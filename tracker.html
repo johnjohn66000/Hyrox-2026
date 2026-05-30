@@ -26,7 +26,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);
   letter-spacing:.1em;display:inline-block;margin-bottom:.25rem}
 .hdr h1{font-size:.95rem;font-weight:900;letter-spacing:-.02em}
 .hdr-sub{font-family:monospace;font-size:9.5px;color:var(--tx3);margin-top:1px}
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);background:var(--bg2);
   border-bottom:1px solid var(--bo2);position:sticky;top:62px;z-index:99}
 .tab{background:transparent;border:0;color:var(--tx4);font-family:monospace;font-size:9px;
   font-weight:700;padding:.5rem .2rem;cursor:pointer;border-bottom:2px solid transparent;
@@ -126,7 +126,7 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 /* Dock */
 .dock{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;
   z-index:200;background:rgba(8,11,10,.96);border-top:1px solid var(--bo2);
-  display:grid;grid-template-columns:repeat(4,1fr);backdrop-filter:blur(12px)}
+  display:grid;grid-template-columns:repeat(5,1fr);backdrop-filter:blur(12px)}
 .dock-btn{background:transparent;border:0;color:var(--tx4);font-family:monospace;font-size:9px;
   font-weight:700;padding:.6rem .2rem;cursor:pointer;border-right:1px solid var(--bo2);
   -webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -157,6 +157,7 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
   <button class="tab" onclick="showTab('log')">➕ Log</button>
   <button class="tab" onclick="showTab('history')">📋 Histo</button>
   <button class="tab" onclick="showTab('race')">🏁 Course</button>
+  <button class="tab" onclick="showTab('charges')">💪 Charges</button>
 </div>
 
 <!-- ═══════════════════════════════
@@ -283,17 +284,37 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 
       <div id="t-str-fields" style="display:none">
         <div class="sep-label">Charges principales</div>
-        <div class="field-row">
-          <div class="field"><label>Squat / Front squat (kg)</label><input type="number" step="2.5" id="t-squat" placeholder="ex : 90"></div>
-          <div class="field"><label>Bench press (kg)</label><input type="number" step="2.5" id="t-bench" placeholder="ex : 82.5"></div>
+        <div style="font-family:monospace;font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin:.3rem 0 .2rem">
+          Charge principale → 1RM calculé automatiquement
+        </div>
+        <div class="field-row3">
+          <div class="field"><label>Squat (kg)</label><input type="number" step="2.5" id="t-squat" placeholder="90"></div>
+          <div class="field"><label>Reps</label><input type="number" id="t-squat-reps" placeholder="5" value="5"></div>
+          <div class="field"><label>RPE série</label><input type="number" step="0.5" id="t-squat-rpe" placeholder="8" min="1" max="10"></div>
+        </div>
+        <div class="field-row3">
+          <div class="field"><label>Bench (kg)</label><input type="number" step="2.5" id="t-bench" placeholder="80"></div>
+          <div class="field"><label>Reps</label><input type="number" id="t-bench-reps" placeholder="6" value="6"></div>
+          <div class="field"><label>RPE série</label><input type="number" step="0.5" id="t-bench-rpe" placeholder="8" min="1" max="10"></div>
+        </div>
+        <div class="field-row3">
+          <div class="field"><label>RDL (kg)</label><input type="number" step="2.5" id="t-rdl" placeholder="82.5"></div>
+          <div class="field"><label>Reps</label><input type="number" id="t-rdl-reps" placeholder="6" value="6"></div>
+          <div class="field"><label>RPE série</label><input type="number" step="0.5" id="t-rdl-rpe" placeholder="7.5" min="1" max="10"></div>
+        </div>
+        <div class="field-row3">
+          <div class="field"><label>Hip thrust (kg)</label><input type="number" step="2.5" id="t-hip" placeholder="105"></div>
+          <div class="field"><label>Reps</label><input type="number" id="t-hip-reps" placeholder="8" value="8"></div>
+          <div class="field"><label>RPE série</label><input type="number" step="0.5" id="t-hip-rpe" placeholder="8" min="1" max="10"></div>
+        </div>
+        <div class="field-row3">
+          <div class="field"><label>Pull-up (+kg)</label><input type="number" step="2.5" id="t-pullup" placeholder="12.5"></div>
+          <div class="field"><label>Reps</label><input type="number" id="t-pullup-reps" placeholder="5" value="5"></div>
+          <div class="field"><label>RPE série</label><input type="number" step="0.5" id="t-pullup-rpe" placeholder="8" min="1" max="10"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>RDL (kg)</label><input type="number" step="2.5" id="t-rdl" placeholder="ex : 82.5"></div>
-          <div class="field"><label>Hip thrust (kg)</label><input type="number" step="2.5" id="t-hip" placeholder="ex : 105"></div>
-        </div>
-        <div class="field-row">
-          <div class="field"><label>Farmer carry (2× kg)</label><input type="number" step="1" id="t-farmer" placeholder="ex : 28"></div>
-          <div class="field"><label>Pull-up lesté (+kg)</label><input type="number" step="2.5" id="t-pullup" placeholder="ex : 12.5"></div>
+          <div class="field"><label>Farmer carry (2× kg)</label><input type="number" step="1" id="t-farmer" placeholder="28"></div>
+          <div class="field"><label>Durée/passages</label><input type="text" id="t-farmer-note" placeholder="ex : 4×50m"></div>
         </div>
       </div>
 
@@ -475,11 +496,122 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 
 </div>
 
+
+<!-- ═══════════════════════════════
+     TAB CHARGES
+═══════════════════════════════ -->
+<div id="tab-charges" class="sec">
+
+  <!-- Formulaire saisie -->
+  <div class="card">
+    <div class="card-title">Enregistrer une série</div>
+    
+    <div class="field">
+      <label>Exercice</label>
+      <select id="ch-exo">
+        <option value="">— Choisir —</option>
+        <optgroup label="Jambes">
+          <option value="squat">Back squat</option>
+          <option value="front_squat">Front squat</option>
+          <option value="rdl">RDL bilatéral</option>
+          <option value="hip_thrust">Hip thrust</option>
+          <option value="bulgarian">Bulgarian split squat</option>
+          <option value="good_morning">Good morning</option>
+        </optgroup>
+        <optgroup label="Haut du corps">
+          <option value="bench">Développé couché</option>
+          <option value="bench_incline">Développé incliné</option>
+          <option value="pullup">Pull-up lestés</option>
+          <option value="press">Strict press</option>
+          <option value="push_press">Push press</option>
+          <option value="pendlay">Pendlay row</option>
+          <option value="curl">Curl barre</option>
+          <option value="skull">Skull crusher</option>
+          <option value="dips">Dips lestés</option>
+        </optgroup>
+        <optgroup label="HYROX spécifique">
+          <option value="farmer">Farmer carry (2× kg)</option>
+          <option value="kb_swing">KB swing</option>
+          <option value="nordic">Nordic (lest additionnel)</option>
+        </optgroup>
+      </select>
+    </div>
+    
+    <div class="field-row">
+      <div class="field">
+        <label>Charge (kg)</label>
+        <input type="number" step="0.5" id="ch-kg" placeholder="ex : 87.5">
+      </div>
+      <div class="field">
+        <label>Reps effectuées</label>
+        <input type="number" id="ch-reps" placeholder="ex : 7">
+      </div>
+    </div>
+    
+    <div class="field-row">
+      <div class="field">
+        <label>Séries</label>
+        <input type="number" id="ch-sets" placeholder="ex : 4" value="1">
+      </div>
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="ch-date">
+      </div>
+    </div>
+    
+    <div class="field">
+      <label>RPE ressenti</label>
+      <div class="rpe-wrap">
+        <input type="range" class="rpe-slider" id="ch-rpe" min="1" max="10" step="0.5" value="7" oninput="document.getElementById('ch-rpe-val').textContent=this.value">
+        <span class="rpe-val" id="ch-rpe-val">7</span>
+      </div>
+    </div>
+    
+    <button class="btn" onclick="saveCharge()">💾 Enregistrer + calculer 1RM</button>
+    <div id="ch-feedback" style="display:none;text-align:center;font-family:monospace;font-size:11px;color:var(--gr);margin-top:.4rem">✅ Série enregistrée</div>
+  </div>
+
+  <!-- Résultat 1RM en temps réel -->
+  <div id="rm-result" style="display:none">
+    <div class="card" style="border-color:var(--gr3)">
+      <div class="card-title" style="color:var(--gr)">1RM estimé — <span id="rm-exo-name">—</span></div>
+      
+      <div class="stat-grid" style="margin-bottom:.6rem">
+        <div class="stat-box" style="grid-column:1/-1">
+          <div class="val" id="rm-value" style="font-size:2rem;color:var(--gr)">— kg</div>
+          <div class="lbl">1RM estimé (formule Epley)</div>
+          <div class="delta" id="rm-formula" style="font-family:monospace;font-size:10px;color:var(--tx4)"></div>
+        </div>
+      </div>
+      
+      <!-- Tableau des charges recommandées -->
+      <div class="card-title" style="margin-top:.4rem">Charges recommandées pour les prochaines séances</div>
+      <div id="rm-table"></div>
+      
+      <!-- Comparaison plan vs réel -->
+      <div id="rm-plan-compare" style="margin-top:.5rem"></div>
+    </div>
+  </div>
+
+  <!-- Sélecteur exercice pour historique -->
+  <div class="card">
+    <div class="card-title">Historique 1RM par exercice</div>
+    <div class="subtabs" id="exo-subtabs" style="flex-wrap:wrap"></div>
+    <div id="rm-history"></div>
+    <div id="rm-chart-wrap" class="chart-wrap" style="display:none">
+      <div class="chart-title">Évolution 1RM estimé</div>
+      <canvas id="rm-chart" height="90"></canvas>
+    </div>
+  </div>
+
+</div>
+
 <nav class="dock">
   <button class="dock-btn on" onclick="showTab('dashboard')"><div class="dock-icon">📊</div>Bilan</button>
   <button class="dock-btn" onclick="showTab('log')"><div class="dock-icon">➕</div>Log</button>
   <button class="dock-btn" onclick="showTab('history')"><div class="dock-icon">📋</div>Histo</button>
   <button class="dock-btn" onclick="showTab('race')"><div class="dock-icon">🏁</div>Course</button>
+  <button class="dock-btn" onclick="showTab('charges')"><div class="dock-icon">💪</div>Charges</button>
 </nav>
 
 <script>
@@ -544,10 +676,10 @@ function showTab(t) {
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
   document.getElementById('tab-'+t).classList.add('on');
   document.querySelectorAll('.tab').forEach((b,i) => {
-    b.classList.toggle('on', ['dashboard','log','history','race'][i]===t);
+    b.classList.toggle('on', ['dashboard','log','history','race','charges'][i]===t);
   });
   document.querySelectorAll('.dock-btn').forEach((b,i) => {
-    b.classList.toggle('on', ['dashboard','log','history','race'][i]===t);
+    b.classList.toggle('on', ['dashboard','log','history','race','charges'][i]===t);
   });
   if (t==='dashboard') renderDashboard();
   if (t==='history') renderHistory('all');
@@ -628,12 +760,22 @@ function saveTraining() {
     entry.fc = +document.getElementById('t-fc').value || null;
   }
   if (['str_bas','str_haut','str_full'].includes(type)) {
-    entry.squat = +document.getElementById('t-squat').value || null;
-    entry.bench = +document.getElementById('t-bench').value || null;
-    entry.rdl = +document.getElementById('t-rdl').value || null;
-    entry.hip = +document.getElementById('t-hip').value || null;
-    entry.farmer = +document.getElementById('t-farmer').value || null;
-    entry.pullup = +document.getElementById('t-pullup').value || null;
+    entry.squat =       +document.getElementById('t-squat').value || null;
+    entry.squat_reps =  +document.getElementById('t-squat-reps').value || 5;
+    entry.squat_rpe =   +document.getElementById('t-squat-rpe').value || null;
+    entry.bench =       +document.getElementById('t-bench').value || null;
+    entry.bench_reps =  +document.getElementById('t-bench-reps').value || 6;
+    entry.bench_rpe =   +document.getElementById('t-bench-rpe').value || null;
+    entry.rdl =         +document.getElementById('t-rdl').value || null;
+    entry.rdl_reps =    +document.getElementById('t-rdl-reps').value || 6;
+    entry.rdl_rpe =     +document.getElementById('t-rdl-rpe').value || null;
+    entry.hip =         +document.getElementById('t-hip').value || null;
+    entry.hip_reps =    +document.getElementById('t-hip-reps').value || 8;
+    entry.hip_rpe =     +document.getElementById('t-hip-rpe').value || null;
+    entry.pullup =      +document.getElementById('t-pullup').value || null;
+    entry.pullup_reps = +document.getElementById('t-pullup-reps').value || 5;
+    entry.pullup_rpe =  +document.getElementById('t-pullup-rpe').value || null;
+    entry.farmer =      +document.getElementById('t-farmer').value || null;
   }
   if (['compromised','simulation'].includes(type)) {
     entry.sp_allure = document.getElementById('t-sp-allure').value;
@@ -643,6 +785,37 @@ function saveTraining() {
     entry.sp_wb = document.getElementById('t-sp-wb').value;
   }
   db.trainings.push(entry);
+  
+  // Auto-extract charges for 1RM calculation
+  if (['str_bas','str_haut','str_full'].includes(type)) {
+    if (!db.charges) db.charges = [];
+    const chargeMap = [
+      {field:'squat',  exo:'squat',      reps_field:'squat_reps',  rpe_field:'squat_rpe'},
+      {field:'bench',  exo:'bench',      reps_field:'bench_reps',  rpe_field:'bench_rpe'},
+      {field:'rdl',    exo:'rdl',        reps_field:'rdl_reps',    rpe_field:'rdl_rpe'},
+      {field:'hip',    exo:'hip_thrust', reps_field:'hip_reps',    rpe_field:'hip_rpe'},
+      {field:'pullup', exo:'pullup',     reps_field:'pullup_reps', rpe_field:'pullup_rpe'},
+    ];
+    chargeMap.forEach(({field, exo, reps_field, rpe_field}) => {
+      const kg = entry[field];
+      if (!kg || kg <= 0) return;
+      const reps = entry[reps_field] || 5;
+      const rm = Math.round(kg * (1 + reps / 30) * 4) / 4;
+      db.charges.push({
+        id: Date.now() + Math.random(),
+        date: entry.date,
+        exo,
+        kg,
+        reps,
+        sets: 1,
+        rpe: entry[rpe_field] || entry.rpe || 7,
+        rm_estimated: rm,
+        auto: true,
+        training_id: entry.id,
+      });
+    });
+  }
+  
   saveDB(db);
   const fb = document.getElementById('save-feedback');
   fb.style.display = 'block';
@@ -1046,8 +1219,14 @@ function renderHistory(filter) {
         tags.push({txt:`RPE ${item.rpe}`, cls});
       }
       if (item.allure) tags.push({txt:item.allure+'/km', cls:'etag'});
-      if (item.squat) tags.push({txt:'Squat '+item.squat+'kg', cls:'etag'});
-      if (item.bench) tags.push({txt:'Bench '+item.bench+'kg', cls:'etag'});
+      if (item.squat) {
+        const rm = item.squat_reps ? Math.round(item.squat*(1+item.squat_reps/30)*4)/4 : null;
+        tags.push({txt:'Squat '+item.squat+'kg'+(rm?` → 1RM ~${rm}kg`:''), cls:'etag'});
+      }
+      if (item.bench) {
+        const rm = item.bench_reps ? Math.round(item.bench*(1+item.bench_reps/30)*4)/4 : null;
+        tags.push({txt:'Bench '+item.bench+'kg'+(rm?` → 1RM ~${rm}kg`:''), cls:'etag'});
+      }
       if (item.sp_wb) tags.push({txt:'WB '+item.sp_wb, cls:'etag'});
     }
 
@@ -1263,6 +1442,265 @@ function clearAll() {
     renderHistory('all');
     renderRaces();
   }
+}
+
+
+
+// ════════════════════════════════════
+// CHARGES & 1RM ENGINE
+// ════════════════════════════════════
+
+const EXO_LABELS = {
+  squat:'Back squat', front_squat:'Front squat', rdl:'RDL bilatéral',
+  hip_thrust:'Hip thrust', bulgarian:'Bulgarian split squat', good_morning:'Good morning',
+  bench:'Développé couché', bench_incline:'Développé incliné', pullup:'Pull-up lestés',
+  press:'Strict press', push_press:'Push press', pendlay:'Pendlay row',
+  curl:'Curl barre', skull:'Skull crusher', dips:'Dips lestés',
+  farmer:'Farmer carry', kb_swing:'KB swing', nordic:'Nordic'
+};
+
+// Intensités cibles du plan par exercice
+const PLAN_INTENSITIES = [
+  { label: '5×8 hypertrophie', pct: 0.675, sets: 5, reps: 8, phase: 'Bloc A' },
+  { label: '5×5 force',        pct: 0.80,  sets: 5, reps: 5, phase: 'Bloc B' },
+  { label: '5-3-1 sem A 95%',  pct: 0.95,  sets: 1, reps: '5+', phase: 'Bloc C' },
+  { label: '5-3-1 sem B 100%', pct: 1.00,  sets: 1, reps: '3+', phase: 'Bloc C' },
+  { label: '5-3-1 sem C 95%',  pct: 0.95,  sets: 1, reps: '1+', phase: 'Bloc C' },
+  { label: '3×5 maintenance',  pct: 0.775, sets: 3, reps: 5,  phase: 'Bloc D/E' },
+  { label: '3RM test',         pct: 0.90,  sets: 1, reps: 3,  phase: 'Tests' },
+  { label: '1RM test',         pct: 1.00,  sets: 1, reps: 1,  phase: 'Tests' },
+];
+
+// HYROX-specific intensities for non-compound exercises
+const HYROX_INTENSITIES = [
+  { label: 'Technique / Z2 muscu', pct: 0.60, sets: 4, reps: 10 },
+  { label: 'Travail volume',       pct: 0.675, sets: 4, reps: 8 },
+  { label: 'Force entretien',      pct: 0.775, sets: 3, reps: 6 },
+];
+
+// Epley formula: 1RM = weight × (1 + reps/30)
+function epley(kg, reps) {
+  if (reps === 1) return kg;
+  return Math.round(kg * (1 + reps / 30) * 4) / 4; // round to nearest 0.25
+}
+
+// Round to nearest 2.5kg for practical use
+function round25(kg) { return Math.round(kg / 2.5) * 2.5; }
+
+function saveCharge() {
+  const db = loadDB();
+  const exo = document.getElementById('ch-exo').value;
+  const kg = parseFloat(document.getElementById('ch-kg').value);
+  const reps = parseInt(document.getElementById('ch-reps').value);
+  const sets = parseInt(document.getElementById('ch-sets').value) || 1;
+  const date = document.getElementById('ch-date').value;
+  const rpe = parseFloat(document.getElementById('ch-rpe').value);
+  
+  if (!exo || !kg || !reps) { alert('Exercice, charge et reps obligatoires.'); return; }
+  
+  const rm = epley(kg, reps);
+  
+  if (!db.charges) db.charges = [];
+  db.charges.push({ id: Date.now(), date, exo, kg, reps, sets, rpe, rm_estimated: rm });
+  saveDB(db);
+  
+  // Show result
+  displayRMResult(exo, kg, reps, rm);
+  
+  // Refresh history tabs
+  renderChargesHistory();
+  
+  const fb = document.getElementById('ch-feedback');
+  fb.style.display = 'block';
+  setTimeout(() => fb.style.display = 'none', 2000);
+}
+
+function displayRMResult(exo, kg, reps, rm) {
+  const wrap = document.getElementById('rm-result');
+  wrap.style.display = 'block';
+  
+  document.getElementById('rm-exo-name').textContent = EXO_LABELS[exo] || exo;
+  document.getElementById('rm-value').textContent = rm + ' kg';
+  document.getElementById('rm-formula').textContent = 
+    `${kg} kg × (1 + ${reps}/30) = ${rm} kg`;
+  
+  // Choose intensities based on exercise type
+  const isCompound = ['squat','front_squat','rdl','bench','bench_incline','press','push_press'].includes(exo);
+  const intensities = isCompound ? PLAN_INTENSITIES : HYROX_INTENSITIES;
+  
+  const tableEl = document.getElementById('rm-table');
+  tableEl.innerHTML = intensities.map(i => {
+    const recommended = round25(rm * i.pct);
+    const repsLabel = typeof i.reps === 'string' ? i.reps : `${i.reps} reps`;
+    const pct = Math.round(i.pct * 100);
+    return `
+      <div style="display:flex;align-items:center;padding:.3rem 0;border-bottom:1px solid var(--bo);font-size:11.5px">
+        <div style="flex:1;color:var(--tx2)">${i.label}</div>
+        <div style="font-family:monospace;font-size:10px;color:var(--tx4);margin:0 .5rem">${pct}%</div>
+        <div style="font-family:monospace;font-size:1rem;font-weight:900;color:var(--gr);min-width:60px;text-align:right">${recommended} kg</div>
+      </div>`;
+  }).join('') + 
+  `<div style="font-family:monospace;font-size:9px;color:var(--tx4);text-align:center;margin-top:.3rem">
+    Arrondi au 2.5 kg pratique · Formule Epley
+  </div>`;
+  
+  // Plan comparison — find planned charge for this exercise and week
+  const db = loadDB();
+  const planCompare = document.getElementById('rm-plan-compare');
+  const PLAN_TARGETS = getPlanTargets(exo);
+  if (PLAN_TARGETS.length) {
+    planCompare.innerHTML = `
+      <div style="background:var(--bg3);border-radius:6px;padding:.5rem;margin-top:.4rem">
+        <div style="font-family:monospace;font-size:9px;text-transform:uppercase;color:var(--tx3);margin-bottom:.4rem">Plan prévu vs 1RM actuel</div>
+        ${PLAN_TARGETS.map(t => {
+          const diff = round25(rm * t.pct) - t.planned_kg;
+          const cls = diff >= 0 ? 'color:var(--ok)' : 'color:var(--rd)';
+          const sign = diff >= 0 ? '+' : '';
+          return `<div style="display:flex;justify-content:space-between;font-size:11px;padding:.2rem 0;border-bottom:1px solid var(--bo)">
+            <span style="color:var(--tx2)">${t.label}</span>
+            <span style="font-family:monospace;font-size:10.5px"><span style="color:var(--tx4)">${t.planned_kg} kg planifié</span> <span style="${cls}">(${sign}${diff} kg)</span></span>
+          </div>`;
+        }).join('')}
+      </div>`;
+  } else {
+    planCompare.innerHTML = '';
+  }
+}
+
+function getPlanTargets(exo) {
+  // Plan targets extracted from the programming
+  const targets = {
+    squat: [
+      {label:'Bloc A S1 5×8', pct:0.675, planned_kg:80},
+      {label:'Bloc A S3 5×8', pct:0.675, planned_kg:85},
+      {label:'Bloc B S1 5×5', pct:0.80, planned_kg:87.5},
+      {label:'Bloc B S3 5×5', pct:0.80, planned_kg:92.5},
+    ],
+    bench: [
+      {label:'Bloc A S1 4×10', pct:0.675, planned_kg:70},
+      {label:'Bloc A S3 4×10', pct:0.675, planned_kg:75},
+      {label:'Bloc B S1 5×6', pct:0.775, planned_kg:77.5},
+      {label:'Bloc B S3 5×6', pct:0.775, planned_kg:82.5},
+    ],
+    rdl: [
+      {label:'Bloc A S1 4×8', pct:0.675, planned_kg:67.5},
+      {label:'Bloc B S1 4×6', pct:0.775, planned_kg:77.5},
+      {label:'Bloc C S1 4×5', pct:0.825, planned_kg:85},
+    ],
+    hip_thrust: [
+      {label:'Bloc A S1 4×10', pct:0.65, planned_kg:85},
+      {label:'Bloc B S1 4×8', pct:0.75, planned_kg:97.5},
+      {label:'Bloc C S1 4×6', pct:0.825, planned_kg:107.5},
+    ],
+    pullup: [
+      {label:'Bloc B S1 4×6', pct:0.05, planned_kg:5},
+      {label:'Bloc C S1 4×5', pct:0.125, planned_kg:12.5},
+    ],
+    press: [
+      {label:'Bloc A S1 4×8', pct:0.675, planned_kg:42.5},
+      {label:'Bloc B S1 4×6', pct:0.775, planned_kg:50},
+      {label:'Bloc C S1 4×5', pct:0.825, planned_kg:55},
+    ],
+  };
+  return targets[exo] || [];
+}
+
+function renderChargesHistory(selectedExo) {
+  const db = loadDB();
+  const charges = db.charges || [];
+  
+  // Build list of exercices that have data
+  const exosWithData = [...new Set(charges.map(c => c.exo))];
+  
+  const tabsEl = document.getElementById('exo-subtabs');
+  if (!tabsEl) return;
+  
+  if (!exosWithData.length) {
+    document.getElementById('rm-history').innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Enregistre des séries pour voir l'historique 1RM.</p></div>';
+    tabsEl.innerHTML = '';
+    return;
+  }
+  
+  const current = selectedExo || exosWithData[0];
+  
+  // Count auto vs manual
+  const autoCount = (db.charges||[]).filter(c => c.auto).length;
+  const manualCount = (db.charges||[]).filter(c => !c.auto).length;
+  
+  tabsEl.innerHTML = exosWithData.map(e => 
+    `<button class="stab ${e===current?'on':''}" onclick="renderChargesHistory('${e}')">${EXO_LABELS[e]||e}</button>`
+  ).join('') + (autoCount > 0 ? `<div style="font-family:monospace;font-size:9px;color:var(--tx4);margin-top:.3rem;width:100%">⚡ ${autoCount} entrées auto depuis les logs · ${manualCount} manuelles</div>` : '');
+  
+  const exoCharges = charges.filter(c => c.exo === current).sort((a,b) => a.date.localeCompare(b.date));
+  
+  if (!exoCharges.length) {
+    document.getElementById('rm-history').innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Aucune donnée pour cet exercice.</div>';
+    return;
+  }
+  
+  // Latest 1RM
+  const latest = exoCharges[exoCharges.length-1];
+  const best = exoCharges.reduce((a,b) => a.rm_estimated > b.rm_estimated ? a : b);
+  
+  document.getElementById('rm-history').innerHTML = `
+    <div class="stat-grid" style="margin-bottom:.4rem">
+      <div class="stat-box">
+        <div class="val" style="color:var(--gr)">${latest.rm_estimated} kg</div>
+        <div class="lbl">1RM actuel</div>
+        <div class="delta" style="font-family:monospace;font-size:10px;color:var(--tx4)">${fmtDate(latest.date)}</div>
+      </div>
+      <div class="stat-box">
+        <div class="val" style="color:var(--am)">${best.rm_estimated} kg</div>
+        <div class="lbl">1RM record</div>
+        <div class="delta" style="font-family:monospace;font-size:10px;color:var(--tx4)">${fmtDate(best.date)}</div>
+      </div>
+    </div>
+    ${exoCharges.slice(-5).reverse().map(c => {
+      const isNew = c.rm_estimated >= best.rm_estimated;
+      return `<div class="entry">
+        <div class="entry-icon">${isNew ? '🏆' : '💪'}</div>
+        <div class="entry-content">
+          <div class="entry-title">${c.kg} kg × ${c.reps} reps = <b style="color:var(--gr)">${c.rm_estimated} kg 1RM</b></div>
+          <div class="entry-meta">${fmtDate(c.date)} · RPE ${c.rpe} · ${c.sets} série(s)</div>
+          <div class="entry-tags">
+            ${PLAN_INTENSITIES.map(i => {
+              const rec = round25(c.rm_estimated * i.pct);
+              return `<span class="etag">${i.label.split(' ')[0]}: <b>${rec}</b></span>`;
+            }).slice(0,4).join('')}
+          </div>
+        </div>
+        <button class="del-btn" onclick="deleteCharge(${c.id})">✕</button>
+      </div>`;
+    }).join('')}`;
+  
+  // Draw chart
+  const chartWrap = document.getElementById('rm-chart-wrap');
+  chartWrap.style.display = 'block';
+  const canvas = document.getElementById('rm-chart');
+  const data = exoCharges.map(c => ({x: fmtDate(c.date), y: c.rm_estimated}));
+  drawLineChart(canvas, data, {color:'var(--gr)', min: Math.min(...data.map(d=>d.y))-5, max: Math.max(...data.map(d=>d.y))+5});
+}
+
+function deleteCharge(id) {
+  if (!confirm('Supprimer cette série ?')) return;
+  const db = loadDB();
+  db.charges = (db.charges||[]).filter(c => c.id !== id);
+  saveDB(db);
+  renderChargesHistory();
+}
+
+// Init charges tab on load
+document.addEventListener('DOMContentLoaded', () => {
+  const t = today();
+  const chDate = document.getElementById('ch-date');
+  if (chDate) chDate.value = t;
+});
+
+// Update showTab to also render charges history
+const _origShowTab = showTab;
+function showTab(t) {
+  _origShowTab(t);
+  if (t === 'charges') renderChargesHistory();
 }
 
 // Init
