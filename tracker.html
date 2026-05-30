@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>HYROX Tracker — Performances & Analyse</title>
+<style>
+:root{
+  --bg:#080b0a;--bg2:#0e1412;--bg3:#141c1a;--bg4:#1c2422;
+  --bo:#1e2a27;--bo2:#263530;--bo3:#344840;
+  --tx:#e8f0ed;--tx2:#b0c4be;--tx3:#718e87;--tx4:#4a6560;
+  --gr:#00c4a7;--gr2:#009e87;--gr3:#003d35;
+  --am:#ffb800;--am2:#c98d00;--am3:#3d2e00;
+  --rd:#ff4444;--rd2:#c42020;--rd3:#3d0a0a;
+  --bl:#4488ff;--pu:#a855f7;--ok:#22c55e;--ok2:#166534;--vo:#ff6b35;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+html{scroll-behavior:smooth}
+body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);
+  max-width:430px;margin:0 auto;font-size:14px;line-height:1.6;
+  min-height:100vh;padding-bottom:100px}
+.hdr{background:linear-gradient(180deg,#000,var(--bg));border-bottom:1px solid var(--bo2);
+  padding:.9rem .9rem .6rem;position:sticky;top:0;z-index:100}
+.hdr-badge{font-family:monospace;font-size:9px;font-weight:700;color:var(--am);
+  background:var(--am3);border:1px solid var(--am2);padding:2px 7px;border-radius:3px;
+  letter-spacing:.1em;display:inline-block;margin-bottom:.25rem}
+.hdr h1{font-size:.95rem;font-weight:900;letter-spacing:-.02em}
+.hdr-sub{font-family:monospace;font-size:9.5px;color:var(--tx3);margin-top:1px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);
+  border-bottom:1px solid var(--bo2);position:sticky;top:62px;z-index:99}
+.tab{background:transparent;border:0;color:var(--tx4);font-family:monospace;font-size:9px;
+  font-weight:700;padding:.5rem .2rem;cursor:pointer;border-bottom:2px solid transparent;
+  -webkit-tap-highlight-color:transparent;transition:all .15s;text-transform:uppercase}
+.tab.on{color:var(--gr);border-bottom-color:var(--gr)}
+.sec{display:none;padding:.65rem .9rem}.sec.on{display:block}
+.card{background:var(--bg2);border:1px solid var(--bo2);border-radius:10px;
+  padding:.7rem;margin-bottom:.6rem}
+.card-title{font-family:monospace;font-size:9.5px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--tx3);margin-bottom:.55rem;
+  display:flex;align-items:center;justify-content:space-between}
+.card-title span{color:var(--tx4);font-weight:400;font-size:9px}
+.field{margin-bottom:.55rem}
+.field label{display:block;font-family:monospace;font-size:10px;color:var(--tx3);
+  margin-bottom:2px;text-transform:uppercase;letter-spacing:.05em}
+.field input,.field select{width:100%;background:var(--bg3);border:1px solid var(--bo2);
+  border-radius:6px;padding:.42rem .5rem;color:var(--tx);font-family:monospace;
+  font-size:13px;outline:none;-webkit-appearance:none}
+.field input:focus,.field select:focus{border-color:var(--gr)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
+.field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.35rem}
+.rpe-wrap{display:flex;align-items:center;gap:.5rem;background:var(--bg3);
+  border:1px solid var(--bo2);border-radius:6px;padding:.4rem .55rem}
+.rpe-slider{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;
+  background:var(--bo2);outline:none}
+.rpe-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;
+  border-radius:50%;background:var(--gr);cursor:pointer;box-shadow:0 0 0 3px rgba(0,196,167,.2)}
+.rpe-val{font-family:monospace;font-size:1.1rem;font-weight:900;color:var(--gr);min-width:24px;text-align:center}
+.rpe-cible{font-family:monospace;font-size:10px;color:var(--tx4)}
+.btn{background:var(--gr);color:#000;border:0;border-radius:8px;padding:.6rem 1.2rem;
+  font-family:monospace;font-size:12px;font-weight:700;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;width:100%;margin-top:.3rem;transition:opacity .15s}
+.btn:active{opacity:.8}
+.btn-sec{background:var(--bg3);color:var(--tx2);border:1px solid var(--bo2)}
+.btn-rd{background:var(--rd3);color:var(--rd);border:1px solid var(--rd2)}
+.btn-am{background:var(--am3);color:var(--am);border:1px solid var(--am2)}
+.btn-sm{padding:.35rem .7rem;font-size:10px;width:auto;border-radius:5px}
+.entry{background:var(--bg3);border:1px solid var(--bo);border-radius:8px;
+  padding:.55rem .65rem;margin-bottom:.35rem;display:flex;align-items:flex-start;gap:.5rem}
+.entry-icon{font-size:1rem;flex-shrink:0;margin-top:1px}
+.entry-content{flex:1;min-width:0}
+.entry-title{font-size:12px;font-weight:700;color:var(--tx)}
+.entry-meta{font-family:monospace;font-size:10px;color:var(--tx3);margin-top:1px}
+.entry-tags{display:flex;gap:3px;flex-wrap:wrap;margin-top:3px}
+.etag{font-family:monospace;font-size:9px;padding:1px 5px;border-radius:2px;
+  background:var(--bg4);border:1px solid var(--bo2);color:var(--tx3)}
+.etag-ok{background:rgba(34,197,94,.1);border-color:var(--ok);color:var(--ok)}
+.etag-warn{background:rgba(255,184,0,.12);border-color:var(--am2);color:var(--am)}
+.etag-bad{background:rgba(255,68,68,.1);border-color:var(--rd2);color:var(--rd)}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-bottom:.55rem}
+.stat-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.35rem;margin-bottom:.5rem}
+.stat-box{background:var(--bg3);border:1px solid var(--bo);border-radius:8px;
+  padding:.5rem .5rem;text-align:center}
+.stat-box .val{font-size:1.15rem;font-weight:900;line-height:1.1}
+.stat-box .lbl{font-family:monospace;font-size:8.5px;color:var(--tx4);text-transform:uppercase;margin-top:2px}
+.stat-box .delta{font-family:monospace;font-size:10px;margin-top:2px}
+.d-up{color:var(--ok)}.d-dn{color:var(--rd)}.d-eq{color:var(--tx4)}
+.alert{border-radius:8px;padding:.55rem .65rem;margin-bottom:.45rem;
+  font-size:11.5px;line-height:1.5;display:flex;gap:.45rem;align-items:flex-start}
+.alert-icon{font-size:.95rem;flex-shrink:0}
+.alert-warn{background:rgba(255,184,0,.08);border:1px solid var(--am3);color:var(--am)}
+.alert-ok{background:rgba(34,197,94,.08);border:1px solid var(--ok2);color:var(--ok)}
+.alert-bad{background:rgba(255,68,68,.08);border:1px solid var(--rd2);color:var(--rd)}
+.alert-info{background:rgba(68,136,255,.08);border:1px solid #1a3366;color:var(--bl)}
+.prog-bar-wrap{margin:.35rem 0}
+.prog-bar-label{display:flex;justify-content:space-between;font-family:monospace;font-size:10px;color:var(--tx3);margin-bottom:3px}
+.prog-bar{height:5px;background:var(--bo2);border-radius:3px;overflow:hidden}
+.prog-bar-fill{height:100%;border-radius:3px;transition:width .6s}
+.subtabs{display:flex;gap:.3rem;margin-bottom:.55rem;flex-wrap:wrap}
+.stab{background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.3rem .55rem;
+  font-family:monospace;font-size:9.5px;font-weight:700;color:var(--tx4);cursor:pointer;
+  -webkit-tap-highlight-color:transparent}
+.stab.on{background:var(--gr3);border-color:var(--gr);color:var(--gr)}
+.empty{text-align:center;padding:2rem 1rem;color:var(--tx4)}
+.empty-icon{font-size:2rem;margin-bottom:.5rem}
+.empty p{font-size:11.5px;line-height:1.6}
+.sep-label{font-family:monospace;font-size:9px;text-transform:uppercase;letter-spacing:.09em;
+  color:var(--tx4);padding:.3rem 0 .2rem;margin-bottom:.2rem;border-top:1px solid var(--bo)}
+/* Charts SVG */
+.chart-wrap{background:var(--bg3);border-radius:8px;padding:.6rem .5rem .4rem;margin:.4rem 0;overflow:hidden}
+.chart-title{font-family:monospace;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:.5rem}
+/* Station bars */
+.station-bar{display:flex;align-items:center;gap:.4rem;margin:.2rem 0;font-size:11px}
+.station-name{min-width:100px;color:var(--tx2);font-size:11px}
+.station-track{flex:1;height:16px;background:var(--bo2);border-radius:3px;overflow:hidden;position:relative}
+.station-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:5px;
+  font-family:monospace;font-size:9px;font-weight:700;color:#000}
+.station-rank{font-family:monospace;font-size:10px;color:var(--tx3);min-width:45px;text-align:right}
+/* Export button */
+.export-row{display:flex;gap:.4rem;margin-top:.5rem}
+/* Delete btn */
+.del-btn{background:transparent;border:0;color:var(--tx4);font-size:.9rem;cursor:pointer;
+  padding:.2rem;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.del-btn:active{color:var(--rd)}
+/* Divider */
+hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
+/* Dock */
+.dock{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;
+  z-index:200;background:rgba(8,11,10,.96);border-top:1px solid var(--bo2);
+  display:grid;grid-template-columns:repeat(4,1fr);backdrop-filter:blur(12px)}
+.dock-btn{background:transparent;border:0;color:var(--tx4);font-family:monospace;font-size:9px;
+  font-weight:700;padding:.6rem .2rem;cursor:pointer;border-right:1px solid var(--bo2);
+  -webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;gap:2px}
+.dock-btn:last-child{border-right:none}
+.dock-btn.on{color:var(--gr)}
+.dock-icon{font-size:1rem}
+@media(min-width:431px){body{border-left:1px solid var(--bo);border-right:1px solid var(--bo)}}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-badge">HYROX TRACKER · 2026</div>
+  <h1>Performances & Analyse</h1>
+  <div class="hdr-sub">Objectif 1h10 · 15 novembre 2026</div>
+  <div style="margin-top:.3rem">
+    <a href="plan.html" style="display:inline-flex;align-items:center;gap:.4rem;
+      background:#003d35;border:1px solid #009e87;border-radius:6px;
+      padding:.3rem .7rem;font-family:monospace;font-size:10px;font-weight:700;
+      color:#00c4a7;text-decoration:none;-webkit-tap-highlight-color:transparent">
+      📅 Plan d'entraînement →
+    </a>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab on" onclick="showTab('dashboard')">📊 Bilan</button>
+  <button class="tab" onclick="showTab('log')">➕ Log</button>
+  <button class="tab" onclick="showTab('history')">📋 Histo</button>
+  <button class="tab" onclick="showTab('race')">🏁 Course</button>
+</div>
+
+<!-- ═══════════════════════════════
+     TAB DASHBOARD
+═══════════════════════════════ -->
+<div id="tab-dashboard" class="sec on">
+
+  <!-- Alertes intelligentes -->
+  <div id="alerts-zone"></div>
+
+  <!-- Stats rapides -->
+  <div class="card">
+    <div class="card-title">Cette semaine</div>
+    <div class="stat-grid" id="week-stats">
+      <div class="stat-box"><div class="val" id="ws-seances">—</div><div class="lbl">Séances</div></div>
+      <div class="stat-box"><div class="val" id="ws-rpe">—</div><div class="lbl">RPE moy.</div></div>
+      <div class="stat-box"><div class="val" id="ws-poids">—</div><div class="lbl">Poids kg</div><div class="delta" id="ws-poids-delta"></div></div>
+      <div class="stat-box"><div class="val" id="ws-conformite">—</div><div class="lbl">Conformité</div></div>
+    </div>
+  </div>
+
+  <!-- Progression clés -->
+  <div class="card">
+    <div class="card-title">Progression forces clés</div>
+    <div id="force-progression"></div>
+  </div>
+
+  <!-- Courbe poids -->
+  <div class="card">
+    <div class="card-title">Poids corporel <span id="poids-target-label">Cible 84 kg</span></div>
+    <div class="chart-wrap">
+      <canvas id="chart-poids" height="80"></canvas>
+    </div>
+    <div class="prog-bar-wrap">
+      <div class="prog-bar-label"><span>90 kg</span><span id="poids-current-label">— kg</span><span>84 kg</span></div>
+      <div class="prog-bar"><div class="prog-bar-fill" id="poids-bar" style="background:var(--gr);width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- Progression run -->
+  <div class="card">
+    <div class="card-title">Allure run (tempo/seuil) <span>Cible 4'10/km</span></div>
+    <div class="chart-wrap">
+      <canvas id="chart-run" height="80"></canvas>
+    </div>
+    <div id="run-last"></div>
+  </div>
+
+  <!-- Progression WB -->
+  <div class="card">
+    <div class="card-title">Wall Balls 100 reps for time <span>Cible &lt;5'30</span></div>
+    <div id="wb-progression"></div>
+  </div>
+
+  <!-- VO2max indirecte -->
+  <div class="card">
+    <div class="card-title">VO2max indirecte (5 km) <span>Cible 22'00</span></div>
+    <div id="vo2-progression"></div>
+  </div>
+
+  <!-- Analyse RPE -->
+  <div class="card">
+    <div class="card-title">Analyse RPE ressenti vs cible <span>4 dernières sem.</span></div>
+    <div id="rpe-analyse"></div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════
+     TAB LOG
+═══════════════════════════════ -->
+<div id="tab-log" class="sec">
+
+  <div class="subtabs" id="log-subtabs">
+    <button class="stab on" onclick="showLogType('training')">Entraînement</button>
+    <button class="stab" onclick="showLogType('poids')">Poids</button>
+    <button class="stab" onclick="showLogType('test')">Test chrono</button>
+  </div>
+
+  <!-- LOG ENTRAÎNEMENT -->
+  <div id="log-training">
+    <div class="card">
+      <div class="card-title">Loguer une séance</div>
+
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="t-date">
+      </div>
+
+      <div class="field">
+        <label>Type de séance</label>
+        <select id="t-type">
+          <option value="">— Choisir —</option>
+          <option value="vma">Run VMA (4×4, 8×3, 6×4 min)</option>
+          <option value="tempo">Run Tempo / Seuil</option>
+          <option value="z2">Run Zone 2</option>
+          <option value="long">Sortie longue</option>
+          <option value="compromised">Compromised run</option>
+          <option value="simulation">Simulation HYROX</option>
+          <option value="str_bas">Muscu — Half-body bas</option>
+          <option value="str_haut">Muscu — Half-body haut</option>
+          <option value="str_full">Muscu — Full body</option>
+          <option value="ergo">Ergomètres (Row/Ski)</option>
+          <option value="mob">Mobilité</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Durée (min)</label>
+        <input type="number" id="t-duree" placeholder="ex : 55">
+      </div>
+
+      <div id="t-run-fields" style="display:none">
+        <div class="sep-label">Données run</div>
+        <div class="field-row">
+          <div class="field"><label>Distance (km)</label><input type="number" step="0.1" id="t-dist" placeholder="ex : 8.5"></div>
+          <div class="field"><label>Allure (min/km)</label><input type="text" id="t-allure" placeholder="ex : 4:28"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Intervalles</label><input type="text" id="t-intervals" placeholder="ex : 6×4 min"></div>
+          <div class="field"><label>FC max (bpm)</label><input type="number" id="t-fc" placeholder="ex : 178"></div>
+        </div>
+      </div>
+
+      <div id="t-str-fields" style="display:none">
+        <div class="sep-label">Charges principales</div>
+        <div class="field-row">
+          <div class="field"><label>Squat / Front squat (kg)</label><input type="number" step="2.5" id="t-squat" placeholder="ex : 90"></div>
+          <div class="field"><label>Bench press (kg)</label><input type="number" step="2.5" id="t-bench" placeholder="ex : 82.5"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>RDL (kg)</label><input type="number" step="2.5" id="t-rdl" placeholder="ex : 82.5"></div>
+          <div class="field"><label>Hip thrust (kg)</label><input type="number" step="2.5" id="t-hip" placeholder="ex : 105"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Farmer carry (2× kg)</label><input type="number" step="1" id="t-farmer" placeholder="ex : 28"></div>
+          <div class="field"><label>Pull-up lesté (+kg)</label><input type="number" step="2.5" id="t-pullup" placeholder="ex : 12.5"></div>
+        </div>
+      </div>
+
+      <div id="t-sp-fields" style="display:none">
+        <div class="sep-label">Données compromised / simulation</div>
+        <div class="field-row">
+          <div class="field"><label>Allure run (min/km)</label><input type="text" id="t-sp-allure" placeholder="ex : 4:12"></div>
+          <div class="field"><label>Temps total (min)</label><input type="number" id="t-sp-total" placeholder="ex : 55"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Rds/rounds complétés</label><input type="number" id="t-sp-rounds" placeholder="ex : 8"></div>
+          <div class="field"><label>BBJ (m consécutifs)</label><input type="number" id="t-sp-bbj" placeholder="ex : 80"></div>
+        </div>
+        <div class="field"><label>WB 100 reps (mm:ss si mesuré)</label><input type="text" id="t-sp-wb" placeholder="ex : 06:15"></div>
+      </div>
+
+      <div class="field" style="margin-top:.5rem">
+        <label>RPE ressenti</label>
+        <div class="rpe-wrap">
+          <span class="rpe-cible" id="rpe-cible-label">Cible : —</span>
+          <input type="range" class="rpe-slider" id="t-rpe" min="1" max="10" step="0.5" value="7" oninput="updateRpe(this.value)">
+          <span class="rpe-val" id="rpe-display">7</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Note qualitative (optionnel)</label>
+        <select id="t-qualite">
+          <option value="">— Ressenti général —</option>
+          <option value="tres_bien">🟢 Très bien — au-dessus des attentes</option>
+          <option value="bien">🟡 Bien — conforme</option>
+          <option value="moyen">🟠 Moyen — en dessous</option>
+          <option value="mauvais">🔴 Difficile — fatigue ou douleur</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Commentaire libre</label>
+        <textarea id="t-comment" placeholder="Ex : dos sensible, Jeu AM, série 3 avortée..." rows="2" style="width:100%;background:var(--bg3);border:1px solid var(--bo2);border-radius:6px;padding:.4rem .5rem;color:var(--tx);font-family:monospace;font-size:12px;resize:vertical;outline:none"></textarea>
+      </div>
+
+      <button class="btn" onclick="saveTraining()">💾 Enregistrer la séance</button>
+      <div id="save-feedback" style="text-align:center;font-family:monospace;font-size:11px;color:var(--gr);margin-top:.4rem;display:none">✅ Séance enregistrée</div>
+    </div>
+  </div>
+
+  <!-- LOG POIDS -->
+  <div id="log-poids" style="display:none">
+    <div class="card">
+      <div class="card-title">Loguer le poids</div>
+      <div class="field"><label>Date</label><input type="date" id="p-date"></div>
+      <div class="field"><label>Poids (kg)</label><input type="number" step="0.1" id="p-val" placeholder="ex : 89.4"></div>
+      <div class="field"><label>Moment de la pesée</label>
+        <select id="p-moment">
+          <option value="matin">Matin à jeun (référence)</option>
+          <option value="soir">Soir</option>
+        </select>
+      </div>
+      <button class="btn" onclick="savePoids()">💾 Enregistrer</button>
+      <div id="poids-feedback" style="text-align:center;font-family:monospace;font-size:11px;color:var(--gr);margin-top:.4rem;display:none">✅ Poids enregistré</div>
+    </div>
+  </div>
+
+  <!-- LOG TEST -->
+  <div id="log-test" style="display:none">
+    <div class="card">
+      <div class="card-title">Loguer un test chrono</div>
+      <div class="field"><label>Date</label><input type="date" id="ts-date"></div>
+      <div class="field"><label>Type de test</label>
+        <select id="ts-type">
+          <option value="5km">5 km chrono (VO2max indirecte)</option>
+          <option value="wb100">100 WB for time</option>
+          <option value="bbj80">80 m BBJ race distance</option>
+          <option value="farmer">Farmer carry 100 m (2×28 kg)</option>
+          <option value="squat1rm">Back squat — 1RM ou 3RM</option>
+          <option value="bench1rm">Bench press — 1RM ou 5RM</option>
+          <option value="hipthrust">Hip thrust — 5RM</option>
+          <option value="race_seq">Race-Sequence for time</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Résultat (mm:ss ou kg)</label><input type="text" id="ts-result" placeholder="ex : 23:45 ou 105 kg"></div>
+        <div class="field"><label>Cible</label><input type="text" id="ts-cible" placeholder="ex : 22:00" readonly id="ts-cible"></div>
+      </div>
+      <div class="field"><label>Commentaire</label>
+        <input type="text" id="ts-comment" placeholder="Conditions, ressenti...">
+      </div>
+      <button class="btn" onclick="saveTest()">💾 Enregistrer le test</button>
+      <div id="test-feedback" style="text-align:center;font-family:monospace;font-size:11px;color:var(--gr);margin-top:.4rem;display:none">✅ Test enregistré</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════
+     TAB HISTORIQUE
+═══════════════════════════════ -->
+<div id="tab-history" class="sec">
+  <div class="subtabs">
+    <button class="stab on" onclick="showHistType('all')">Tout</button>
+    <button class="stab" onclick="showHistType('run')">Run</button>
+    <button class="stab" onclick="showHistType('str')">Muscu</button>
+    <button class="stab" onclick="showHistType('sp')">SP/Sim</button>
+    <button class="stab" onclick="showHistType('test')">Tests</button>
+  </div>
+  <div id="history-list">
+    <div class="empty"><div class="empty-icon">📋</div><p>Aucune séance encore loguée.<br>Commence par l'onglet ➕ Log.</p></div>
+  </div>
+  <div class="export-row">
+    <button class="btn btn-sec btn-sm" onclick="exportData()">⬇ Export JSON</button>
+    <button class="btn btn-sec btn-sm" onclick="importData()">⬆ Import JSON</button>
+    <button class="btn btn-rd btn-sm" onclick="clearAll()">🗑 Tout effacer</button>
+  </div>
+  <input type="file" id="import-file" style="display:none" accept=".json" onchange="handleImport(this)">
+</div>
+
+<!-- ═══════════════════════════════
+     TAB COURSE
+═══════════════════════════════ -->
+<div id="tab-race" class="sec">
+
+  <div class="card">
+    <div class="card-title">Ajouter un résultat de course</div>
+    <div class="field-row">
+      <div class="field"><label>Date</label><input type="date" id="r-date"></div>
+      <div class="field"><label>Événement</label><input type="text" id="r-event" placeholder="ex : Paris HYROX"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Temps final (hh:mm:ss)</label><input type="text" id="r-total" placeholder="1:24:49"></div>
+      <div class="field"><label>Classement #OV</label><input type="number" id="r-ov" placeholder="1297"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Classement #AG</label><input type="number" id="r-ag" placeholder="148"></div>
+      <div class="field"><label>Nb total finishers</label><input type="number" id="r-total-fin" placeholder="ex : 2350"></div>
+    </div>
+    <hr class="div">
+    <div class="sep-label">Splits stations (mm:ss)</div>
+    <div class="field-row3">
+      <div class="field"><label>Ski Erg</label><input type="text" id="r-ski" placeholder="04:36"></div>
+      <div class="field"><label>Sled Push</label><input type="text" id="r-sled-p" placeholder="04:00"></div>
+      <div class="field"><label>Sled Pull</label><input type="text" id="r-sled-pu" placeholder="04:23"></div>
+    </div>
+    <div class="field-row3">
+      <div class="field"><label>BBJ</label><input type="text" id="r-bbj" placeholder="05:49"></div>
+      <div class="field"><label>Row</label><input type="text" id="r-row" placeholder="04:59"></div>
+      <div class="field"><label>Farmers</label><input type="text" id="r-farmers" placeholder="01:57"></div>
+    </div>
+    <div class="field-row3">
+      <div class="field"><label>Fentes</label><input type="text" id="r-fentes" placeholder="05:23"></div>
+      <div class="field"><label>Wall Balls</label><input type="text" id="r-wb" placeholder="07:54"></div>
+      <div class="field"><label>Roxzone</label><input type="text" id="r-rox" placeholder="06:27"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Run total</label><input type="text" id="r-run" placeholder="39:28"></div>
+      <div class="field"><label>Fonctionnel total</label><input type="text" id="r-fonc" placeholder="39:01"></div>
+    </div>
+    <div class="field"><label>Commentaire</label>
+      <input type="text" id="r-comment" placeholder="Ex : sol sled difficile, jambes fraîches...">
+    </div>
+    <button class="btn" onclick="saveRace()">💾 Enregistrer la course</button>
+    <div id="race-feedback" style="text-align:center;font-family:monospace;font-size:11px;color:var(--gr);margin-top:.4rem;display:none">✅ Course enregistrée</div>
+  </div>
+
+  <!-- Comparateur de courses -->
+  <div id="race-compare">
+    <div class="card">
+      <div class="card-title">Historique courses</div>
+      <div id="race-list"><div class="empty"><div class="empty-icon">🏁</div><p>Aucune course loguée.</p></div></div>
+    </div>
+  </div>
+
+  <!-- Analyse comparative -->
+  <div id="race-analysis" style="display:none">
+    <div class="card">
+      <div class="card-title">Analyse comparative stations</div>
+      <div id="station-analysis"></div>
+    </div>
+  </div>
+
+</div>
+
+<nav class="dock">
+  <button class="dock-btn on" onclick="showTab('dashboard')"><div class="dock-icon">📊</div>Bilan</button>
+  <button class="dock-btn" onclick="showTab('log')"><div class="dock-icon">➕</div>Log</button>
+  <button class="dock-btn" onclick="showTab('history')"><div class="dock-icon">📋</div>Histo</button>
+  <button class="dock-btn" onclick="showTab('race')"><div class="dock-icon">🏁</div>Course</button>
+</nav>
+
+<script>
+// ════════════════════════════════════
+// DATA LAYER
+// ════════════════════════════════════
+const DB_KEY = 'hyrox_tracker_v1';
+
+function loadDB() {
+  try { return JSON.parse(localStorage.getItem(DB_KEY)) || {trainings:[],poids:[],tests:[],races:[]}; }
+  catch { return {trainings:[],poids:[],tests:[],races:[]}; }
+}
+function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+
+// Cibles par type de test
+const CIBLES = {
+  '5km': {label:'5 km', target:'22:00', unit:'mm:ss', better:'lower'},
+  'wb100': {label:'100 WB', target:'5:30', unit:'mm:ss', better:'lower'},
+  'bbj80': {label:'80m BBJ', target:'4:30', unit:'mm:ss', better:'lower'},
+  'farmer': {label:'Farmer 100m', target:'2:00', unit:'mm:ss', better:'lower'},
+  'squat1rm': {label:'Squat 1RM', target:'105 kg', unit:'kg', better:'higher'},
+  'bench1rm': {label:'Bench 1RM', target:'90 kg', unit:'kg', better:'higher'},
+  'hipthrust': {label:'Hip thrust 5RM', target:'115 kg', unit:'kg', better:'higher'},
+  'race_seq': {label:'Race-Séquence', target:'20:00', unit:'mm:ss', better:'lower'},
+};
+
+const RPE_CIBLES = {
+  vma:'8.5–9', tempo:'7.5–8', z2:'4–5', long:'4–6',
+  compromised:'7.5–8', simulation:'race', str_bas:'7.5–8.5',
+  str_haut:'7.5–8', str_full:'7–8', ergo:'6–7', mob:'2–3'
+};
+
+const TYPE_ICONS = {
+  vma:'⚡', tempo:'🏃', z2:'🚶', long:'🛤️', compromised:'💥',
+  simulation:'🏁', str_bas:'🦵', str_haut:'💪', str_full:'🏋️',
+  ergo:'🚣', mob:'🧘', poids:'⚖️', test:'🎯', race:'🏆'
+};
+
+function timeToSec(t) {
+  if (!t) return null;
+  const parts = t.split(':').map(Number);
+  if (parts.length === 2) return parts[0]*60 + parts[1];
+  if (parts.length === 3) return parts[0]*3600 + parts[1]*60 + parts[2];
+  return null;
+}
+function secToTime(s) {
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), ss = s%60;
+  if (h>0) return `${h}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+  return `${m}:${String(ss).padStart(2,'0')}`;
+}
+function fmtDate(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+}
+function today() { return new Date().toISOString().split('T')[0]; }
+
+// ════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════
+function showTab(t) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  document.getElementById('tab-'+t).classList.add('on');
+  document.querySelectorAll('.tab').forEach((b,i) => {
+    b.classList.toggle('on', ['dashboard','log','history','race'][i]===t);
+  });
+  document.querySelectorAll('.dock-btn').forEach((b,i) => {
+    b.classList.toggle('on', ['dashboard','log','history','race'][i]===t);
+  });
+  if (t==='dashboard') renderDashboard();
+  if (t==='history') renderHistory('all');
+  if (t==='race') renderRaces();
+}
+
+function showLogType(type) {
+  ['training','poids','test'].forEach(t => {
+    document.getElementById('log-'+t).style.display = t===type ? 'block' : 'none';
+  });
+  document.querySelectorAll('#log-subtabs .stab').forEach((b,i) => {
+    b.classList.toggle('on', ['training','poids','test'][i]===type);
+  });
+}
+
+function showHistType(type) {
+  document.querySelectorAll('#tab-history .stab').forEach(b => b.classList.remove('on'));
+  event.target.classList.add('on');
+  renderHistory(type);
+}
+
+// ════════════════════════════════════
+// FORM LOGIC
+// ════════════════════════════════════
+document.getElementById('t-type').addEventListener('change', function() {
+  const v = this.value;
+  document.getElementById('t-run-fields').style.display =
+    ['vma','tempo','z2','long'].includes(v) ? 'block' : 'none';
+  document.getElementById('t-str-fields').style.display =
+    ['str_bas','str_haut','str_full'].includes(v) ? 'block' : 'none';
+  document.getElementById('t-sp-fields').style.display =
+    ['compromised','simulation'].includes(v) ? 'block' : 'none';
+  document.getElementById('rpe-cible-label').textContent =
+    'Cible : ' + (RPE_CIBLES[v] || '—');
+});
+
+document.getElementById('ts-type').addEventListener('change', function() {
+  const c = CIBLES[this.value];
+  document.getElementById('ts-cible').value = c ? c.target : '';
+});
+
+function updateRpe(v) {
+  document.getElementById('rpe-display').textContent = v;
+  const hue = Math.round((1 - (v-1)/9) * 120);
+  document.getElementById('rpe-display').style.color = `hsl(${hue},80%,55%)`;
+}
+
+// Set today's date on load
+window.addEventListener('load', () => {
+  const t = today();
+  ['t-date','p-date','ts-date','r-date'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = t;
+  });
+  renderDashboard();
+});
+
+// ════════════════════════════════════
+// SAVE FUNCTIONS
+// ════════════════════════════════════
+function saveTraining() {
+  const db = loadDB();
+  const type = document.getElementById('t-type').value;
+  if (!type) { alert('Choisis un type de séance.'); return; }
+  const entry = {
+    id: Date.now(),
+    date: document.getElementById('t-date').value,
+    type,
+    duree: +document.getElementById('t-duree').value || null,
+    rpe: +document.getElementById('t-rpe').value,
+    qualite: document.getElementById('t-qualite').value,
+    comment: document.getElementById('t-comment').value,
+  };
+  if (['vma','tempo','z2','long'].includes(type)) {
+    entry.dist = +document.getElementById('t-dist').value || null;
+    entry.allure = document.getElementById('t-allure').value;
+    entry.intervals = document.getElementById('t-intervals').value;
+    entry.fc = +document.getElementById('t-fc').value || null;
+  }
+  if (['str_bas','str_haut','str_full'].includes(type)) {
+    entry.squat = +document.getElementById('t-squat').value || null;
+    entry.bench = +document.getElementById('t-bench').value || null;
+    entry.rdl = +document.getElementById('t-rdl').value || null;
+    entry.hip = +document.getElementById('t-hip').value || null;
+    entry.farmer = +document.getElementById('t-farmer').value || null;
+    entry.pullup = +document.getElementById('t-pullup').value || null;
+  }
+  if (['compromised','simulation'].includes(type)) {
+    entry.sp_allure = document.getElementById('t-sp-allure').value;
+    entry.sp_total = +document.getElementById('t-sp-total').value || null;
+    entry.sp_rounds = +document.getElementById('t-sp-rounds').value || null;
+    entry.sp_bbj = +document.getElementById('t-sp-bbj').value || null;
+    entry.sp_wb = document.getElementById('t-sp-wb').value;
+  }
+  db.trainings.push(entry);
+  saveDB(db);
+  const fb = document.getElementById('save-feedback');
+  fb.style.display = 'block';
+  setTimeout(() => fb.style.display='none', 2000);
+}
+
+function savePoids() {
+  const db = loadDB();
+  db.poids.push({
+    id: Date.now(),
+    date: document.getElementById('p-date').value,
+    val: +document.getElementById('p-val').value,
+    moment: document.getElementById('p-moment').value
+  });
+  saveDB(db);
+  document.getElementById('poids-feedback').style.display = 'block';
+  setTimeout(() => document.getElementById('poids-feedback').style.display='none', 2000);
+}
+
+function saveTest() {
+  const db = loadDB();
+  db.tests.push({
+    id: Date.now(),
+    date: document.getElementById('ts-date').value,
+    type: document.getElementById('ts-type').value,
+    result: document.getElementById('ts-result').value,
+    cible: document.getElementById('ts-cible').value,
+    comment: document.getElementById('ts-comment').value
+  });
+  saveDB(db);
+  document.getElementById('test-feedback').style.display = 'block';
+  setTimeout(() => document.getElementById('test-feedback').style.display='none', 2000);
+}
+
+function saveRace() {
+  const db = loadDB();
+  const race = {
+    id: Date.now(),
+    date: document.getElementById('r-date').value,
+    event: document.getElementById('r-event').value,
+    total: document.getElementById('r-total').value,
+    ov: +document.getElementById('r-ov').value || null,
+    ag: +document.getElementById('r-ag').value || null,
+    total_fin: +document.getElementById('r-total-fin').value || null,
+    splits: {
+      ski: document.getElementById('r-ski').value,
+      sled_push: document.getElementById('r-sled-p').value,
+      sled_pull: document.getElementById('r-sled-pu').value,
+      bbj: document.getElementById('r-bbj').value,
+      row: document.getElementById('r-row').value,
+      farmers: document.getElementById('r-farmers').value,
+      fentes: document.getElementById('r-fentes').value,
+      wb: document.getElementById('r-wb').value,
+      roxzone: document.getElementById('r-rox').value,
+    },
+    run_total: document.getElementById('r-run').value,
+    fonc_total: document.getElementById('r-fonc').value,
+    comment: document.getElementById('r-comment').value
+  };
+  db.races.push(race);
+  saveDB(db);
+  document.getElementById('race-feedback').style.display = 'block';
+  setTimeout(() => {
+    document.getElementById('race-feedback').style.display='none';
+    renderRaces();
+  }, 1500);
+}
+
+// ════════════════════════════════════
+// DASHBOARD ANALYSIS ENGINE
+// ════════════════════════════════════
+function renderDashboard() {
+  const db = loadDB();
+  renderAlerts(db);
+  renderWeekStats(db);
+  renderForceProgression(db);
+  renderPoidsChart(db);
+  renderRunChart(db);
+  renderWBProgression(db);
+  renderVO2Progression(db);
+  renderRPEAnalysis(db);
+}
+
+function renderAlerts(db) {
+  const zone = document.getElementById('alerts-zone');
+  const alerts = [];
+  const trainings = db.trainings || [];
+
+  // ① Alerte RPE : 3 séances consécutives RPE > cible de +1
+  const recent = [...trainings].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  const highRpe = recent.filter(t => {
+    const cible = RPE_CIBLES[t.type];
+    if (!cible || cible==='race') return false;
+    const cMax = parseFloat(cible.split('–')[1] || cible);
+    return t.rpe > cMax + 0.5;
+  });
+  if (highRpe.length >= 3) {
+    alerts.push({type:'bad', icon:'🚨', text:'<b>Surcharge détectée</b> — RPE > cible sur 3+ séances consécutives. Semaine de décharge recommandée.'});
+  } else if (highRpe.length >= 2) {
+    alerts.push({type:'warn', icon:'⚠️', text:'RPE élevé sur 2 séances récentes. Surveille la récupération cette semaine.'});
+  }
+
+  // ② Alerte poids : perte > 500g/sem
+  const poids = (db.poids||[]).filter(p=>p.moment==='matin').sort((a,b)=>b.date.localeCompare(a.date));
+  if (poids.length >= 2) {
+    const delta = poids[0].val - poids[1].val;
+    const daysDiff = (new Date(poids[0].date) - new Date(poids[1].date)) / 86400000;
+    if (daysDiff > 0 && daysDiff <= 10) {
+      const weeklyRate = (delta / daysDiff) * 7;
+      if (weeklyRate < -0.7) alerts.push({type:'warn', icon:'⚖️', text:`<b>Perte de poids rapide</b> (${weeklyRate.toFixed(1)} kg/sem). Risque de perte musculaire. Augmente les glucides à 14h.`});
+      if (weeklyRate > 0.2) alerts.push({type:'info', icon:'⬆️', text:'Poids en légère hausse cette semaine — normal en phase hypertrophie bloc A/B.'});
+    }
+  }
+
+  // ③ Alerte WB progression
+  const wbTests = (db.tests||[]).filter(t=>t.type==='wb100').sort((a,b)=>a.date.localeCompare(b.date));
+  if (wbTests.length >= 2) {
+    const last = timeToSec(wbTests[wbTests.length-1].result);
+    const prev = timeToSec(wbTests[wbTests.length-2].result);
+    if (last && prev) {
+      if (last < prev) alerts.push({type:'ok', icon:'✅', text:`<b>WB progression</b> — ${secToTime(prev)} → ${secToTime(last)} (−${secToTime(prev-last)}). En route vers 5'30.`});
+      if (last > prev) alerts.push({type:'warn', icon:'📉', text:`WB en régression cette semaine. Normal si fatigue cumulative — surveiller 2 sem.`});
+    }
+  }
+
+  // ④ Bonne semaine
+  const thisWeek = trainings.filter(t => {
+    const d = new Date(t.date), now = new Date();
+    return (now-d) < 7*86400000;
+  });
+  if (thisWeek.length >= 8 && alerts.length===0) {
+    alerts.push({type:'ok', icon:'🔥', text:`<b>Semaine complète</b> — ${thisWeek.length} séances loguées. Consistance = progrès.`});
+  }
+
+  if (alerts.length === 0) {
+    zone.innerHTML = '';
+    return;
+  }
+  zone.innerHTML = alerts.map(a =>
+    `<div class="alert alert-${a.type}"><span class="alert-icon">${a.icon}</span><span>${a.text}</span></div>`
+  ).join('');
+}
+
+function renderWeekStats(db) {
+  const now = new Date();
+  const weekAgo = new Date(now - 7*86400000);
+  const thisWeek = (db.trainings||[]).filter(t => new Date(t.date) >= weekAgo);
+  const allRpe = thisWeek.map(t=>t.rpe).filter(Boolean);
+  const avgRpe = allRpe.length ? (allRpe.reduce((a,b)=>a+b,0)/allRpe.length).toFixed(1) : '—';
+  const conforme = thisWeek.filter(t => t.qualite === 'tres_bien' || t.qualite === 'bien').length;
+  const conformePct = thisWeek.length ? Math.round(conforme/thisWeek.length*100) + '%' : '—';
+
+  document.getElementById('ws-seances').textContent = thisWeek.length;
+  document.getElementById('ws-rpe').textContent = avgRpe;
+  document.getElementById('ws-conformite').textContent = conformePct;
+
+  const poids = (db.poids||[]).filter(p=>p.moment==='matin').sort((a,b)=>b.date.localeCompare(a.date));
+  if (poids.length) {
+    const last = poids[0].val;
+    document.getElementById('ws-poids').textContent = last + ' kg';
+    if (poids.length >= 2) {
+      const delta = (last - poids[1].val).toFixed(1);
+      const cls = delta < 0 ? 'd-dn' : delta > 0 ? 'd-up' : 'd-eq';
+      const sign = delta > 0 ? '+' : '';
+      document.getElementById('ws-poids-delta').innerHTML =
+        `<span class="${cls}">${sign}${delta} kg</span>`;
+    }
+  }
+}
+
+function renderForceProgression(db) {
+  const trainings = (db.trainings||[]).filter(t =>
+    ['str_bas','str_haut','str_full'].includes(t.type) && t.date
+  ).sort((a,b)=>a.date.localeCompare(b.date));
+
+  const keys = [
+    {k:'squat', label:'Squat', target:105, color:'var(--gr)'},
+    {k:'bench', label:'Bench', target:90, color:'var(--bl)'},
+    {k:'rdl', label:'RDL', target:90, color:'var(--pu)'},
+    {k:'hip', label:'Hip thrust', target:115, color:'var(--am)'},
+    {k:'farmer', label:'Farmer 2×', target:32, color:'var(--vo)'},
+  ];
+
+  const el = document.getElementById('force-progression');
+  if (!trainings.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">🏋️</div><p>Commence à loguer tes séances muscu.</p></div>';
+    return;
+  }
+
+  el.innerHTML = keys.map(({k, label, target, color}) => {
+    const vals = trainings.map(t => t[k]).filter(Boolean);
+    if (!vals.length) return '';
+    const last = vals[vals.length-1];
+    const first = vals[0];
+    const pct = Math.min(100, Math.round((last / target) * 100));
+    const delta = vals.length > 1 ? (last - first) : 0;
+    return `
+      <div class="prog-bar-wrap">
+        <div class="prog-bar-label">
+          <span>${label} — <b>${last} kg</b></span>
+          <span style="color:${color}">${pct}% cible · +${delta} kg</span>
+        </div>
+        <div class="prog-bar"><div class="prog-bar-fill" style="background:${color};width:${pct}%"></div></div>
+      </div>`;
+  }).filter(Boolean).join('');
+}
+
+function renderPoidsChart(db) {
+  const poids = (db.poids||[])
+    .filter(p=>p.moment==='matin')
+    .sort((a,b)=>a.date.localeCompare(b.date))
+    .slice(-12);
+
+  const el = document.getElementById('poids-current-label');
+  if (poids.length) {
+    const last = poids[poids.length-1].val;
+    el.textContent = last + ' kg';
+    const pct = Math.max(0, Math.min(100, Math.round((90-last)/(90-84)*100)));
+    document.getElementById('poids-bar').style.width = pct + '%';
+  }
+
+  const canvas = document.getElementById('chart-poids');
+  drawLineChart(canvas, poids.map(p=>({x:fmtDate(p.date), y:p.val})),
+    {min:83, max:91, color:'var(--gr)', target:84, targetColor:'rgba(0,196,167,.3)'});
+}
+
+function renderRunChart(db) {
+  const runs = (db.trainings||[])
+    .filter(t => ['tempo','vma'].includes(t.type) && t.allure)
+    .sort((a,b)=>a.date.localeCompare(b.date))
+    .slice(-10);
+
+  const el = document.getElementById('run-last');
+  if (!runs.length) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Loguer des séances tempo pour voir la progression.</div>';
+    return;
+  }
+  const last = runs[runs.length-1];
+  el.innerHTML = `<div style="font-family:monospace;font-size:11px;color:var(--tx3);text-align:center;margin-top:.3rem">Dernière : <b style="color:var(--tx2)">${last.allure}/km</b> — ${fmtDate(last.date)}</div>`;
+}
+
+function renderWBProgression(db) {
+  const tests = (db.tests||[]).filter(t=>t.type==='wb100').sort((a,b)=>a.date.localeCompare(b.date));
+  const el = document.getElementById('wb-progression');
+  if (!tests.length) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Aucun test WB logué. Cible : battre 5\'30 avant novembre.</div>';
+    return;
+  }
+  const target = timeToSec('5:30');
+  el.innerHTML = tests.map((t,i) => {
+    const s = timeToSec(t.result);
+    const prev = i > 0 ? timeToSec(tests[i-1].result) : null;
+    const pct = s ? Math.round((1 - (s - target) / (timeToSec('8:00') - target)) * 100) : 0;
+    const delta = (prev && s) ? secToTime(Math.abs(s-prev)) + (s < prev ? ' ✅' : ' 📈') : '';
+    const cls = s && s <= target ? 'etag-ok' : s && s <= 360 ? 'etag-warn' : 'etag-bad';
+    return `
+      <div class="entry">
+        <div class="entry-icon">🎯</div>
+        <div class="entry-content">
+          <div class="entry-title">${t.result}</div>
+          <div class="entry-meta">${fmtDate(t.date)} ${delta ? '· ' + delta : ''}</div>
+          <div class="entry-tags">
+            <span class="etag ${cls}">${pct}% cible</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderVO2Progression(db) {
+  const tests = (db.tests||[]).filter(t=>t.type==='5km').sort((a,b)=>a.date.localeCompare(b.date));
+  const el = document.getElementById('vo2-progression');
+
+  // Add race reference (16 mai : allure moy run = 4:56/km → 5km ≈ 24:40)
+  const baseline = {date:'2026-05-16', result:'24:40', comment:'Course 16 mai (allure run 4:56/km)'};
+  const allTests = [baseline, ...tests];
+
+  if (allTests.length < 2) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Référence : 24\'40 (16 mai). Prochain test fin bloc B (fin juillet).</div>';
+    return;
+  }
+
+  el.innerHTML = allTests.map((t,i) => {
+    const s = timeToSec(t.result);
+    const target = timeToSec('22:00');
+    const prev = i > 0 ? timeToSec(allTests[i-1].result) : null;
+    const pct = s ? Math.round((1-(s-target)/(timeToSec('26:00')-target))*100) : 0;
+    const delta = (prev && s) ? (s < prev ? '−' + secToTime(prev-s) + ' ✅' : '+' + secToTime(s-prev)) : '';
+    const cls = s && s <= target ? 'etag-ok' : s && s <= 23*60 ? 'etag-warn' : 'etag-bad';
+    return `
+      <div class="entry">
+        <div class="entry-icon">🏃</div>
+        <div class="entry-content">
+          <div class="entry-title">${t.result} — 5 km</div>
+          <div class="entry-meta">${fmtDate(t.date)}${t.comment ? ' · ' + t.comment : ''} ${delta ? '· ' + delta : ''}</div>
+          <div class="entry-tags"><span class="etag ${cls}">${Math.max(0,pct)}% cible 22'00</span></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderRPEAnalysis(db) {
+  const el = document.getElementById('rpe-analyse');
+  const recent = (db.trainings||[])
+    .sort((a,b)=>b.date.localeCompare(a.date))
+    .slice(0,20);
+
+  if (!recent.length) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Loguer des séances pour voir l\'analyse RPE.</div>';
+    return;
+  }
+
+  let over = 0, under = 0, match = 0;
+  recent.forEach(t => {
+    const cible = RPE_CIBLES[t.type];
+    if (!cible || cible==='race') return;
+    const parts = cible.split('–').map(parseFloat);
+    const cMin = parts[0], cMax = parts[parts.length-1];
+    if (t.rpe > cMax + 0.5) over++;
+    else if (t.rpe < cMin - 0.5) under++;
+    else match++;
+  });
+
+  const total = over + under + match;
+  if (!total) { el.innerHTML = ''; return; }
+
+  const matchPct = Math.round(match/total*100);
+  const overPct = Math.round(over/total*100);
+  const underPct = Math.round(under/total*100);
+
+  let diagnostic = '';
+  if (overPct >= 40) diagnostic = `<div class="alert alert-bad"><span class="alert-icon">🚨</span><span><b>${overPct}% au-dessus de la cible RPE</b> — Surcharge probable. Vérifie la récupération et le sommeil.</span></div>`;
+  else if (overPct >= 25) diagnostic = `<div class="alert alert-warn"><span class="alert-icon">⚠️</span><span>${overPct}% au-dessus de la cible — Surveille la progression de fatigue.</span></div>`;
+  else if (underPct >= 40) diagnostic = `<div class="alert alert-info"><span class="alert-icon">💡</span><span>${underPct}% en dessous de la cible — Tu peux potentiellement pousser plus. Vérifie que les allures sont bien respectées.</span></div>`;
+  else diagnostic = `<div class="alert alert-ok"><span class="alert-icon">✅</span><span><b>${matchPct}% conformité RPE</b> — Charge d'entraînement bien dosée.</span></div>`;
+
+  el.innerHTML = diagnostic + `
+    <div class="stat-grid3" style="margin-top:.4rem">
+      <div class="stat-box"><div class="val d-ok">${matchPct}%</div><div class="lbl">Conforme</div></div>
+      <div class="stat-box"><div class="val d-dn">${overPct}%</div><div class="lbl">Au-dessus</div></div>
+      <div class="stat-box"><div class="val d-up">${underPct}%</div><div class="lbl">En dessous</div></div>
+    </div>`;
+}
+
+// ════════════════════════════════════
+// HISTORY RENDER
+// ════════════════════════════════════
+function renderHistory(filter) {
+  const db = loadDB();
+  const el = document.getElementById('history-list');
+  let items = [...(db.trainings||[]).map(t=>({...t,_cat:'training'})),
+               ...(db.tests||[]).map(t=>({...t,_cat:'test'})),
+               ...(db.poids||[]).map(t=>({...t,_cat:'poids'}))];
+
+  if (filter !== 'all') {
+    const map = {run:['vma','tempo','z2','long'], str:['str_bas','str_haut','str_full'],
+      sp:['compromised','simulation'], test:['_cat=test']};
+    if (filter === 'test') items = items.filter(t=>t._cat==='test');
+    else items = items.filter(t => (map[filter]||[]).includes(t.type));
+  }
+
+  items.sort((a,b) => b.date.localeCompare(a.date));
+
+  if (!items.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>Aucune entrée pour ce filtre.</p></div>';
+    return;
+  }
+
+  el.innerHTML = items.map(item => {
+    const icon = TYPE_ICONS[item._cat==='test'?'test':item._cat==='poids'?'poids':item.type] || '📋';
+    let title = '', meta = '', tags = [];
+
+    if (item._cat === 'poids') {
+      title = item.val + ' kg';
+      meta = fmtDate(item.date) + ' · ' + item.moment;
+    } else if (item._cat === 'test') {
+      const c = CIBLES[item.type];
+      title = (c?.label||item.type) + ' — ' + item.result;
+      meta = fmtDate(item.date) + (item.comment ? ' · ' + item.comment : '');
+      if (c && item.result) {
+        const s = timeToSec(item.result), t2 = timeToSec(c.target);
+        if (s && t2) {
+          const ok = c.better==='lower' ? s<=t2 : +item.result>=+c.target;
+          tags.push({txt: ok ? '✅ Cible atteinte' : `Cible : ${c.target}`, cls: ok ? 'etag-ok' : 'etag-warn'});
+        }
+      }
+    } else {
+      const typeLabels = {vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',compromised:'Compromised',
+        simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',ergo:'Ergo',mob:'Mobilité'};
+      title = typeLabels[item.type] || item.type;
+      if (item.duree) title += ` — ${item.duree} min`;
+      meta = fmtDate(item.date);
+      if (item.rpe) {
+        const cible = RPE_CIBLES[item.type];
+        let cls = 'etag';
+        if (cible && cible !== 'race') {
+          const parts = cible.split('–').map(parseFloat);
+          const cMax = parts[parts.length-1];
+          cls = item.rpe > cMax+0.5 ? 'etag-bad' : item.rpe < parts[0]-0.5 ? 'etag-warn' : 'etag-ok';
+        }
+        tags.push({txt:`RPE ${item.rpe}`, cls});
+      }
+      if (item.allure) tags.push({txt:item.allure+'/km', cls:'etag'});
+      if (item.squat) tags.push({txt:'Squat '+item.squat+'kg', cls:'etag'});
+      if (item.bench) tags.push({txt:'Bench '+item.bench+'kg', cls:'etag'});
+      if (item.sp_wb) tags.push({txt:'WB '+item.sp_wb, cls:'etag'});
+    }
+
+    const tagsHtml = tags.map(t=>`<span class="etag ${t.cls}">${t.txt}</span>`).join('');
+    return `<div class="entry">
+      <div class="entry-icon">${icon}</div>
+      <div class="entry-content">
+        <div class="entry-title">${title}</div>
+        <div class="entry-meta">${meta}${item.comment ? ' · ' + item.comment : ''}</div>
+        ${tags.length ? `<div class="entry-tags">${tagsHtml}</div>` : ''}
+      </div>
+      <button class="del-btn" onclick="deleteEntry(${item.id}, '${item._cat}')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function deleteEntry(id, cat) {
+  if (!confirm('Supprimer cette entrée ?')) return;
+  const db = loadDB();
+  if (cat==='training') db.trainings = db.trainings.filter(t=>t.id!==id);
+  if (cat==='test') db.tests = db.tests.filter(t=>t.id!==id);
+  if (cat==='poids') db.poids = db.poids.filter(t=>t.id!==id);
+  saveDB(db);
+  renderHistory('all');
+}
+
+// ════════════════════════════════════
+// RACE RENDER + ANALYSIS
+// ════════════════════════════════════
+const STATION_TARGETS = {
+  ski:{label:'Ski Erg', target:'3:52', prev:'4:36', color:'#00c4a7'},
+  sled_push:{label:'Sled Push', target:'2:45', prev:'4:00', color:'#ff6b35'},
+  sled_pull:{label:'Sled Pull', target:'3:30', prev:'4:23', color:'#ffb800'},
+  bbj:{label:'BBJ', target:'4:30', prev:'5:49', color:'#a855f7'},
+  row:{label:'Row', target:'4:05', prev:'4:59', color:'#4488ff'},
+  farmers:{label:'Farmers', target:'1:45', prev:'1:57', color:'#22c55e'},
+  fentes:{label:'Fentes', target:'4:30', prev:'5:23', color:'#ff4444'},
+  wb:{label:'Wall Balls', target:'5:30', prev:'7:54', color:'#ff6b35'},
+};
+
+function renderRaces() {
+  const db = loadDB();
+  const races = (db.races||[]).sort((a,b)=>b.date.localeCompare(a.date));
+  const listEl = document.getElementById('race-list');
+  const anaEl = document.getElementById('race-analysis');
+
+  if (!races.length) {
+    listEl.innerHTML = '<div class="empty"><div class="empty-icon">🏁</div><p>Aucune course loguée.<br>Ajoute ta prochaine course.</p></div>';
+    anaEl.style.display = 'none';
+    return;
+  }
+
+  listEl.innerHTML = races.map(r => `
+    <div class="entry">
+      <div class="entry-icon">🏆</div>
+      <div class="entry-content">
+        <div class="entry-title">${r.event || 'HYROX'} — ${r.total}</div>
+        <div class="entry-meta">${fmtDate(r.date)} · #OV${r.ov||'—'} · #AG${r.ag||'—'}</div>
+        <div class="entry-tags">
+          <span class="etag">${r.splits?.wb||'—'} WB</span>
+          <span class="etag">${r.splits?.bbj||'—'} BBJ</span>
+          <span class="etag">${r.splits?.ski||'—'} Ski</span>
+        </div>
+        ${r.comment ? `<div class="entry-meta" style="margin-top:2px;font-style:italic">${r.comment}</div>` : ''}
+      </div>
+      <button class="del-btn" onclick="deleteRace(${r.id})">✕</button>
+    </div>`
+  ).join('');
+
+  // Station analysis on last race
+  const last = races[0];
+  if (last && last.splits) {
+    anaEl.style.display = 'block';
+    const anaContent = document.getElementById('station-analysis');
+    const prev = races.length > 1 ? races[1] : null;
+
+    anaContent.innerHTML = `
+      <div style="font-family:monospace;font-size:10px;color:var(--tx3);margin-bottom:.5rem">
+        ${last.event||'HYROX'} · ${fmtDate(last.date)} · ${last.total}
+      </div>` +
+      Object.entries(STATION_TARGETS).map(([key, info]) => {
+        const val = last.splits[key];
+        if (!val) return '';
+        const s = timeToSec(val);
+        const t = timeToSec(info.target);
+        const p = timeToSec(info.prev);
+        const pct = s && t ? Math.min(100, Math.round((p-s)/(p-t)*100)) : 0;
+        const prevRace = prev?.splits?.[key];
+        const deltaHtml = prevRace ? (() => {
+          const ps = timeToSec(prevRace);
+          if (!ps || !s) return '';
+          const diff = ps - s;
+          return diff > 0
+            ? ` <span style="color:var(--ok);font-size:9px">−${secToTime(diff)}</span>`
+            : ` <span style="color:var(--rd);font-size:9px">+${secToTime(-diff)}</span>`;
+        })() : '';
+        const barColor = pct >= 80 ? 'var(--ok)' : pct >= 40 ? 'var(--am)' : 'var(--rd)';
+        return `
+          <div class="station-bar">
+            <span class="station-name">${info.label}</span>
+            <div class="station-track">
+              <div class="station-fill" style="background:${barColor};width:${Math.max(5,pct)}%">
+                ${val}
+              </div>
+            </div>
+            <span class="station-rank">${deltaHtml || `→${info.target}`}</span>
+          </div>`;
+      }).filter(Boolean).join('') +
+      `<div style="font-family:monospace;font-size:9px;color:var(--tx4);margin-top:.5rem;text-align:center">
+        Barre verte = proche cible · Rouge = travail nécessaire
+      </div>`;
+  }
+}
+
+function deleteRace(id) {
+  if (!confirm('Supprimer cette course ?')) return;
+  const db = loadDB();
+  db.races = db.races.filter(r=>r.id!==id);
+  saveDB(db);
+  renderRaces();
+}
+
+// ════════════════════════════════════
+// CHART (lightweight SVG)
+// ════════════════════════════════════
+function drawLineChart(canvas, data, opts={}) {
+  if (!data.length) { canvas.style.display='none'; return; }
+  canvas.style.display = 'block';
+  const W = canvas.parentElement.clientWidth - 20 || 350;
+  const H = 80;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+
+  const vals = data.map(d=>d.y);
+  const min = opts.min ?? Math.min(...vals) - 1;
+  const max = opts.max ?? Math.max(...vals) + 1;
+  const pad = {l:5, r:5, t:8, b:20};
+  const w = W - pad.l - pad.r;
+  const h = H - pad.t - pad.b;
+
+  // Target line
+  if (opts.target) {
+    const ty = pad.t + h - ((opts.target - min) / (max - min)) * h;
+    ctx.strokeStyle = opts.targetColor || 'rgba(0,196,167,.3)';
+    ctx.setLineDash([4,4]);
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.l, ty); ctx.lineTo(pad.l+w, ty); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Line
+  const pts = data.map((d,i) => ({
+    x: pad.l + (i/(data.length-1||1))*w,
+    y: pad.t + h - ((d.y - min)/(max - min))*h
+  }));
+  ctx.strokeStyle = opts.color || 'var(--gr)';
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  pts.forEach((p,i) => i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y));
+  ctx.stroke();
+
+  // Dots
+  pts.forEach(p => {
+    ctx.fillStyle = opts.color || '#00c4a7';
+    ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fill();
+  });
+
+  // X labels (first and last)
+  ctx.fillStyle = '#4a6560';
+  ctx.font = '9px monospace';
+  ctx.textAlign = 'center';
+  if (data.length) {
+    ctx.fillText(data[0].x, pts[0].x, H-4);
+    if (data.length > 1) ctx.fillText(data[data.length-1].x, pts[pts.length-1].x, H-4);
+  }
+}
+
+// ════════════════════════════════════
+// IMPORT / EXPORT
+// ════════════════════════════════════
+function exportData() {
+  const db = loadDB();
+  const blob = new Blob([JSON.stringify(db, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'hyrox_tracker_' + today() + '.json';
+  a.click();
+}
+function importData() { document.getElementById('import-file').click(); }
+function handleImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.trainings || data.races) {
+        localStorage.setItem(DB_KEY, JSON.stringify(data));
+        renderDashboard();
+        renderHistory('all');
+        alert('✅ Import réussi');
+      }
+    } catch { alert('Fichier JSON invalide'); }
+  };
+  reader.readAsText(file);
+}
+function clearAll() {
+  if (confirm('Effacer toutes les données ? Cette action est irréversible.')) {
+    localStorage.removeItem(DB_KEY);
+    renderDashboard();
+    renderHistory('all');
+    renderRaces();
+  }
+}
+
+// Init
+showTab('dashboard');
+</script>
+</body>
+</html>

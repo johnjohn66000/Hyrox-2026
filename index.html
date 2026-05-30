@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HYROX 2026 — Objectif 1h10</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Georgia',serif;background:#080b0a;color:#e8f0ed;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:1.5rem}
+.home{max-width:380px;width:100%;text-align:center}
+.badge{font-family:monospace;font-size:9px;font-weight:700;color:#00c4a7;
+  background:#003d35;border:1px solid #009e87;padding:3px 10px;border-radius:3px;
+  letter-spacing:.12em;text-transform:uppercase;display:inline-block;margin-bottom:1rem}
+h1{font-size:1.8rem;font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:.5rem}
+.sub{font-family:monospace;font-size:11px;color:#718e87;margin-bottom:2rem}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1.5rem}
+.card{border-radius:12px;padding:1.2rem 1rem;text-decoration:none;
+  display:flex;flex-direction:column;align-items:center;gap:.4rem;
+  transition:transform .15s,opacity .15s;-webkit-tap-highlight-color:transparent}
+.card:active{transform:scale(.97);opacity:.9}
+.card-plan{background:linear-gradient(135deg,#0a2e28,#001a14);border:1px solid #00c4a7}
+.card-track{background:linear-gradient(135deg,#2a1a00,#1a0d00);border:1px solid #ffb800}
+.card-icon{font-size:2rem}
+.card-title{font-family:monospace;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.card-plan .card-title{color:#00c4a7}
+.card-track .card-title{color:#ffb800}
+.card-desc{font-size:11px;color:#718e87;text-align:center;line-height:1.4}
+.goal{background:#0e1412;border:1px solid #1e2a27;border-radius:10px;padding:.8rem;
+  font-family:monospace;font-size:11px;color:#718e87;line-height:1.7}
+.goal b{color:#e8f0ed}
+.goal .time{font-size:1.6rem;font-weight:900;color:#ffb800;display:block;margin:.3rem 0}
+</style>
+</head>
+<body>
+<div class="home">
+  <div class="badge">HYROX ELITE · 2026</div>
+  <h1>Objectif<br>1h10 PRO</h1>
+  <div class="sub">1er juin → 15 novembre 2026 · 24 semaines</div>
+
+  <div class="cards">
+    <a href="plan.html" class="card card-plan">
+      <div class="card-icon">📅</div>
+      <div class="card-title">Plan</div>
+      <div class="card-desc">Off-season + Pré-compétition</div>
+    </a>
+    <a href="tracker.html" class="card card-track">
+      <div class="card-icon">📊</div>
+      <div class="card-title">Tracker</div>
+      <div class="card-desc">Perfs & analyse automatique</div>
+    </a>
+  </div>
+
+  <div class="goal">
+    <span>Dernière course · 16 mai 2026</span>
+    <span class="time">1:24:49</span>
+    <b>#OV1297 · #AG148 · Top 55%</b><br>
+    <span style="color:#00c4a7;margin-top:.3rem;display:block">→ Objectif novembre : <b style="color:#ffb800">1:10:00</b></span>
+  </div>
+</div>
+</body>
+</html>

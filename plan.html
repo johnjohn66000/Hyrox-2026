@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>HYROX — Off-Season + Pré-Compétition 2026</title>
+<style>
+/* ══════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════ */
+:root{
+  --bg:#080b0a;--bg2:#0e1412;--bg3:#141c1a;--bg4:#1c2422;
+  --bo:#1e2a27;--bo2:#263530;--bo3:#344840;
+  --tx:#e8f0ed;--tx2:#b0c4be;--tx3:#718e87;--tx4:#4a6560;
+  --gr:#00c4a7;--gr2:#009e87;--gr3:#003d35;
+  --am:#ffb800;--am2:#c98d00;--am3:#3d2e00;
+  --rd:#ff4444;--rd2:#c42020;--rd3:#3d0a0a;
+  --bl:#4488ff;--pu:#a855f7;
+  --ok:#22c55e;--ok2:#166534;
+  --vo:#ff6b35;--vo2:#c44a18;
+  /* Phase colors */
+  --ph-off:#0a2e28;--ph-off2:#00c4a7;
+  --ph-pre:#2a1a00;--ph-pre2:#ffb800;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Georgia',serif;
+  background:var(--bg);color:var(--tx);
+  max-width:430px;margin:0 auto;
+  font-size:14px;line-height:1.6;
+  min-height:100vh;
+  padding-bottom:80px;
+}
+
+/* ══ HEADER ══ */
+.hdr{
+  background:linear-gradient(180deg,#000 0%,var(--bg) 100%);
+  border-bottom:1px solid var(--bo2);
+  padding:1rem .9rem .7rem;
+  position:sticky;top:0;z-index:100;
+}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.hdr-badge{
+  font-family:monospace;font-size:9px;font-weight:700;
+  color:var(--gr);background:var(--gr3);border:1px solid var(--gr2);
+  padding:2px 7px;border-radius:3px;letter-spacing:.1em;text-transform:uppercase;
+}
+.hdr h1{font-size:1rem;font-weight:900;color:var(--tx);letter-spacing:-.02em}
+.hdr-sub{font-family:monospace;font-size:10px;color:var(--tx3);margin-top:2px}
+
+/* ══ PHASE SWITCHER ══ */
+.phase-switch{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:.4rem;padding:.6rem .9rem;
+  background:var(--bg2);border-bottom:1px solid var(--bo2);
+  position:sticky;top:72px;z-index:99;
+}
+.psw{
+  background:var(--bg3);border:1px solid var(--bo2);border-radius:8px;
+  padding:.55rem .7rem;cursor:pointer;text-align:center;
+  font-family:monospace;font-size:10px;font-weight:700;
+  color:var(--tx3);transition:all .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.psw.on-off{background:var(--ph-off);border-color:var(--ph-off2);color:var(--ph-off2)}
+.psw.on-pre{background:var(--ph-pre);border-color:var(--ph-pre2);color:var(--ph-pre2)}
+.psw span{display:block;font-size:9px;font-weight:400;color:var(--tx4);margin-top:1px}
+
+/* ══ SECTIONS ══ */
+.section{display:none;padding:.7rem .9rem}
+.section.on{display:block}
+
+/* ══ HERO CARD ══ */
+.hero-card{
+  border-radius:12px;padding:1rem;margin-bottom:.8rem;
+  position:relative;overflow:hidden;
+}
+.hero-off{background:linear-gradient(135deg,var(--ph-off),#001a14);border:1px solid var(--ph-off2)}
+.hero-pre{background:linear-gradient(135deg,var(--ph-pre),#1a0d00);border:1px solid var(--ph-pre2)}
+.hero-label{
+  font-family:monospace;font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.12em;margin-bottom:.4rem;opacity:.7;
+}
+.hero-title{font-size:1.3rem;font-weight:900;line-height:1.1;margin-bottom:.3rem}
+.hero-dates{font-family:monospace;font-size:11px;opacity:.6;margin-bottom:.6rem}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem;margin-top:.7rem}
+.hs{background:rgba(0,0,0,.3);border-radius:6px;padding:.4rem .5rem;text-align:center}
+.hs b{display:block;font-size:1rem;font-weight:900;line-height:1.1}
+.hs span{font-size:9px;font-family:monospace;opacity:.6;text-transform:uppercase}
+
+/* ══ PRINCIPES CARD ══ */
+.principes{
+  background:var(--bg2);border:1px solid var(--bo2);border-radius:10px;
+  padding:.8rem;margin-bottom:.7rem;
+}
+.principes h3{
+  font-family:monospace;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--tx3);margin-bottom:.6rem;
+}
+.principe{
+  display:flex;gap:.6rem;align-items:flex-start;
+  padding:.45rem 0;border-bottom:1px solid var(--bo);
+  font-size:12.5px;
+}
+.principe:last-child{border-bottom:none;padding-bottom:0}
+.principe-icon{font-size:1rem;flex-shrink:0;width:20px;text-align:center}
+.principe-text{flex:1}
+.principe-text b{color:var(--tx);display:block;font-size:12.5px;margin-bottom:1px}
+.principe-text span{color:var(--tx3);font-size:11.5px}
+
+/* ══ BLOC ACCORDION ══ */
+.bloc{
+  border:1px solid var(--bo2);border-radius:12px;
+  overflow:hidden;margin-bottom:.6rem;
+}
+.bloc-hd{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.75rem .85rem;cursor:pointer;
+  background:var(--bg2);user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .12s;
+}
+.bloc-hd:active{background:var(--bg3)}
+.bloc-hd.open{background:var(--bg3);border-bottom:1px solid var(--bo2)}
+.bloc-num{
+  font-family:monospace;font-size:1.4rem;font-weight:900;
+  opacity:.2;min-width:30px;line-height:1;flex-shrink:0;
+}
+.bloc-info{flex:1;min-width:0}
+.bloc-info h3{font-size:.9rem;font-weight:800;color:var(--tx);margin-bottom:1px}
+.bloc-info .dates{font-family:monospace;font-size:9.5px;color:var(--tx4)}
+.bloc-info .tags{display:flex;gap:3px;margin-top:4px;flex-wrap:wrap}
+.tag{font-family:monospace;font-size:9px;font-weight:700;padding:2px 5px;border-radius:3px}
+.tag-off{background:var(--ph-off);color:var(--ph-off2);border:1px solid var(--gr3)}
+.tag-pre{background:var(--ph-pre);color:var(--ph-pre2);border:1px solid var(--am3)}
+.tag-vo2{background:#0a1a2e;color:var(--bl);border:1px solid #1a3366}
+.tag-str{background:#1a0a1a;color:var(--pu);border:1px solid #4a1a6a}
+.tag-spec{background:#2a0a00;color:var(--vo);border:1px solid #4a2000}
+.bloc-ar{font-size:10px;color:var(--tx4);transition:.2s;flex-shrink:0}
+.bloc-ar.open{transform:rotate(180deg)}
+.bloc-body{display:none;background:var(--bg)}
+.bloc-body.open{display:block}
+
+/* ══ SEMAINE ACCORDION ══ */
+.sem{border-top:1px solid var(--bo);overflow:hidden}
+.sem-hd{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.6rem .85rem;cursor:pointer;
+  background:var(--bg);user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  min-height:40px;
+}
+.sem-hd:active{background:var(--bg2)}
+.sem-hd.open{background:var(--bg2)}
+.sem-badge{
+  font-family:monospace;font-size:10px;font-weight:700;
+  color:var(--gr);background:var(--gr3);border:1px solid var(--gr2);
+  border-radius:3px;padding:1px 5px;min-width:32px;text-align:center;flex-shrink:0;
+}
+.sem-title{flex:1;font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sem-pills{display:flex;gap:3px;flex-shrink:0}
+.spill{font-family:monospace;font-size:8.5px;font-weight:700;padding:1px 4px;border-radius:2px}
+.spill-h{background:#1a0a00;color:var(--rd);border:1px solid var(--rd3)}
+.spill-m{background:#0d1a00;color:var(--ok);border:1px solid var(--ok2)}
+.spill-d{background:var(--bg4);color:var(--tx4);border:1px solid var(--bo2)}
+.sem-ar{font-size:9px;color:var(--tx4);transition:.2s;margin-left:.2rem}
+.sem-ar.open{transform:rotate(180deg)}
+.sem-body{display:none;padding:.5rem .85rem .7rem}
+.sem-body.open{display:block}
+
+/* ══ OBJECTIFS SEMAINE ══ */
+.sem-obj{
+  background:var(--bg3);border-left:2px solid var(--bo3);
+  border-radius:0 6px 6px 0;padding:.5rem .65rem;
+  margin-bottom:.6rem;font-size:11.5px;color:var(--tx2);
+}
+.sem-obj b{display:block;font-family:monospace;font-size:9px;text-transform:uppercase;
+  color:var(--tx3);letter-spacing:.06em;margin-bottom:2px}
+
+/* ══ SÉANCES ══ */
+.ss-list{display:flex;flex-direction:column;gap:.35rem}
+.ss{
+  background:var(--bg2);border:1px solid var(--bo);border-radius:8px;
+  display:grid;grid-template-columns:52px 1fr;overflow:hidden;
+}
+.ss-day{
+  background:var(--bg3);padding:.5rem .4rem;
+  font-family:monospace;font-size:9.5px;font-weight:700;
+  color:var(--tx3);text-align:center;line-height:1.3;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border-right:1px solid var(--bo);
+}
+.ss-content{padding:.5rem .6rem}
+.ss-type{display:flex;align-items:center;gap:.4rem;margin-bottom:3px}
+.t{font-family:monospace;font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;flex-shrink:0}
+.t-run{background:#001a0d;color:#00e676;border:1px solid #004d20}
+.t-str{background:#1a001a;color:#e040fb;border:1px solid #4d004d}
+.t-sp{background:#0d0d1a;color:#7c9eff;border:1px solid #1a2566}
+.t-mob{background:#1a1500;color:#ffd740;border:1px solid #4d3d00}
+.t-rec{background:#00101a;color:#40c4ff;border:1px solid #00394d}
+.t-ergo{background:#0d1a1a;color:#00e5ff;border:1px solid #004d4d}
+.ss-title{font-size:12.5px;font-weight:700;color:var(--tx);margin-bottom:3px}
+.ss-body{font-size:11.5px;color:var(--tx2);line-height:1.5}
+.ss-kp{display:flex;flex-wrap:wrap;gap:3px;margin-top:.4rem}
+.ki{
+  font-family:monospace;font-size:10px;
+  background:var(--bg3);border:1px solid var(--bo2);
+  padding:1px 6px;border-radius:3px;color:var(--tx3);
+}
+.ki b{color:var(--tx2)}
+.ki-vo2{border-color:#1a3366;color:var(--bl)}
+.ki-str{border-color:#4a1a6a;color:var(--pu)}
+.ki-rpe{border-color:var(--bo3)}
+
+/* ══ VOLUME CARD ══ */
+.vol-card{
+  background:var(--bg2);border:1px solid var(--bo2);border-radius:8px;
+  padding:.65rem;margin-bottom:.5rem;
+}
+.vol-title{font-family:monospace;font-size:9px;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--tx3);margin-bottom:.4rem}
+.vol-row{display:flex;justify-content:space-between;align-items:center;
+  padding:.25rem 0;border-bottom:1px solid var(--bo);font-size:12px}
+.vol-row:last-child{border-bottom:none}
+.vol-row span:last-child{font-family:monospace;font-size:11px;color:var(--gr);font-weight:700}
+
+/* ══ PROGRESSION CARD ══ */
+.prog-card{
+  background:var(--bg2);border:1px solid var(--bo2);border-radius:8px;
+  padding:.65rem;margin-bottom:.5rem;
+}
+.prog-title{font-family:monospace;font-size:9px;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--tx3);margin-bottom:.4rem}
+.prog-row{
+  display:flex;align-items:center;gap:.4rem;
+  padding:.3rem 0;border-bottom:1px solid var(--bo);font-size:11.5px;
+}
+.prog-row:last-child{border-bottom:none}
+.prog-name{flex:1;color:var(--tx2)}
+.prog-vals{font-family:monospace;font-size:10.5px;color:var(--tx3)}
+.prog-arr{color:var(--gr);font-size:11px}
+.prog-target{color:var(--gr);font-weight:700}
+
+/* ══ GAINS CARD ══ */
+.gains{
+  background:linear-gradient(135deg,rgba(0,196,167,.08),rgba(0,0,0,0));
+  border:1px solid var(--gr3);border-radius:10px;
+  padding:.75rem;margin:.7rem 0;
+}
+.gains h3{font-family:monospace;font-size:9px;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--gr);margin-bottom:.6rem}
+.gain-row{display:flex;justify-content:space-between;align-items:center;
+  padding:.3rem 0;border-bottom:1px solid var(--bo);font-size:12px}
+.gain-row:last-child{border-bottom:none}
+.gain-row .before{color:var(--tx3);font-family:monospace;font-size:11px}
+.gain-row .arrow{color:var(--gr);margin:0 .3rem}
+.gain-row .after{color:var(--gr);font-family:monospace;font-size:11px;font-weight:700}
+
+/* ══ TIMELINE MINI ══ */
+.tl-mini{
+  background:var(--bg2);border:1px solid var(--bo2);border-radius:10px;
+  padding:.7rem;margin-bottom:.7rem;
+}
+.tl-mini-title{font-family:monospace;font-size:9.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);margin-bottom:.5rem}
+.tl-bar-mini{
+  height:28px;background:var(--bg4);border-radius:5px;
+  overflow:hidden;display:flex;position:relative;
+}
+.tl-seg{
+  display:flex;align-items:center;justify-content:center;
+  font-family:monospace;font-size:9px;font-weight:700;
+  border-right:1px solid rgba(0,0,0,.4);overflow:hidden;
+}
+.tl-seg:last-child{border-right:none}
+.tl-seg-a{background:#0a3c34;color:var(--gr3)}
+.tl-seg-b{background:#0d4b3f;color:#005544}
+.tl-seg-c{background:#0f5950;color:#006655}
+.tl-seg-t{background:#1a0f00;color:var(--am3)}
+.tl-seg-d{background:#2a1800;color:var(--am)}
+.tl-seg-e{background:#3a2200;color:var(--am)}
+.tl-seg-ta{background:#ff4444;color:#fff;font-size:8px}
+.tl-labels-mini{display:flex;justify-content:space-between;
+  font-size:9px;font-family:monospace;color:var(--tx4);margin-top:4px}
+
+/* ══ SEPARATOR ══ */
+.sep{
+  font-family:monospace;font-size:9px;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--tx4);
+  padding:.35rem .85rem;background:var(--bg2);
+  border-top:1px solid var(--bo);border-bottom:1px solid var(--bo);
+  margin-bottom:0;
+}
+
+/* ══ DOCK NAV ══ */
+.dock{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:430px;z-index:200;
+  background:rgba(8,11,10,.96);border-top:1px solid var(--bo2);
+  display:grid;grid-template-columns:1fr 1fr;
+  backdrop-filter:blur(12px);
+}
+.dock-btn{
+  background:transparent;border:0;color:var(--tx4);
+  font-family:monospace;font-size:10px;font-weight:700;
+  padding:.7rem;cursor:pointer;
+  border-right:1px solid var(--bo2);
+  -webkit-tap-highlight-color:transparent;
+  transition:color .15s;
+}
+.dock-btn:last-child{border-right:none}
+.dock-btn.on{color:var(--gr)}
+.dock-btn span{display:block;font-size:8px;opacity:.5;font-weight:400}
+
+/* ══ THEME TOGGLE ══ */
+.theme-btn{
+  background:var(--bg3);border:1px solid var(--bo2);
+  color:var(--tx3);font-size:12px;padding:3px 8px;border-radius:5px;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+
+
+/* RÉCUP */
+.recup{
+  font-size:10.5px;color:var(--tx3);
+  background:var(--bg3);border-left:2px solid var(--bo3);
+  border-radius:0 4px 4px 0;
+  padding:.3rem .5rem;margin-top:.35rem;
+  line-height:1.4;
+}
+.recup b{color:var(--am);font-size:10px}
+
+/* ══ LIGHT MODE ══ */
+[data-theme="light"]{
+  --bg:#f4f8f6;--bg2:#e8f0ed;--bg3:#d8e8e3;--bg4:#c4d8d1;
+  --bo:#c4d8d1;--bo2:#a0b8b0;--bo3:#7a9890;
+  --tx:#081412;--tx2:#1a3530;--tx3:#3a5550;--tx4:#5a7570;
+  --gr:#007a65;--gr2:#005a4a;--gr3:#b0e0d8;
+  --am:#b87a00;--am2:#8a5c00;--am3:#f5d880;
+  --ph-off:#d8f0ec;--ph-pre:#f5e8c0;
+}
+[data-theme="light"] .tl-seg-a{background:#b0e0d8;color:#006655}
+[data-theme="light"] .tag-off{background:#d8f0ec;color:#007a65;border-color:#a0d8cc}
+[data-theme="light"] .tag-pre{background:#f5e8c0;color:#b87a00;border-color:#dac060}
+
+@media(max-width:375px){.hero-title{font-size:1.1rem}}
+@media(min-width:431px){body{border-left:1px solid var(--bo);border-right:1px solid var(--bo)}}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="hdr-badge">HYROX ELITE · 2026</div>
+      <h1>Off-Season + Pré-Compétition</h1>
+      <div class="hdr-sub">26 mai → 15 novembre · 24,5 semaines · Objectif 1h10 PRO</div>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()">☀</button>
+  </div>
+</header>
+
+<!-- PHASE SWITCHER -->
+<div class="phase-switch">
+  <div class="psw on-off" onclick="showPhase('off',this)" id="btn-off">
+    OFF-SEASON
+    <span>1er juin → 6 sept</span>
+  </div>
+  <div class="psw" onclick="showPhase('pre',this)" id="btn-pre">
+    PRÉ-COMP
+    <span>7 sept → 15 nov</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     PHASE OFF-SEASON
+════════════════════════════════════ -->
+<div id="phase-off" class="section on">
+
+  <!-- Hero -->
+  <div class="hero-card hero-off">
+    <div class="hero-label">Phase 1 · Off-Season</div>
+    <div class="hero-title" style="color:var(--gr)">Construire<br>le moteur</div>
+    <div class="hero-dates">1er juin → 6 septembre · 14 semaines</div>
+    <div style="font-size:12px;color:var(--tx2);line-height:1.5">
+      VO2max + Force maximale. Méthode Alan Cao / Hunter McIntyre.
+      Aucune simulation race. Aucun compromised. Juste le moteur.
+    </div>
+    <div class="hero-stats">
+      <div class="hs" style="color:var(--gr)">
+        <b>14</b><span>semaines</span>
+      </div>
+      <div class="hs" style="color:var(--bl)">
+        <b>8-10</b><span>séances/sem</span>
+      </div>
+      <div class="hs" style="color:var(--pu)">
+        <b>55 km</b><span>run/sem max</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="tl-mini">
+    <div class="tl-mini-title">Structure des 14 semaines</div>
+    <div class="tl-bar-mini">
+      <div class="tl-seg tl-seg-a" style="width:29%">BlocA</div>
+      <div class="tl-seg tl-seg-b" style="width:29%">BlocB</div>
+      <div class="tl-seg tl-seg-c" style="width:29%">BlocC</div>
+      <div class="tl-seg tl-seg-t" style="width:13%">Tests</div>
+    </div>
+    <div class="tl-labels-mini">
+      <span>1 juin</span>
+      <span>29 juin</span>
+      <span>27 juil</span>
+      <span>24 août</span>
+      <span>6 sept</span>
+    </div>
+  </div>
+
+  <!-- Principes -->
+  <div class="principes">
+    <h3>Philosophie — ce que font les meilleurs</h3>
+    <div class="principe">
+      <div class="principe-icon">📊</div>
+      <div class="principe-text">
+        <b>80/20 polarisé</b>
+        <span>80% Zone 2, 20% haute intensité. Les 4×4 min VO2max produisent 3× plus de gains que le seuil seul. Science prouvée (Seiler 2010 + HyroxDataLab 2025).</span>
+      </div>
+    </div>
+    <div class="principe">
+      <div class="principe-icon">🏋</div>
+      <div class="principe-text">
+        <b>Hypertrophie d'abord, force ensuite</b>
+        <span>Bloc A = volume 5×8-10. Bloc B = force 5×3-5. Bloc C = puissance 5-3-1 Wendler. Alan Cao : split upper/lower sur mouvements de base uniquement.</span>
+      </div>
+    </div>
+    <div class="principe">
+      <div class="principe-icon">🔄</div>
+      <div class="principe-text">
+        <b>Hard / Low alternance stricte</b>
+        <span>Méthode Alan Cao. Lun/Jeu = hard days. Mar = tempo. Mer = ergomètres Z2. Ven = low. Sam = long. Dim = repos ou marche.</span>
+      </div>
+    </div>
+    <div class="principe">
+      <div class="principe-icon">🚫</div>
+      <div class="principe-text">
+        <b>Zéro simulation race jusqu'au 18 août</b>
+        <span>Hunter McIntyre : "Build strength, build endurance. Race specificity comes last." Les patterns stations reviennent en bloc C de façon technique seulement.</span>
+      </div>
+    </div>
+    <div class="principe">
+      <div class="principe-icon">🎯</div>
+      <div class="principe-text">
+        <b>3 semaines hard + 1 décharge</b>
+        <span>Cycle HAOS Training. Semaine 4 de chaque bloc = volume -30%, intensité maintenue. Supercompensation garantie.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOC A -->
+  <div class="bloc">
+    <div class="bloc-hd" onclick="toggleBloc(this)">
+      <div class="bloc-num">A</div>
+      <div class="bloc-info">
+        <h3>Fondation aérobie + hypertrophie</h3>
+        <div class="dates">1er juin → 28 juin · 4 semaines</div>
+        <div class="tags">
+          <span class="tag tag-off">OFF-SEASON</span>
+          <span class="tag tag-vo2">VO2MAX BASE</span>
+          <span class="tag tag-str">HYPERTROPHIE</span>
+        </div>
+      </div>
+      <div class="bloc-ar">▼</div>
+    </div>
+    <div class="bloc-body">
+
+      <!-- Vol/Prog -->
+      <div style="padding:.6rem .85rem .3rem">
+        <div class="vol-card">
+          <div class="vol-title">Volume hebdomadaire cible</div>
+          <div class="vol-row"><span>Course à pied</span><span>40–48 km</span></div>
+          <div class="vol-row"><span>Zone 2 (80%)</span><span>32–38 km</span></div>
+          <div class="vol-row"><span>Haute intensité</span><span>8–10 km</span></div>
+          <div class="vol-row"><span>Ergomètres</span><span>2×40 min Z2</span></div>
+          <div class="vol-row"><span>Musculation</span><span>3 séances upper/lower</span></div>
+        </div>
+      </div>
+
+      <!-- S1 -->
+      <div class="sep">S1 · 1–7 juin · Entrée progressive</div>
+      <div class="sem">
+        <div class="sem-hd" onclick="toggleSem(this)">
+          <div class="sem-badge">S1</div>
+          <div class="sem-title">S1 · 1–7 juin · Entrée progressive</div>
+          <div class="sem-pills"><span class="spill spill-m">MED</span></div>
+          <div class="sem-ar">▼</div>
+        </div>
+        <div class="sem-body">
+          <div class="sem-obj"><b>// Objectif S1 — 1er juin</b>Entrée progressive dans le plan. Squat léger semaine 1, charges normales S2. Volume 70% du cible. Établir les habitudes : Z2 strict, hard/low alternance, mercredi mobilité fixe.</div>
+          <div class="ss-list">
+            <div class="ss">
+              <div class="ss-day">Lun<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">Sortie Z2 — reprise</div>
+                <div class="ss-body">50 min footing 5'30–5'45/km. Respiration nasale sur 80%. RPE 4.</div>
+                <div class="ss-kp"><span class="ki ki-rpe">RPE <b>4</b></span><span class="ki">Z2 <b>5'30–5'45</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : peuvent enchaîner dans la journée si Z2 strict. Hydratation 400 ml.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Lun<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-str">MUSC</span></div>
+                <div class="ss-title">Réactivation force — haut du corps</div>
+                <div class="ss-body">Développé couché 4×8 @ 70 kg. Pull-up BW 4×6. Strict press 3×8 @ 42.5 kg. Pendlay row 4×8 @ 57.5 kg. Curl barre 3×10 @ 27.5 kg. Skull crusher 3×12 @ 20 kg. Farmer carry 4×50 m @ 2×24 kg.</div>
+                <div class="ss-kp"><span class="ki ki-str">Bench <b>70 kg</b></span><span class="ki ki-str">Farmer <b>2×24 kg</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 24h suffisent. Protéines 30 g dans les 30 min.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Mar<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">Tempo court — réactivation neuro</div>
+                <div class="ss-body">10 min échauff + 3×6 min @ 4'35–4'40/km, récup 2 min. 10 min retour calme.</div>
+                <div class="ss-kp"><span class="ki ki-rpe">RPE <b>7</b></span><span class="ki">Allure <b>4'35–4'40</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 10 min marche + étirements passifs 10 min. Attendre 3h min avant séance suivante.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Mer<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-ergo">ERGO</span></div>
+                <div class="ss-title">SkiErg ou Row Z2 — articulaire</div>
+                <div class="ss-body">40 min continu à allure aisée (Row 2'15–2'20/500 ou Ski 2'10–2'15/500). RPE 4. Préserve les jambes, travaille le cardio. Méthode Alan Cao.</div>
+                <div class="ss-kp"><span class="ki ki-rpe">RPE <b>4</b></span><span class="ki">Articulaire <b>Z2</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : peuvent enchaîner dans la journée si Z2 strict. Hydratation 400 ml.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Mer<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-mob">MOB</span></div>
+                <div class="ss-title">Mobilité obligatoire — 45 min</div>
+                <div class="ss-body">10 min foam roll global (ischios/lombaires/quadri/mollets). 15 min mobilité dynamique (CARs hanches + world's greatest stretch ×5/côté + 90/90 ×8/côté). 15 min étirements actifs (psoas, ischios, pectoraux). 5 min respiration nasale 4-7-8. <b>Séance fixe chaque mercredi midi — non négociable.</b></div>
+                <div class="ss-kp"><span class="ki">Durée <b>45 min</b></span><span class="ki">Mob <b>fixe mercredi</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup : aucune contrainte — peut enchaîner immédiatement.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Jeu<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">VMA intro — 4×4 min</div>
+                <div class="ss-body">12 min échauff + <b>4×4 min à 105% VMA</b> (allure ~4'00–4'05/km), récup 4 min marche. Format scientifique — 3× plus de gains VO2max qu'un tempo. 10 min retour calme.</div>
+                <div class="ss-kp"><span class="ki ki-vo2">4×4 min <b>VO2max</b></span><span class="ki ki-rpe">RPE <b>8</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 15 min marche + foam roll jambes. Attendre 4h min avant séance suivante. Hydratation 500 ml dans les 30 min.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Jeu<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-str">MUSC</span></div>
+                <div class="ss-title">Réactivation force — bas du corps léger</div>
+                <div class="ss-body">Goblet squat 3×10 @ 24 kg. Hip thrust 4×10 @ 80 kg. RDL léger 3×8 @ 60 kg tempo 3-1-1. Nordic assisté 3×4 descente 4 sec. Mollets debout 3×15.</div>
+                <div class="ss-kp"><span class="ki">Hip thrust <b>80 kg</b></span><span class="ki">Nordic <b>assisté</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 24h suffisent. Protéines 30 g dans les 30 min.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Ven</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-mob">MOB</span></div>
+                <div class="ss-title">Récup active + mobilité</div>
+                <div class="ss-body">30 min marche ou vélo Z1. 20 min foam roll + mobilité ischios/hanches. Dead bug 3×10. Bird dog 3×8/côté.</div>
+                <div class="ss-kp"><span class="ki ki-rpe">RPE <b>2–3</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup : aucune contrainte — peut enchaîner immédiatement.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Sam</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">Sortie longue fondamentale</div>
+                <div class="ss-body">70 min footing 5'15–5'30/km. Respiration nasale strict sur 60 min. 10 dernières min légèrement progressif. RPE 4–5.</div>
+                <div class="ss-kp"><span class="ki ki-rpe">RPE <b>4–5</b></span><span class="ki">Volume <b>70 min Z2</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 20 min marche + foam roll complet + 500 ml eau + glucides dans les 30 min. Pas de séance hard le lendemain.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S2 -->
+      <div class="sep">S2 · 8–14 juin · Hypertrophie + VMA montante</div>
+      <div class="sem">
+        <div class="sem-hd" onclick="toggleSem(this)">
+          <div class="sem-badge">S2</div>
+          <div class="sem-title">S2 · 8–14 juin · Hypertrophie + VMA</div>
+          <div class="sem-pills"><span class="spill spill-h">HARD</span></div>
+          <div class="sem-ar">▼</div>
+        </div>
+        <div class="sem-body">
+          <div class="sem-obj"><b>// Objectif S2</b>+5 km vs S1. Squat et bench en volume 5×8. VMA passe à 5×4 min. Sortie longue 80 min.</div>
+          <div class="ss-list">
+            <div class="ss">
+              <div class="ss-day">Lun<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">Sortie Z2 progressive</div>
+                <div class="ss-body">60 min footing 5'15–5'30/km. RPE 4–5. Construire l'habitude de la longue Z2.</div>
+                <div class="ss-kp"><span class="ki ki-rpe">RPE <b>4–5</b></span><span class="ki">Volume <b>60 min</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : peuvent enchaîner dans la journée si Z2 strict. Hydratation 400 ml.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Lun<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-str">MUSC</span></div>
+                <div class="ss-title">Half-body haut — hypertrophie vol. A</div>
+                <div class="ss-body">Développé couché <b>5×8 @ 75 kg</b>. Pull-up lestés 4×6 @ +5 kg. Strict press 4×8 @ 45 kg. Pendlay row 5×8 @ 60 kg. Curl barre 3×10 @ 30 kg. Skull crusher 3×12 @ 22.5 kg. Farmer carry 5×50 m @ 2×26 kg.</div>
+                <div class="ss-kp"><span class="ki ki-str">Bench <b>75 kg × 5×8</b></span><span class="ki ki-str">Farmer <b>2×26 kg</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 24h suffisent. Protéines 30 g dans les 30 min.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Mar<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">Tempo — 4×8 min</div>
+                <div class="ss-body">12 min échauff + <b>4×8 min @ 4'28–4'33/km</b>, récup 2'30. Développement seuil lactique.</div>
+                <div class="ss-kp"><span class="ki ki-rpe">RPE <b>7.5</b></span><span class="ki">Seuil <b>4'28–4'33</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 10 min marche + étirements passifs 10 min. Attendre 3h min avant séance suivante.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Mer<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-ergo">ERGO</span></div>
+                <div class="ss-title">Row + SkiErg Z2 — mercredi Cao</div>
+                <div class="ss-body">20 min Row @ 2'12–2'15/500 + 20 min SkiErg @ 2'08–2'12/500. RPE 4–5. Endurance bras + cardio sans impact articulaire.</div>
+                <div class="ss-kp"><span class="ki">Row + Ski <b>40 min Z2</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : peuvent enchaîner dans la journée si Z2 strict. Hydratation 400 ml.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Mer<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-mob">MOB</span></div>
+                <div class="ss-title">Mobilité obligatoire — 45 min</div>
+                <div class="ss-body">10 min foam roll global (ischios/lombaires/quadri/mollets). 15 min mobilité dynamique (CARs hanches + world's greatest stretch ×5/côté + 90/90 ×8/côté). 15 min étirements actifs (psoas, ischios, pectoraux). 5 min respiration nasale 4-7-8. <b>Séance fixe chaque mercredi midi — non négociable.</b></div>
+                <div class="ss-kp"><span class="ki">Durée <b>45 min</b></span><span class="ki">Mob <b>fixe mercredi</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup : aucune contrainte — peut enchaîner immédiatement.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Jeu<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">VMA — 5×4 min</div>
+                <div class="ss-body">12 min échauff + <b>5×4 min @ 105–110% VMA</b> (4'00–4'05/km), récup 4 min. 12 min retour calme.</div>
+                <div class="ss-kp"><span class="ki ki-vo2">5×4 min <b>VO2max</b></span><span class="ki ki-rpe">RPE <b>8.5</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 15 min marche + foam roll jambes. Attendre 4h min avant séance suivante. Hydratation 500 ml dans les 30 min.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Jeu<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-str">MUSC</span></div>
+                <div class="ss-title">Half-body bas — hypertrophie vol. A</div>
+                <div class="ss-body">Back squat <b>5×8 @ 82.5 kg</b>. Front squat 3×6 @ 62.5 kg. RDL 4×8 @ 70 kg tempo 3-1-1. Hip thrust 4×10 @ 90 kg. Bulgarian 3×8/jambe @ 20 kg. Nordic assisté 4×4 descente 5 sec. Mollets debout 4×15.</div>
+                <div class="ss-kp"><span class="ki ki-str">Squat <b>82.5 kg × 5×8</b></span><span class="ki ki-str">Hip thrust <b>90 kg</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 24h suffisent. Protéines 30 g dans les 30 min.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Ven</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-mob">MOB</span></div>
+                <div class="ss-title">Récup active low day</div>
+                <div class="ss-body">Footing facile 25 min 5'45/km OU vélo 35 min Z1. Mobilité 15 min. RPE 3.</div>
+                <div class="ss-kp"><span class="ki ki-rpe">RPE <b>3</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup : aucune contrainte — peut enchaîner immédiatement.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Sam</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">Sortie longue + bloc terminal</div>
+                <div class="ss-body">80 min footing 5'15–5'30/km. <b>15 dernières min à 4'45/km</b>. Total 80 min Z2 + progression finale. RPE 4–5 → 7 en fin.</div>
+                <div class="ss-kp"><span class="ki ki-rpe">RPE <b>4–7</b></span><span class="ki">Long <b>80 min</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 20 min marche + foam roll complet + 500 ml eau + glucides dans les 30 min. Pas de séance hard le lendemain.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S3-S4 condensé -->
+      <div class="sep">S3–S4 · 15–28 juin · Progression + Décharge</div>
+      <div class="sem">
+        <div class="sem-hd" onclick="toggleSem(this)">
+          <div class="sem-badge">S3</div>
+          <div class="sem-title">Pic bloc A — volume max + charges</div>
+          <div class="sem-pills"><span class="spill spill-h">HARD</span></div>
+          <div class="sem-ar">▼</div>
+        </div>
+        <div class="sem-body">
+          <div class="sem-obj"><b>// Objectif S3</b>Volume course 45–48 km. VMA 6×4 min. Squat 5×8 @ 85 kg. Bench 5×8 @ 77.5 kg. Sortie longue 90 min. Pic hypertrophie bloc A.</div>
+          <div class="ss-list">
+            <div class="ss">
+              <div class="ss-day">Jeu<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">VMA — 6×4 min pic bloc A</div>
+                <div class="ss-body">12 min échauff + <b>6×4 min @ 3'55–4'00/km</b>, récup 4 min. Pic VMA du bloc A. 12 min retour calme.</div>
+                <div class="ss-kp"><span class="ki ki-vo2">6×4 min <b>pic VO2max</b></span><span class="ki ki-rpe">RPE <b>9</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 15 min marche + foam roll jambes. Attendre 4h min avant séance suivante. Hydratation 500 ml dans les 30 min.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Jeu<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-str">MUSC</span></div>
+                <div class="ss-title">Half-body bas — 5×8 pic hypertrophie</div>
+                <div class="ss-body">Back squat <b>5×8 @ 85 kg</b>. Front squat 3×6 @ 65 kg. RDL 4×8 @ 75 kg. Hip thrust 4×10 @ 95 kg. Bulgarian 3×8/jambe @ 22.5 kg. Nordic assisté 4×5. Good morning 3×8 @ 47.5 kg. Mollets 4×15.</div>
+                <div class="ss-kp"><span class="ki ki-str">Squat <b>85 kg</b></span><span class="ki ki-str">Hip thrust <b>95 kg</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 24h suffisent. Protéines 30 g dans les 30 min.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Sam</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">Sortie longue 90 min Z2</div>
+                <div class="ss-body">90 min footing 5'10–5'25/km. Respiration nasale sur 70 min. 20 dernières min légèrement progressif → 4'40/km. Première vraie longue Z2 du plan.</div>
+                <div class="ss-kp"><span class="ki ki-rpe">RPE <b>4–6</b></span><span class="ki">Long <b>90 min</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 20 min marche + foam roll complet + 500 ml eau + glucides dans les 30 min. Pas de séance hard le lendemain.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sem">
+        <div class="sem-hd" onclick="toggleSem(this)">
+          <div class="sem-badge">S4</div>
+          <div class="sem-title">Décharge bloc A — volume -30%</div>
+          <div class="sem-pills"><span class="spill spill-d">DÉCH</span></div>
+          <div class="sem-ar">▼</div>
+        </div>
+        <div class="sem-body">
+          <div class="sem-obj"><b>// Objectif S4 décharge</b>Volume -30%, intensité maintenue. 4×4 min VMA seulement. Charges -10%. Supercompensation. Prépare le pic bloc B.</div>
+          <div class="ss-list">
+            <div class="ss">
+              <div class="ss-day">Sem.</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-mob">DÉCH</span></div>
+                <div class="ss-title">Semaine décharge — structure allégée</div>
+                <div class="ss-body">Run total 32–35 km (au lieu de 48). VMA : 4×4 min uniquement. Tempo : 3×6 min. Sortie longue : 60 min. Muscu : charges -10%, volume -1 série par exercice. Mercredi : repos ou marche 30 min seulement. Sommeils +1h si possible.</div>
+                <div class="ss-kp"><span class="ki">Volume <b>-30%</b></span><span class="ki">Intensité <b>maintenue</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : peuvent enchaîner dans la journée si Z2 strict. Hydratation 400 ml.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BLOC B -->
+  <div class="bloc">
+    <div class="bloc-hd" onclick="toggleBloc(this)">
+      <div class="bloc-num">B</div>
+      <div class="bloc-info">
+        <h3>Force maximale + VO2max pic</h3>
+        <div class="dates">29 juin → 26 juillet · 4 semaines</div>
+        <div class="tags">
+          <span class="tag tag-off">OFF-SEASON</span>
+          <span class="tag tag-vo2">VO2MAX PIC</span>
+          <span class="tag tag-str">FORCE MAX</span>
+        </div>
+      </div>
+      <div class="bloc-ar">▼</div>
+    </div>
+    <div class="bloc-body">
+      <div style="padding:.6rem .85rem .3rem">
+        <div class="vol-card">
+          <div class="vol-title">Progression charges bloc B vs A</div>
+          <div class="vol-row"><span>Back squat</span><span>5×8 → <b>5×5 @ 90–95 kg</b></span></div>
+          <div class="vol-row"><span>Front squat</span><span>3×6 → <b>3×5 @ 70–72.5 kg</b></span></div>
+          <div class="vol-row"><span>RDL bilatéral</span><span>4×8 @ 75 → <b>4×6 @ 82.5 kg</b></span></div>
+          <div class="vol-row"><span>Développé couché</span><span>5×8 @ 77.5 → <b>5×5 @ 82.5 kg</b></span></div>
+          <div class="vol-row"><span>Hip thrust</span><span>4×10 @ 95 → <b>4×6 @ 105 kg</b></span></div>
+          <div class="vol-row"><span>Course à pied</span><span>48 → <b>52 km/sem</b></span></div>
+          <div class="vol-row"><span>VMA</span><span>6×4 min → <b>8×3 min</b></span></div>
+        </div>
+      </div>
+
+      <div class="sep">Semaine type bloc B — hard day</div>
+      <div class="sem">
+        <div class="sem-hd" onclick="toggleSem(this)">
+          <div class="sem-badge">B</div>
+          <div class="sem-title">Semaine type — force + VO2max</div>
+          <div class="sem-pills"><span class="spill spill-h">HARD</span></div>
+          <div class="sem-ar">▼</div>
+        </div>
+        <div class="sem-body">
+          <div class="sem-obj"><b>// Structure semaine B</b>Lun = sortie Z2 60-70 min + muscu haut. Mar = tempo long 4×10 min. Mer = ergomètres Z2. Jeu = VMA 8×3 min + muscu bas. Ven = low. Sam = sortie longue 90-100 min.</div>
+          <div class="ss-list">
+            <div class="ss">
+              <div class="ss-day">Lun<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">Sortie Z2 — fondamentale</div>
+                <div class="ss-body">65 min footing 5'10–5'25/km. RPE 4–5.</div>
+                <div class="ss-kp"><span class="ki ki-rpe">RPE <b>4–5</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : peuvent enchaîner dans la journée si Z2 strict. Hydratation 400 ml.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Lun<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-str">MUSC</span></div>
+                <div class="ss-title">Half-body haut — force 5×5</div>
+                <div class="ss-body">Développé couché <b>5×5 @ 82.5 kg</b> (récup 3 min). Pull-up lestés 4×5 @ +10 kg. Push press 4×5 @ 52.5 kg. Pendlay row 4×6 @ 70 kg. Curl barre 3×10 @ 32.5 kg. Skull crusher 3×10 @ 25 kg. Farmer carry AMRAP 8 min @ 2×28 kg.</div>
+                <div class="ss-kp"><span class="ki ki-str">Bench <b>82.5 kg × 5×5</b></span><span class="ki ki-str">Farmer AMRAP <b>2×28 kg</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 24h suffisent. Protéines 30 g dans les 30 min.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Mar<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">Tempo long — 4×10 min</div>
+                <div class="ss-body">12 min échauff + <b>4×10 min @ 4'25–4'30/km</b>, récup 3 min. Développement du seuil lactique sur durée.</div>
+                <div class="ss-kp"><span class="ki ki-rpe">RPE <b>7.5</b></span><span class="ki">Seuil <b>4'25–4'30</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 10 min marche + étirements passifs 10 min. Attendre 3h min avant séance suivante.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Mer<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-ergo">ERGO</span></div>
+                <div class="ss-title">Row + SkiErg qualité — seuil bras</div>
+                <div class="ss-body">2×15 min Row @ 2'05–2'08/500 (seuil bras). 5 min repos. 2×10 min SkiErg @ 2'02–2'05/500. Adaptation cardiovasculaire bras spécifique HYROX.</div>
+                <div class="ss-kp"><span class="ki">Row seuil <b>2'05–2'08/500</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 10 min marche + étirements passifs 10 min. Attendre 3h min avant séance suivante.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Mer<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-mob">MOB</span></div>
+                <div class="ss-title">Mobilité obligatoire — 45 min</div>
+                <div class="ss-body">10 min foam roll global (ischios/lombaires/quadri/mollets). 15 min mobilité dynamique (CARs hanches + world's greatest stretch ×5/côté + 90/90 ×8/côté). 15 min étirements actifs (psoas, ischios, pectoraux). 5 min respiration nasale 4-7-8. <b>Séance fixe chaque mercredi midi — non négociable.</b></div>
+                <div class="ss-kp"><span class="ki">Durée <b>45 min</b></span><span class="ki">Mob <b>fixe mercredi</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup : aucune contrainte — peut enchaîner immédiatement.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Jeu<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">VMA — 8×3 min</div>
+                <div class="ss-body">12 min échauff + <b>8×3 min @ 110% VMA</b> (3'52–3'58/km), récup 3 min marche. Pic VO2max bloc B. Volume total haute intensité : 24 min.</div>
+                <div class="ss-kp"><span class="ki ki-vo2">8×3 min <b>110% VMA</b></span><span class="ki ki-rpe">RPE <b>9</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 15 min marche + foam roll jambes. Attendre 4h min avant séance suivante. Hydratation 500 ml dans les 30 min.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Jeu<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-str">MUSC</span></div>
+                <div class="ss-title">Half-body bas — force 5×5 + EMOM</div>
+                <div class="ss-body">Back squat <b>5×5 @ 90 kg</b> (récup 3 min). Front squat 3×4 @ 70 kg. RDL <b>4×6 @ 82.5 kg</b> tempo 3-1-1. EMOM 12 min : min impair = sled push 20 m @ 50 kg, min pair = box jump 5 reps 60 cm. Nordic semi-libre 4×5. Mollets 4×15.</div>
+                <div class="ss-kp"><span class="ki ki-str">Squat <b>90 kg × 5×5</b></span><span class="ki ki-str">RDL <b>82.5 kg</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 24h suffisent. Protéines 30 g dans les 30 min.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Sam</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">Sortie longue 95 min — Z2 + Run-Ergo</div>
+                <div class="ss-body">70 min footing 5'10–5'25/km + 25 min Row @ 2'15/500. RPE 4–5. Introduction du run-ergo : habitue le système cardio à l'alternance course-ergomètre propre à HYROX.</div>
+                <div class="ss-kp"><span class="ki">Run-Ergo <b>70+25 min</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 20 min marche + foam roll complet + 500 ml eau + glucides dans les 30 min. Pas de séance hard le lendemain.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sep">Décharge bloc B · semaine 4</div>
+      <div class="sem">
+        <div class="sem-hd" onclick="toggleSem(this)">
+          <div class="sem-badge">B4</div>
+          <div class="sem-title">Décharge + test 5 km</div>
+          <div class="sem-pills"><span class="spill spill-d">DÉCH</span></div>
+          <div class="sem-ar">▼</div>
+        </div>
+        <div class="sem-body">
+          <div class="sem-obj"><b>// Test VO2max indirect</b>Volume -30%. Jeudi : test 5 km chrono sur piste. Compare au 16 mai. Muscu -1 série, charges identiques. Prépare le pic bloc C.</div>
+          <div class="ss-list">
+            <div class="ss">
+              <div class="ss-day">Jeu<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">TEST 5 km — mesure VO2max indirecte</div>
+                <div class="ss-body">Échauff 15 min progressif. <b>5 km all-out sur piste ou circuit plat</b>. Chrono précis. Comparer au temps du 16 mai. Cible : battre 4'56/km (allure Run 1 du 16 mai). Retour calme 10 min.</div>
+                <div class="ss-kp"><span class="ki ki-vo2">Test <b>5 km all-out</b></span><span class="ki">Cible <b>&lt; 23'00</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : peuvent enchaîner dans la journée si Z2 strict. Hydratation 400 ml.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BLOC C -->
+  <div class="bloc">
+    <div class="bloc-hd" onclick="toggleBloc(this)">
+      <div class="bloc-num">C</div>
+      <div class="bloc-info">
+        <h3>Force spécifique + seuil lactique + intro stations</h3>
+        <div class="dates">27 juillet → 23 août · 4 semaines</div>
+        <div class="tags">
+          <span class="tag tag-off">OFF-SEASON</span>
+          <span class="tag tag-str">5-3-1 WENDLER</span>
+          <span class="tag tag-spec">INTRO STATIONS</span>
+        </div>
+      </div>
+      <div class="bloc-ar">▼</div>
+    </div>
+    <div class="bloc-body">
+      <div style="padding:.6rem .85rem .3rem">
+        <div class="vol-card">
+          <div class="vol-title">Nouveautés bloc C vs B</div>
+          <div class="vol-row"><span>Squat</span><span>5-3-1 Wendler (3 cycles)</span></div>
+          <div class="vol-row"><span>Bench</span><span>5-3-1 Wendler (3 cycles)</span></div>
+          <div class="vol-row"><span>Intervals</span><span>3×10 min seuil long</span></div>
+          <div class="vol-row"><span>Stations</span><span>Technique légère × 2/sem</span></div>
+          <div class="vol-row"><span>Sortie longue</span><span>100–110 min run-ergo</span></div>
+          <div class="vol-row"><span>Course</span><span>50–58 km/sem</span></div>
+        </div>
+      </div>
+
+      <div class="sep">Semaine type bloc C</div>
+      <div class="sem">
+        <div class="sem-hd" onclick="toggleSem(this)">
+          <div class="sem-badge">C</div>
+          <div class="sem-title">Semaine type C — Wendler + seuil long</div>
+          <div class="sem-pills"><span class="spill spill-h">HARD</span></div>
+          <div class="sem-ar">▼</div>
+        </div>
+        <div class="sem-body">
+          <div class="sem-obj"><b>// Structure bloc C</b>Lun = Z2 + 2 tours technique stations légers. Mar = 3×10 min seuil long. Mer = ergo qualité. Jeu = VMA + 5-3-1 Wendler. Sam = sortie longue run-ergo 100 min.</div>
+          <div class="ss-list">
+            <div class="ss">
+              <div class="ss-day">Lun<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-sp">SP</span></div>
+                <div class="ss-title">Z2 + intro technique stations</div>
+                <div class="ss-body">40 min footing 5'20/km Z2. Repos 3 min. <b>2 tours technique (poids léger, qualité pure) :</b> 20 WB 6 kg (procédure) + 20 m BBJ (mécanique) + 20 m fentes 10 kg (foulée). Récup 3 min entre tours. RPE 6 max sur les stations.</div>
+                <div class="ss-kp"><span class="ki">Stations <b>qualité ×2</b></span><span class="ki ki-rpe">RPE <b>6 max</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : peuvent enchaîner dans la journée si Z2 strict. Hydratation 400 ml.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Lun<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-str">MUSC</span></div>
+                <div class="ss-title">Half-body haut — 5-3-1 Wendler</div>
+                <div class="ss-body">Développé couché <b>5-3-1 sem A : 5×75% / 5×85% / 5+×95%</b>. Pull-up lestés +12.5 kg 4×5. Push press 4×4 @ 55 kg. Pendlay row 4×6 @ 72.5 kg. Curl 3×10 @ 32.5 kg. Skull crusher 3×10 @ 25 kg. Dips lestés 3×8 @ +12.5 kg.</div>
+                <div class="ss-kp"><span class="ki ki-str">Bench 5-3-1 <b>sem A</b></span><span class="ki ki-str">Dips <b>+12.5 kg</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 24h suffisent. Protéines 30 g dans les 30 min.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Mar<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">Seuil long — 3×10 min</div>
+                <div class="ss-body">12 min échauff + <b>3×10 min @ 4'22–4'27/km</b>, récup 3 min. Développement capacité lactique sur durée. Allure cible = allure HYROX run objectif 1h10.</div>
+                <div class="ss-kp"><span class="ki ki-rpe">RPE <b>7.5–8</b></span><span class="ki">Allure cible <b>4'22–4'27</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 10 min marche + étirements passifs 10 min. Attendre 3h min avant séance suivante.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Mer<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-ergo">ERGO</span></div>
+                <div class="ss-title">SkiErg qualité + Row Z2</div>
+                <div class="ss-body">SkiErg : 3×6 min @ 1'58–2'02/500 allure race (récup 3 min) + 20 min Row Z2. Introduit l'allure race SkiErg en condition fraîche.</div>
+                <div class="ss-kp"><span class="ki">SkiErg allure race <b>1'58–2'02/500</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : peuvent enchaîner dans la journée si Z2 strict. Hydratation 400 ml.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Mer<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-mob">MOB</span></div>
+                <div class="ss-title">Mobilité obligatoire — 45 min</div>
+                <div class="ss-body">10 min foam roll global (ischios/lombaires/quadri/mollets). 15 min mobilité dynamique (CARs hanches + world's greatest stretch ×5/côté + 90/90 ×8/côté). 15 min étirements actifs (psoas, ischios, pectoraux). 5 min respiration nasale 4-7-8. <b>Séance fixe chaque mercredi midi — non négociable.</b></div>
+                <div class="ss-kp"><span class="ki">Durée <b>45 min</b></span><span class="ki">Mob <b>fixe mercredi</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup : aucune contrainte — peut enchaîner immédiatement.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Jeu<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">VMA + hill sprints</div>
+                <div class="ss-body">12 min échauff + <b>6×4 min @ 105% VMA</b>, récup 4 min. Puis 6×15 sec hill sprints à max (pente 6–8%), récup complète. Puissance neuromusculaire.</div>
+                <div class="ss-kp"><span class="ki ki-vo2">6×4 min <b>VO2max</b></span><span class="ki">Hill sprints <b>×6</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 15 min marche + foam roll jambes. Attendre 4h min avant séance suivante. Hydratation 500 ml dans les 30 min.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Jeu<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-str">MUSC</span></div>
+                <div class="ss-title">Half-body bas — 5-3-1 Wendler + broad jumps</div>
+                <div class="ss-body">Back squat <b>5-3-1 sem A</b> (1×5 @ 75% / 1×5 @ 85% / 1×5+ @ 95% → noter max reps). Front squat 3×4 @ 72.5 kg. RDL 4×5 @ 85 kg. Good morning 3×8 @ 52.5 kg. Nordic libre 4×5. <b>Broad jumps continus 4×6 chrono</b> (transfert BBJ race distance). Mollets 4×15.</div>
+                <div class="ss-kp"><span class="ki ki-str">Squat 5-3-1 <b>sem A</b></span><span class="ki">Broad jumps <b>×6 chrono</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 24h suffisent. Protéines 30 g dans les 30 min.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Sam</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">Sortie longue 100 min — run-ergo</div>
+                <div class="ss-body">70 min footing 5'05–5'20/km + 30 min Row/SkiErg Z2. Sortie longue run-ergo : simule l'endurance cardio de la race. RPE 4–5.</div>
+                <div class="ss-kp"><span class="ki">Run-Ergo <b>70+30 min</b></span><span class="ki ki-rpe">RPE <b>4–5</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 20 min marche + foam roll complet + 500 ml eau + glucides dans les 30 min. Pas de séance hard le lendemain.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TESTS + TRANSITION -->
+  <div class="bloc">
+    <div class="bloc-hd" onclick="toggleBloc(this)">
+      <div class="bloc-num">T</div>
+      <div class="bloc-info">
+        <h3>Tests + Transition — bilan off-season</h3>
+        <div class="dates">24 août → 6 septembre · 2 semaines</div>
+        <div class="tags">
+          <span class="tag tag-vo2">TESTS</span>
+          <span class="tag tag-spec">TRANSITION</span>
+        </div>
+      </div>
+      <div class="bloc-ar">▼</div>
+    </div>
+    <div class="bloc-body">
+      <div style="padding:.6rem .85rem">
+        <div class="vol-card">
+          <div class="vol-title">Tests à réaliser — semaine 13</div>
+          <div class="vol-row"><span>Run 5 km chrono</span><span>Cible &lt; 22'00 (4'24/km)</span></div>
+          <div class="vol-row"><span>Back squat 1RM</span><span>Cible ≥ 105 kg</span></div>
+          <div class="vol-row"><span>Bench 1RM</span><span>Cible ≥ 90 kg</span></div>
+          <div class="vol-row"><span>Hip thrust 5RM</span><span>Cible ≥ 115 kg</span></div>
+          <div class="vol-row"><span>100 WB for time</span><span>Cible &lt; 6'00</span></div>
+          <div class="vol-row"><span>80m BBJ for time</span><span>Cible &lt; 4'45</span></div>
+          <div class="vol-row"><span>Farmer carry 100m</span><span>Cible &lt; 2'00 @ 2×28 kg</span></div>
+        </div>
+      </div>
+      <div class="gains">
+        <h3>Gains estimés off-season (14 sem.)</h3>
+        <div class="gain-row"><span>Allure Run</span><span class="before">4'56/km (16 mai)</span><span class="arrow">→</span><span class="after">4'22–4'27/km</span></div>
+        <div class="gain-row"><span>Back squat</span><span class="before">~95 kg</span><span class="arrow">→</span><span class="after">≥ 105 kg</span></div>
+        <div class="gain-row"><span>Bench press</span><span class="before">~82.5 kg</span><span class="arrow">→</span><span class="after">≥ 90 kg</span></div>
+        <div class="gain-row"><span>VO2max estimé</span><span class="before">~52</span><span class="arrow">→</span><span class="after">57–60 mL/kg/min</span></div>
+        <div class="gain-row"><span>WB 100 reps</span><span class="before">7'54</span><span class="arrow">→</span><span class="after">&lt; 6'00</span></div>
+        <div class="gain-row"><span>Poids corps</span><span class="before">90 kg</span><span class="arrow">→</span><span class="after">86–88 kg</span></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phase-off -->
+
+<!-- ════════════════════════════════════
+     PHASE PRÉ-COMPÉTITION
+════════════════════════════════════ -->
+<div id="phase-pre" class="section">
+
+  <!-- Hero -->
+  <div class="hero-card hero-pre">
+    <div class="hero-label">Phase 2 · Pré-Compétition</div>
+    <div class="hero-title" style="color:var(--am)">Transformer<br>en performance</div>
+    <div class="hero-dates">7 septembre → 15 novembre · 10,5 semaines</div>
+    <div style="font-size:12px;color:var(--tx2);line-height:1.5">
+      Spécificité race. Simulations complètes. Taper final.
+      Méthode Hunter McIntyre : 3 sem hard + 1 sem décharge.
+    </div>
+    <div class="hero-stats">
+      <div class="hs" style="color:var(--am)">
+        <b>10.5</b><span>semaines</span>
+      </div>
+      <div class="hs" style="color:var(--vo)">
+        <b>9-10</b><span>séances/sem</span>
+      </div>
+      <div class="hs" style="color:var(--ok)">
+        <b>1h10</b><span>objectif PRO</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="tl-mini">
+    <div class="tl-mini-title">Structure des 10,5 semaines</div>
+    <div class="tl-bar-mini">
+      <div class="tl-seg tl-seg-d" style="width:38%">Bloc D</div>
+      <div class="tl-seg tl-seg-e" style="width:38%">Bloc E</div>
+      <div class="tl-seg tl-seg-ta" style="width:24%">TAPER</div>
+    </div>
+    <div class="tl-labels-mini">
+      <span>7 sept</span>
+      <span>5 oct</span>
+      <span>2 nov</span>
+      <span>15 nov</span>
+    </div>
+  </div>
+
+  <!-- Principes -->
+  <div class="principes">
+    <h3>Philosophie — spécificité race</h3>
+    <div class="principe">
+      <div class="principe-icon">🏁</div>
+      <div class="principe-text">
+        <b>Compromised runs partout</b>
+        <span>Les intervalles purs disparaissent. Chaque séance run inclut des stations HYROX. Le corps apprend à courir sous fatigue fonctionnelle.</span>
+      </div>
+    </div>
+    <div class="principe">
+      <div class="principe-icon">⚡</div>
+      <div class="principe-text">
+        <b>Stations race-weight ou plus lourd</b>
+        <span>Entraîner avec des charges légèrement supérieures à la race. Sled lourd → Sled race = "déchargé". Méthode standard des pros.</span>
+      </div>
+    </div>
+    <div class="principe">
+      <div class="principe-icon">🔁</div>
+      <div class="principe-text">
+        <b>Simulation complète 1×/semaine</b>
+        <span>Bloc E : 7-8 stations + 4-5 km run en Basic Fit. La séance la plus importante de la semaine. Pas négociable.</span>
+      </div>
+    </div>
+    <div class="principe">
+      <div class="principe-icon">💪</div>
+      <div class="principe-text">
+        <b>Force en maintenance — complex barbell</b>
+        <span>Hunter McIntyre en phase pré-race : complex barbell 50 kg (squat+RDL+hip thrust+row) × 5 rounds. 25 min max. Garde la force sans accumuler fatigue.</span>
+      </div>
+    </div>
+    <div class="principe">
+      <div class="principe-icon">🏆</div>
+      <div class="principe-text">
+        <b>Alan Cao taper protocol</b>
+        <span>J-7 : circuit 40 min SkiErg+Sled+Farmers+WB. J-4 : repos + logistique. J-2 : 30 min negative split. J-1 : mobilité + visualisation.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOC D -->
+  <div class="bloc">
+    <div class="bloc-hd" onclick="toggleBloc(this)">
+      <div class="bloc-num">D</div>
+      <div class="bloc-info">
+        <h3>Spécificité race + entretien force</h3>
+        <div class="dates">7 septembre → 4 octobre · 4 semaines</div>
+        <div class="tags">
+          <span class="tag tag-pre">PRÉ-COMP</span>
+          <span class="tag tag-spec">COMPROMISED</span>
+          <span class="tag tag-str">FORCE MAINT.</span>
+        </div>
+      </div>
+      <div class="bloc-ar">▼</div>
+    </div>
+    <div class="bloc-body">
+      <div style="padding:.6rem .85rem .3rem">
+        <div class="vol-card">
+          <div class="vol-title">Volume et structure bloc D</div>
+          <div class="vol-row"><span>Course à pied</span><span>50–55 km/sem</span></div>
+          <div class="vol-row"><span>Compromised runs</span><span>2–3 séances/sem</span></div>
+          <div class="vol-row"><span>Force</span><span>2×/sem · complex barbell</span></div>
+          <div class="vol-row"><span>WB unbroken</span><span>5×20 reps procédure</span></div>
+          <div class="vol-row"><span>BBJ race</span><span>80m consécutifs × 2/sem</span></div>
+          <div class="vol-row"><span>Simulation partielle</span><span>4-5 stations + 4 km run</span></div>
+        </div>
+      </div>
+
+      <div class="sep">Semaine type bloc D</div>
+      <div class="sem">
+        <div class="sem-hd" onclick="toggleSem(this)">
+          <div class="sem-badge">D</div>
+          <div class="sem-title">Semaine type — compromised + stations</div>
+          <div class="sem-pills"><span class="spill spill-h">HARD</span></div>
+          <div class="sem-ar">▼</div>
+        </div>
+        <div class="sem-body">
+          <div class="sem-obj"><b>// Transition off-season → race</b>Lun = compromised run allure race. Mar = force maintenance complex. Mer AM = ergo allure race + Mer midi = mobilité. Jeu = simulation 5 stations. Sam = sortie longue + WB procédure.</div>
+          <div class="ss-list">
+            <div class="ss">
+              <div class="ss-day">Lun<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-sp">SP</span></div>
+                <div class="ss-title">Compromised run — intro D</div>
+                <div class="ss-body">12 min échauff. <b>8×400 m @ 4'10–4'15/km</b>. Avant chaque : 25 WB 6 kg + 40 m BBJ box 60 cm + 20 m fentes sandbag 20 kg. Récup 90 sec. Durée ≈ 55 min.</div>
+                <div class="ss-kp"><span class="ki">Pace <b>4'10–4'15</b></span><span class="ki">WB+BBJ+Fentes</span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 20 min marche + foam roll jambes + glucides 50 g + protéines 30 g dans 30 min. Pas de séance lourde avant 6h.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Lun<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-str">MUSC</span></div>
+                <div class="ss-title">Force maintenance — complex barbell</div>
+                <div class="ss-body">Complex barre <b>50 kg × 5 rounds</b> (0 sec entre exos, récup 2 min entre rounds) : 5 back squat → 5 front squat → 5 RDL → 5 hip thrust → poser. Développé couché 3×5 @ 82.5 kg. Pull-up lestés 3×5 @ +12.5 kg. Durée 30 min max.</div>
+                <div class="ss-kp"><span class="ki ki-str">Complex <b>barre 50 kg</b></span><span class="ki">Durée <b>30 min max</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 24h suffisent. Protéines 30 g dans les 30 min.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Mar<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">Tempo race — allure cible 1h10</div>
+                <div class="ss-body">12 min échauff + <b>4×8 min @ 4'10–4'15/km</b>, récup 2 min. C'est l'allure run cible pour 1h10. Ancrer cette allure sous fatigue musculaire.</div>
+                <div class="ss-kp"><span class="ki ki-rpe">RPE <b>8</b></span><span class="ki">Allure 1h10 <b>4'10–4'15</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 10 min marche + étirements passifs 10 min. Attendre 3h min avant séance suivante.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Mer<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-ergo">ERGO</span></div>
+                <div class="ss-title">Row + SkiErg allure race</div>
+                <div class="ss-body">SkiErg : 4×6 min @ <b>1'56–2'00/500</b> allure race (récup 3 min). Row : 4×5 min @ <b>1'58–2'02/500</b> allure race (récup 2 min). Ancrer les allures race sur ergo.</div>
+                <div class="ss-kp"><span class="ki">Ski race <b>1'56–2'00/500</b></span><span class="ki">Row race <b>1'58–2'02/500</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 10 min étirements épaules/dos. Attendre 2h min avant séance suivante.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Mer<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-mob">MOB</span></div>
+                <div class="ss-title">Mobilité obligatoire — 45 min</div>
+                <div class="ss-body">10 min foam roll global (ischios/lombaires/quadri/mollets). 15 min mobilité dynamique (CARs hanches + world's greatest stretch ×5/côté + 90/90 ×8/côté). 15 min étirements actifs (psoas, ischios, pectoraux). 5 min respiration nasale 4-7-8. <b>Séance fixe chaque mercredi midi — non négociable.</b></div>
+                <div class="ss-kp"><span class="ki">Durée <b>45 min</b></span><span class="ki">Mob <b>fixe mercredi</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup : aucune contrainte — peut enchaîner immédiatement.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Jeu<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-sp">SP</span></div>
+                <div class="ss-title">Simulation partielle 5 stations — for time</div>
+                <div class="ss-body">For Time : 1 km run 4'15/km → SkiErg 500 m race pace → 1 km run → BBJ 40 m → 1 km run → Row 500 m → 1 km run → Farmers 50 m 2×28 kg → 1 km run → WB 25 reps procédure. Transition Roxzone sur chaque station. Chrono total noter.</div>
+                <div class="ss-kp"><span class="ki">Simulation <b>5 stations for time</b></span><span class="ki">Roxzone <b>transitions</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : peuvent enchaîner dans la journée si Z2 strict. Hydratation 400 ml.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Sam<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-run">RUN</span></div>
+                <div class="ss-title">Sortie longue 90 min + WB procédure</div>
+                <div class="ss-body">80 min footing 5'00–5'15/km. Repos 3 min. <b>5×20 WB 6 kg unbroken procédure</b>, récup 20 sec. Note les splits. Cible : 5×20 en moins de 1'10 chaque série.</div>
+                <div class="ss-kp"><span class="ki">Long <b>80 min</b></span><span class="ki">WB <b>5×20 procédure</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 20 min marche + foam roll complet + 500 ml eau + glucides dans les 30 min. Pas de séance hard le lendemain.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOC E -->
+  <div class="bloc">
+    <div class="bloc-hd" onclick="toggleBloc(this)">
+      <div class="bloc-num">E</div>
+      <div class="bloc-info">
+        <h3>Simulation complète + pic spécificité</h3>
+        <div class="dates">5 octobre → 1er novembre · 4 semaines</div>
+        <div class="tags">
+          <span class="tag tag-pre">PRÉ-COMP</span>
+          <span class="tag tag-spec">SIMULATION 8 STATIONS</span>
+        </div>
+      </div>
+      <div class="bloc-ar">▼</div>
+    </div>
+    <div class="bloc-body">
+      <div style="padding:.6rem .85rem .3rem">
+        <div class="vol-card">
+          <div class="vol-title">Nouveautés bloc E vs D</div>
+          <div class="vol-row"><span>Simulation complète</span><span><b>7-8 stations × 1/sem</b></span></div>
+          <div class="vol-row"><span>Compromised lourd</span><span><b>10×500 m + stations full</b></span></div>
+          <div class="vol-row"><span>WB</span><span><b>100 reps for time × 1/sem</b></span></div>
+          <div class="vol-row"><span>Sled charge</span><span><b>&gt; race weight × 2</b></span></div>
+          <div class="vol-row"><span>Run long</span><span><b>90 min allure HYROX</b></span></div>
+          <div class="vol-row"><span>Test race-sequence</span><span>100 WB→BBJ→fentes for time</span></div>
+        </div>
+      </div>
+
+      <div class="sep">Séance signature bloc E — Simulation complète</div>
+      <div class="sem">
+        <div class="sem-hd" onclick="toggleSem(this)">
+          <div class="sem-badge">SIM</div>
+          <div class="sem-title">Simulation 8 stations — Basic Fit</div>
+          <div class="sem-pills"><span class="spill spill-h">RACE</span></div>
+          <div class="sem-ar">▼</div>
+        </div>
+        <div class="sem-body">
+          <div class="sem-obj"><b>// La séance la plus importante du plan</b>Reproduire la race en entraînement. Pas de pause entre stations. Roxzone systématique. Chrono total + splits à noter.</div>
+          <div class="ss-list">
+            <div class="ss">
+              <div class="ss-day">Sam<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-sp">SP</span></div>
+                <div class="ss-title">HYROX simulation complète for time</div>
+                <div class="ss-body">
+                  Échauff 15 min. <b>For Time (cible &lt; 75 min, semaine 1 → &lt; 70 min semaine 4) :</b><br>
+                  1 km run 4'15 → SkiErg 1 km 1'56/500 → 1 km run → Sled push 50 m (charge course +10%) → 1 km run → Sled pull (charge course +5%) → 1 km run → BBJ 80 m consécutifs race distance → 1 km run → Row 1 km 2'00/500 → 1 km run → Farmers 200 m 2×28 kg → 1 km run → Fentes sandbag 100 m 20 kg → 1 km run → WB 100 reps procédure (cible &lt;5'30).<br>
+                  <b>Gel @ station Row. Roxzone entrée+sortie sur chaque station. Chrono total + splits notés.</b>
+                </div>
+                <div class="ss-kp"><span class="ki">Simulation <b>8 stations for time</b></span><span class="ki">Cible <b>&lt; 75 min</b></span><span class="ki">WB <b>&lt;5'30</b></span><span class="ki">BBJ <b>80m sans poser</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : peuvent enchaîner dans la journée si Z2 strict. Hydratation 400 ml.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sep">Semaine type bloc E</div>
+      <div class="sem">
+        <div class="sem-hd" onclick="toggleSem(this)">
+          <div class="sem-badge">E</div>
+          <div class="sem-title">Semaine type — pic spécificité</div>
+          <div class="sem-pills"><span class="spill spill-h">HARD</span></div>
+          <div class="sem-ar">▼</div>
+        </div>
+        <div class="sem-body">
+          <div class="ss-list">
+            <div class="ss">
+              <div class="ss-day">Lun<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-sp">SP</span></div>
+                <div class="ss-title">Compromised 10×500 m — bear complex</div>
+                <div class="ss-body">12 min échauff. <b>10 rounds, récup = temps du round précédent</b> : 500 m run @ 4'05–4'10/km + <b>25 WB 6 kg + 40 m BBJ + 20 m fentes sandbag 20 kg</b>. Finir : 80 m BBJ race distance chrono. Durée ≈ 55 min.</div>
+                <div class="ss-kp"><span class="ki">10 rounds <b>récup autogérée</b></span><span class="ki">BBJ 80m <b>race distance</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 20 min marche + foam roll jambes + glucides 50 g + protéines 30 g dans 30 min. Pas de séance lourde avant 6h.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Jeu<br>midi</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-sp">SP</span></div>
+                <div class="ss-title">Test Race-Sequence — prédicteur 1h10</div>
+                <div class="ss-body">For Time (cible &lt; 20 min) : <b>100 WB 6 kg</b> procédure (cible &lt; 5'30) → 200 m run 4'10/km → <b>80 m BBJ race distance</b> → 200 m run → <b>40 m fentes sandbag 20 kg</b>. Chrono total + splits à noter. Battre à chaque cycle.</div>
+                <div class="ss-kp"><span class="ki">Race-Sequence <b>for time</b></span><span class="ki">100 WB <b>cible &lt;5'30</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : 20 min marche + foam roll jambes + glucides 50 g + protéines 30 g dans 30 min. Pas de séance lourde avant 6h.</div></div>
+            </div>
+            <div class="ss">
+              <div class="ss-day">Sam<br>AM</div>
+              <div class="ss-content">
+                <div class="ss-type"><span class="t t-sp">SP</span></div>
+                <div class="ss-title">Simulation complète 8 stations</div>
+                <div class="ss-body">Reproduire la race en entraînement. For Time (cible &lt; 70 min) : 8×1 km run + 8 stations race-weight. Roxzone systématique. Chrono total + splits à noter. Cible : battre la semaine précédente.</div>
+                <div class="ss-kp"><span class="ki">Simulation <b>8 stations</b></span><span class="ki">PR <b>toutes les 2 sem</b></span></div>
+              
+                <div class="recup"><b>↩ Récup</b> — ⏱ Récup post-séance : récupération race. 30 min marche, repas complet dans l'heure, repos le lendemain.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAPER -->
+  <div class="bloc">
+    <div class="bloc-hd" onclick="toggleBloc(this)">
+      <div class="bloc-num">↗</div>
+      <div class="bloc-info">
+        <h3>Taper — affûtage final</h3>
+        <div class="dates">2 novembre → 15 novembre · 2 semaines</div>
+        <div class="tags">
+          <span class="tag tag-pre">TAPER</span>
+        </div>
+      </div>
+      <div class="bloc-ar">▼</div>
+    </div>
+    <div class="bloc-body">
+      <div style="padding:.6rem .85rem">
+        <div class="vol-card">
+          <div class="vol-title">Protocole taper — Alan Cao + Hunter McIntyre</div>
+          <div class="vol-row"><span>Sem. 9 (2–8 nov)</span><span>Volume -30%, intensité maintenue</span></div>
+          <div class="vol-row"><span>Compromised</span><span>6×400 m (pas 10×500)</span></div>
+          <div class="vol-row"><span>Force</span><span>2×3 squat @ 90 kg · 2×5 bench</span></div>
+          <div class="vol-row"><span>Simulation</span><span>4 stations courte seulement</span></div>
+        </div>
+        <div class="vol-card" style="margin-top:.5rem">
+          <div class="vol-title">Semaine de course (J-7 → race) — méthode Alan Cao</div>
+          <div class="vol-row"><span>Lun J-6</span><span>Circuit 40 min Ski+Sled+Farmers+WB race pace</span></div>
+          <div class="vol-row"><span>Mar J-5</span><span>30 min footing negative split</span></div>
+          <div class="vol-row"><span>Mer J-4</span><span>Repos complet + logistique</span></div>
+          <div class="vol-row"><span>Jeu J-3</span><span>Mobilité + visualisation · RPE 0</span></div>
+          <div class="vol-row"><span>Ven J-2</span><span>20 min très facile + 3 accélérations</span></div>
+          <div class="vol-row"><span>Sam J-1</span><span>Mobilité + visite hangar + sieste</span></div>
+          <div class="vol-row"><span style="color:#ffb800;font-weight:700">Dim 15 nov</span><span style="color:#ffb800;font-weight:700">🏁 HYROX PRO · Objectif 1h10</span></div>
+        </div>
+        <div class="gains" style="background:linear-gradient(135deg,rgba(255,184,0,.08),rgba(0,0,0,0));border-color:#3d2e00">
+          <h3 style="color:#ffb800">Objectifs race day — 15 novembre</h3>
+          <div class="gain-row"><span>Course 8 km</span><span class="before">39'28</span><span class="arrow">→</span><span class="after" style="color:#ffb800">34'00–35'00</span></div>
+          <div class="gain-row"><span>Wall Balls</span><span class="before">7'54</span><span class="arrow">→</span><span class="after" style="color:#ffb800">&lt; 5'30</span></div>
+          <div class="gain-row"><span>BBJ 80 m</span><span class="before">5'49</span><span class="arrow">→</span><span class="after" style="color:#ffb800">&lt; 4'30</span></div>
+          <div class="gain-row"><span>Row 1 km</span><span class="before">4'59</span><span class="arrow">→</span><span class="after" style="color:#ffb800">4'00–4'10</span></div>
+          <div class="gain-row" style="border-top:1px solid #3d2e00;padding-top:.4rem">
+            <span style="font-weight:700">TOTAL</span>
+            <span class="before">1:24:49</span>
+            <span class="arrow" style="color:#ffb800">→</span>
+            <span class="after" style="color:#ffb800;font-size:13px">1:10:00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- DOCK -->
+<nav class="dock">
+  <button class="dock-btn on" id="dock-off" onclick="showPhase('off',document.getElementById('btn-off'))">
+    OFF-SEASON<span>1er juin → 6 sept</span>
+  </button>
+  <button class="dock-btn" id="dock-pre" onclick="showPhase('pre',document.getElementById('btn-pre'))">
+    PRÉ-COMP<span>7 sept → 15 nov</span>
+  </button>
+</nav>
+
+<script>
+function showPhase(ph, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('on'));
+  document.getElementById('phase-' + ph).classList.add('on');
+  document.querySelectorAll('.psw').forEach(b => b.className = 'psw');
+  btn.classList.add('on-' + ph);
+  document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('dock-' + ph).classList.add('on');
+}
+function toggleBloc(hd) {
+  const body = hd.nextElementSibling;
+  const ar = hd.querySelector('.bloc-ar');
+  const isOpen = hd.classList.contains('open');
+  hd.classList.toggle('open', !isOpen);
+  body.classList.toggle('open', !isOpen);
+  ar.classList.toggle('open', !isOpen);
+  if (!isOpen) setTimeout(() => hd.scrollIntoView({behavior:'smooth',block:'start'}), 60);
+}
+function toggleSem(hd) {
+  const body = hd.nextElementSibling;
+  const ar = hd.querySelector('.sem-ar');
+  const isOpen = hd.classList.contains('open');
+  hd.classList.toggle('open', !isOpen);
+  body.classList.toggle('open', !isOpen);
+  ar.classList.toggle('open', !isOpen);
+  if (!isOpen) setTimeout(() => hd.scrollIntoView({behavior:'smooth',block:'start'}), 60);
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', cur === 'light' ? 'dark' : 'light');
+}
+</script>
+</body>
+</html>
