@@ -26,7 +26,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);
   letter-spacing:.1em;display:inline-block;margin-bottom:.25rem}
 .hdr h1{font-size:.95rem;font-weight:900;letter-spacing:-.02em}
 .hdr-sub{font-family:monospace;font-size:9.5px;color:var(--tx3);margin-top:1px}
-.tabs{display:grid;grid-template-columns:repeat(5,1fr);background:var(--bg2);
+.tabs{display:grid;grid-template-columns:repeat(6,1fr);background:var(--bg2);
   border-bottom:1px solid var(--bo2);position:sticky;top:62px;z-index:99}
 .tab{background:transparent;border:0;color:var(--tx4);font-family:monospace;font-size:9px;
   font-weight:700;padding:.5rem .2rem;cursor:pointer;border-bottom:2px solid transparent;
@@ -126,7 +126,7 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 /* Dock */
 .dock{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;
   z-index:200;background:rgba(8,11,10,.96);border-top:1px solid var(--bo2);
-  display:grid;grid-template-columns:repeat(5,1fr);backdrop-filter:blur(12px)}
+  display:grid;grid-template-columns:repeat(6,1fr);backdrop-filter:blur(12px)}
 .dock-btn{background:transparent;border:0;color:var(--tx4);font-family:monospace;font-size:9px;
   font-weight:700;padding:.6rem .2rem;cursor:pointer;border-right:1px solid var(--bo2);
   -webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -158,6 +158,7 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
   <button class="tab" onclick="showTab('history')">📋 Histo</button>
   <button class="tab" onclick="showTab('race')">🏁 Course</button>
   <button class="tab" onclick="showTab('charges')">💪 Charges</button>
+  <button class="tab" onclick="showTab('mensur')">📏 Corps</button>
 </div>
 
 <!-- ═══════════════════════════════
@@ -606,12 +607,99 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 
 </div>
 
+
+<!-- ═══════════════════════════════
+     TAB MENSURATIONS
+═══════════════════════════════ -->
+<div id="tab-mensur" class="sec">
+
+  <!-- Formulaire saisie -->
+  <div class="card">
+    <div class="card-title">Enregistrer les mensurations</div>
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="m-date">
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Taille (cm)</label><input type="number" step="0.5" id="m-taille" placeholder="ex : 90"></div>
+      <div class="field"><label>Poitrine (cm)</label><input type="number" step="0.5" id="m-poitrine" placeholder="ex : 100"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Cuisse D (cm)</label><input type="number" step="0.5" id="m-cuisse" placeholder="ex : 60"></div>
+      <div class="field"><label>Biceps D (cm)</label><input type="number" step="0.5" id="m-biceps" placeholder="ex : 38"></div>
+    </div>
+    <div class="field">
+      <label>Note (optionnel)</label>
+      <input type="text" id="m-note" placeholder="ex : matin à jeun, fin bloc A...">
+    </div>
+    <button class="btn" onclick="saveMensur()">💾 Enregistrer</button>
+    <div id="m-feedback" style="display:none;text-align:center;font-family:monospace;font-size:11px;color:var(--gr);margin-top:.4rem">✅ Mensurations enregistrées</div>
+  </div>
+
+  <!-- Dernières valeurs -->
+  <div class="card" id="m-current-card" style="display:none">
+    <div class="card-title">Dernière mensuration <span id="m-last-date"></span></div>
+    <div class="stat-grid" id="m-current-stats"></div>
+  </div>
+
+  <!-- Courbes -->
+  <div id="m-charts-section" style="display:none">
+
+    <div class="card">
+      <div class="card-title">Taille <span style="color:var(--tx4);font-weight:400">Objectif : perte de tour de taille</span></div>
+      <div class="chart-wrap">
+        <canvas id="chart-taille" height="80"></canvas>
+      </div>
+      <div id="delta-taille" style="font-family:monospace;font-size:11px;color:var(--tx3);text-align:center;margin-top:.3rem"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cuisse <span style="color:var(--tx4);font-weight:400">Hypertrophie attendue blocs A/B</span></div>
+      <div class="chart-wrap">
+        <canvas id="chart-cuisse" height="80"></canvas>
+      </div>
+      <div id="delta-cuisse" style="font-family:monospace;font-size:11px;color:var(--tx3);text-align:center;margin-top:.3rem"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Poitrine</div>
+      <div class="chart-wrap">
+        <canvas id="chart-poitrine" height="80"></canvas>
+      </div>
+      <div id="delta-poitrine" style="font-family:monospace;font-size:11px;color:var(--tx3);text-align:center;margin-top:.3rem"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Biceps <span style="color:var(--tx4);font-weight:400">Hypertrophie haut du corps</span></div>
+      <div class="chart-wrap">
+        <canvas id="chart-biceps" height="80"></canvas>
+      </div>
+      <div id="delta-biceps" style="font-family:monospace;font-size:11px;color:var(--tx3);text-align:center;margin-top:.3rem"></div>
+    </div>
+
+    <!-- Tableau historique -->
+    <div class="card">
+      <div class="card-title">Historique complet</div>
+      <div id="m-history-table"></div>
+    </div>
+
+  </div>
+
+  <!-- Empty state -->
+  <div id="m-empty" class="empty">
+    <div class="empty-icon">📏</div>
+    <p>Prends tes premières mensurations.<br>Idéalement le matin à jeun,<br>même heure chaque semaine.</p>
+  </div>
+
+</div>
+
 <nav class="dock">
   <button class="dock-btn on" onclick="showTab('dashboard')"><div class="dock-icon">📊</div>Bilan</button>
   <button class="dock-btn" onclick="showTab('log')"><div class="dock-icon">➕</div>Log</button>
   <button class="dock-btn" onclick="showTab('history')"><div class="dock-icon">📋</div>Histo</button>
   <button class="dock-btn" onclick="showTab('race')"><div class="dock-icon">🏁</div>Course</button>
   <button class="dock-btn" onclick="showTab('charges')"><div class="dock-icon">💪</div>Charges</button>
+  <button class="dock-btn" onclick="showTab('mensur')"><div class="dock-icon">📏</div>Corps</button>
 </nav>
 
 <script>
@@ -676,15 +764,16 @@ function showTab(t) {
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
   document.getElementById('tab-'+t).classList.add('on');
   document.querySelectorAll('.tab').forEach((b,i) => {
-    b.classList.toggle('on', ['dashboard','log','history','race','charges'][i]===t);
+    b.classList.toggle('on', ['dashboard','log','history','race','charges','mensur'][i]===t);
   });
   document.querySelectorAll('.dock-btn').forEach((b,i) => {
-    b.classList.toggle('on', ['dashboard','log','history','race','charges'][i]===t);
+    b.classList.toggle('on', ['dashboard','log','history','race','charges','mensur'][i]===t);
   });
   if (t==='dashboard') renderDashboard();
   if (t==='history') renderHistory('all');
   if (t==='race') renderRaces();
   if (t==='charges') renderChargesHistory();
+  if (t==='mensur') renderMensur();
 }
 
 function showLogType(type) {
@@ -731,7 +820,7 @@ function updateRpe(v) {
 // Set today's date on load
 window.addEventListener('load', () => {
   const t = today();
-  ['t-date','p-date','ts-date','r-date','ch-date'].forEach(id => {
+  ['t-date','p-date','ts-date','r-date','ch-date','m-date'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = t;
   });
@@ -1693,6 +1782,124 @@ function deleteCharge(id) {
 
 
 // showTab handles charges inline
+
+
+
+// ════════════════════════════════════
+// MENSURATIONS
+// ════════════════════════════════════
+
+const MENSUR_FIELDS = [
+  { key: 'taille',   label: 'Taille',   unit: 'cm', color: '#00c4a7', icon: '👖', trend: 'down' },
+  { key: 'poitrine', label: 'Poitrine', unit: 'cm', color: '#4488ff', icon: '🫁', trend: 'neutral' },
+  { key: 'cuisse',   label: 'Cuisse',   unit: 'cm', color: '#a855f7', icon: '🦵', trend: 'up' },
+  { key: 'biceps',   label: 'Biceps',   unit: 'cm', color: '#ffb800', icon: '💪', trend: 'up' },
+];
+
+function saveMensur() {
+  const db = loadDB();
+  if (!db.mensur) db.mensur = [];
+
+  const entry = {
+    id: Date.now(),
+    date: document.getElementById('m-date').value,
+    note: document.getElementById('m-note').value,
+  };
+
+  let hasValue = false;
+  MENSUR_FIELDS.forEach(f => {
+    const val = parseFloat(document.getElementById('m-' + f.key).value);
+    if (val > 0) { entry[f.key] = val; hasValue = true; }
+  });
+
+  if (!entry.date || !hasValue) {
+    alert('Date et au moins une mensuration obligatoires.');
+    return;
+  }
+
+  db.mensur.push(entry);
+  saveDB(db);
+
+  const fb = document.getElementById('m-feedback');
+  fb.style.display = 'block';
+  setTimeout(() => { fb.style.display = 'none'; renderMensur(); }, 1500);
+}
+
+function renderMensur() {
+  const db = loadDB();
+  const entries = (db.mensur || []).sort((a, b) => a.date.localeCompare(b.date));
+
+  const empty = document.getElementById('m-empty');
+  const charts = document.getElementById('m-charts-section');
+  const card = document.getElementById('m-current-card');
+
+  if (!entries.length) {
+    empty.style.display = 'block';
+    charts.style.display = 'none';
+    card.style.display = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  charts.style.display = 'block';
+  card.style.display = 'block';
+
+  const last = entries[entries.length - 1];
+  const first = entries[0];
+
+  // Last values card
+  document.getElementById('m-last-date').textContent = fmtDate(last.date);
+  const statsEl = document.getElementById('m-current-stats');
+  statsEl.innerHTML = MENSUR_FIELDS.map(f => {
+    if (!last[f.key]) return '';
+    const firstVal = first[f.key];
+    const delta = firstVal ? (last[f.key] - firstVal).toFixed(1) : null;
+    const sign = delta > 0 ? '+' : '';
+    const deltaColor = (f.trend === 'down' && delta < 0) || (f.trend === 'up' && delta > 0)
+      ? 'color:var(--ok)' : delta != 0 ? 'color:var(--am)' : 'color:var(--tx4)';
+    return `<div class="stat-box">
+      <div class="val" style="color:${f.color}">${last[f.key]}</div>
+      <div class="lbl">${f.label} cm</div>
+      ${delta !== null ? `<div class="delta" style="${deltaColor}">${sign}${delta} cm</div>` : ''}
+    </div>`;
+  }).filter(Boolean).join('');
+
+  // Draw each chart
+  MENSUR_FIELDS.forEach(f => {
+    const vals = entries.filter(e => e[f.key]).map(e => ({ x: fmtDate(e.date), y: e[f.key] }));
+    if (!vals.length) return;
+
+    const canvas = document.getElementById('chart-' + f.key);
+    const minY = Math.min(...vals.map(v => v.y)) - 2;
+    const maxY = Math.max(...vals.map(v => v.y)) + 2;
+    drawLineChart(canvas, vals, { color: f.color, min: minY, max: maxY });
+
+    // Delta label
+    const deltaEl = document.getElementById('delta-' + f.key);
+    if (vals.length >= 2) {
+      const diff = (vals[vals.length-1].y - vals[0].y).toFixed(1);
+      const sign = diff > 0 ? '+' : '';
+      const arrow = diff < 0 ? '↓' : diff > 0 ? '↑' : '→';
+      const col = (f.trend === 'down' && diff < 0) || (f.trend === 'up' && diff > 0)
+        ? 'var(--ok)' : diff != 0 ? 'var(--am)' : 'var(--tx4)';
+      deltaEl.innerHTML = `<span style="color:${col}">${arrow} ${sign}${diff} cm</span> depuis le ${vals[0].x}`;
+    }
+  });
+
+  // History table
+  const tableEl = document.getElementById('m-history-table');
+  tableEl.innerHTML = `
+    <div style="display:grid;grid-template-columns:80px repeat(4,1fr);gap:.2rem;font-family:monospace;font-size:9.5px;color:var(--tx4);padding:.2rem 0;border-bottom:1px solid var(--bo2)">
+      <span>Date</span>
+      ${MENSUR_FIELDS.map(f => `<span style="color:${f.color}">${f.label}</span>`).join('')}
+    </div>` +
+    [...entries].reverse().slice(0, 10).map(e => `
+      <div style="display:grid;grid-template-columns:80px repeat(4,1fr);gap:.2rem;font-family:monospace;font-size:10.5px;padding:.3rem 0;border-bottom:1px solid var(--bo)">
+        <span style="color:var(--tx4)">${fmtDate(e.date)}</span>
+        ${MENSUR_FIELDS.map(f => `<span style="color:${e[f.key] ? 'var(--tx2)' : 'var(--tx4)'}">${e[f.key] ? e[f.key] + ' cm' : '—'}</span>`).join('')}
+      </div>`).join('') +
+    (entries.length > 10 ? `<div style="font-family:monospace;font-size:9px;color:var(--tx4);text-align:center;padding:.3rem">${entries.length - 10} entrées plus anciennes masquées</div>` : '');
+}
 
 // Init
 showTab('dashboard');
