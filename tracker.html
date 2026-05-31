@@ -147,7 +147,7 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
       background:#003d35;border:1px solid #009e87;border-radius:6px;
       padding:.3rem .7rem;font-family:monospace;font-size:10px;font-weight:700;
       color:#00c4a7;text-decoration:none;-webkit-tap-highlight-color:transparent">
-      📅 Plan d'entraînement →
+      📅 Plan d&#39;entra&#238;nement →
     </a>
   </div>
 </header>
@@ -684,6 +684,7 @@ function showTab(t) {
   if (t==='dashboard') renderDashboard();
   if (t==='history') renderHistory('all');
   if (t==='race') renderRaces();
+  if (t==='charges') renderChargesHistory();
 }
 
 function showLogType(type) {
@@ -730,7 +731,7 @@ function updateRpe(v) {
 // Set today's date on load
 window.addEventListener('load', () => {
   const t = today();
-  ['t-date','p-date','ts-date','r-date'].forEach(id => {
+  ['t-date','p-date','ts-date','r-date','ch-date'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = t;
   });
@@ -1061,7 +1062,7 @@ function renderWBProgression(db) {
   const tests = (db.tests||[]).filter(t=>t.type==='wb100').sort((a,b)=>a.date.localeCompare(b.date));
   const el = document.getElementById('wb-progression');
   if (!tests.length) {
-    el.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Aucun test WB logué. Cible : battre 5\'30 avant novembre.</div>';
+    el.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Aucun test WB logué. Cible : battre 5&#39;30 avant novembre.</div>';
     return;
   }
   const target = timeToSec('5:30');
@@ -1094,7 +1095,7 @@ function renderVO2Progression(db) {
   const allTests = [baseline, ...tests];
 
   if (allTests.length < 2) {
-    el.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Référence : 24\'40 (16 mai). Prochain test fin bloc B (fin juillet).</div>';
+    el.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Référence : 24&#39;40 (16 mai). Prochain test fin bloc B (fin juillet).</div>';
     return;
   }
 
@@ -1124,7 +1125,7 @@ function renderRPEAnalysis(db) {
     .slice(0,20);
 
   if (!recent.length) {
-    el.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Loguer des séances pour voir l\'analyse RPE.</div>';
+    el.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Loguer des séances pour voir l&#39;analyse RPE.</div>';
     return;
   }
 
@@ -1150,7 +1151,7 @@ function renderRPEAnalysis(db) {
   if (overPct >= 40) diagnostic = `<div class="alert alert-bad"><span class="alert-icon">🚨</span><span><b>${overPct}% au-dessus de la cible RPE</b> — Surcharge probable. Vérifie la récupération et le sommeil.</span></div>`;
   else if (overPct >= 25) diagnostic = `<div class="alert alert-warn"><span class="alert-icon">⚠️</span><span>${overPct}% au-dessus de la cible — Surveille la progression de fatigue.</span></div>`;
   else if (underPct >= 40) diagnostic = `<div class="alert alert-info"><span class="alert-icon">💡</span><span>${underPct}% en dessous de la cible — Tu peux potentiellement pousser plus. Vérifie que les allures sont bien respectées.</span></div>`;
-  else diagnostic = `<div class="alert alert-ok"><span class="alert-icon">✅</span><span><b>${matchPct}% conformité RPE</b> — Charge d'entraînement bien dosée.</span></div>`;
+  else diagnostic = `<div class="alert alert-ok"><span class="alert-icon">✅</span><span><b>${matchPct}% conformité RPE</b> — Charge d&#39;entra&#238;nement bien dosée.</span></div>`;
 
   el.innerHTML = diagnostic + `
     <div class="stat-grid3" style="margin-top:.4rem">
@@ -1616,7 +1617,7 @@ function renderChargesHistory(selectedExo) {
   if (!tabsEl) return;
   
   if (!exosWithData.length) {
-    document.getElementById('rm-history').innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Enregistre des séries pour voir l'historique 1RM.</p></div>';
+    document.getElementById('rm-history').innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Enregistre des séries pour voir l&#39;historique 1RM.</p></div>';
     tabsEl.innerHTML = '';
     return;
   }
@@ -1689,19 +1690,9 @@ function deleteCharge(id) {
   renderChargesHistory();
 }
 
-// Init charges tab on load
-document.addEventListener('DOMContentLoaded', () => {
-  const t = today();
-  const chDate = document.getElementById('ch-date');
-  if (chDate) chDate.value = t;
-});
 
-// Update showTab to also render charges history
-const _origShowTab = showTab;
-function showTab(t) {
-  _origShowTab(t);
-  if (t === 'charges') renderChargesHistory();
-}
+
+// showTab handles charges inline
 
 // Init
 showTab('dashboard');
