@@ -278,14 +278,17 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
       </div>
 
       <div id="t-run-fields" style="display:none">
-        <div class="sep-label">Données run</div>
+        <div class="sep-label">Données cardio / run</div>
         <div class="field-row">
           <div class="field"><label>Distance (km)</label><input type="number" step="0.1" id="t-dist" placeholder="ex : 8.5"></div>
           <div class="field"><label>Allure (min/km)</label><input type="text" id="t-allure" placeholder="ex : 4:28"></div>
         </div>
         <div class="field-row">
           <div class="field"><label>Intervalles</label><input type="text" id="t-intervals" placeholder="ex : 6×4 min"></div>
-          <div class="field"><label>FC max (bpm)</label><input type="number" id="t-fc" placeholder="ex : 178"></div>
+          <div class="field"><label>FC moyenne (bpm)</label><input type="number" id="t-fc-avg" placeholder="ex : 152"></div>
+        </div>
+        <div class="field">
+          <label>FC max (bpm)</label><input type="number" id="t-fc-max" placeholder="ex : 178">
         </div>
       </div>
 
@@ -350,6 +353,10 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
           <div class="field"><label>BBJ (m consécutifs)</label><input type="number" id="t-sp-bbj" placeholder="ex : 80"></div>
         </div>
         <div class="field"><label>WB 100 reps (mm:ss si mesuré)</label><input type="text" id="t-sp-wb" placeholder="ex : 06:15"></div>
+        <div class="field-row">
+          <div class="field"><label>FC moyenne (bpm)</label><input type="number" id="t-sp-fc-avg" placeholder="ex : 166"></div>
+          <div class="field"><label>FC max (bpm)</label><input type="number" id="t-sp-fc-max" placeholder="ex : 184"></div>
+        </div>
       </div>
 
       <div class="field" style="margin-top:.5rem">
@@ -733,6 +740,7 @@ async function sbEnsureDevice(){const r=await fetch(SUPA_URL+'/rest/v1/device_us
 async function sbSave(table,entry){
   try{
     const p={...entry,device_id:DEVICE_ID};
+    if(table==='trainings'){ delete p.fc; } // évite l'échec si la colonne legacy fc n'existe pas
     delete p.id; // conserve la logique Supabase existante : id géré côté table
     const r=await fetch(SUPA_URL+'/rest/v1/'+table,{method:'POST',headers:SB,body:JSON.stringify(p)});
     if(!r.ok){console.warn('sb save fail',table,await r.text());return null;}
@@ -767,6 +775,8 @@ function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;',
 function parsePaceToSec(p){return timeToSec(p);}
 function isRecentDate(date,days){if(!date)return false;const d=new Date(date);const now=new Date();return (now-d)/(1000*60*60*24)<=days;}
 function tableForCat(cat){return {training:'trainings',test:'tests',poids:'poids',race:'races',charge:'charges',mensur:'mensur'}[cat]||cat;}
+function getFcAvg(t){const v=Number(t&&t.fc_avg);return Number.isFinite(v)&&v>0?v:null;}
+function getFcMax(t){const v=Number(t&&t.fc_max);if(Number.isFinite(v)&&v>0)return v;const legacy=Number(t&&t.fc);return Number.isFinite(legacy)&&legacy>0?legacy:null;}
 function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
 
 // Cibles par type de test
@@ -852,7 +862,7 @@ function showHistType(type) {
 document.getElementById('t-type').addEventListener('change', function() {
   const v = this.value;
   document.getElementById('t-run-fields').style.display =
-    ['vma','tempo','z2','long'].includes(v) ? 'block' : 'none';
+    ['vma','tempo','z2','long','bike','ergo'].includes(v) ? 'block' : 'none';
   document.getElementById('t-str-fields').style.display =
     ['str_bas','str_haut','str_full'].includes(v) ? 'block' : 'none';
   document.getElementById('t-sp-fields').style.display =
@@ -989,11 +999,13 @@ async function saveTraining() {
     qualite: document.getElementById('t-qualite').value,
     comment: document.getElementById('t-comment').value,
   };
-  if (['vma','tempo','z2','long'].includes(type)) {
+  if (['vma','tempo','z2','long','bike','ergo'].includes(type)) {
     entry.dist = +document.getElementById('t-dist').value || null;
     entry.allure = document.getElementById('t-allure').value;
     entry.intervals = document.getElementById('t-intervals').value;
-    entry.fc = +document.getElementById('t-fc').value || null;
+    entry.fc_avg = +document.getElementById('t-fc-avg').value || null;
+    entry.fc_max = +document.getElementById('t-fc-max').value || null;
+    entry.fc = entry.fc_max; // compatibilité locale avec anciennes données
   }
   if (['str_bas','str_haut','str_full'].includes(type)) {
     entry.exercises = (window._strExos||[]).map(exo=>({
@@ -1017,6 +1029,9 @@ async function saveTraining() {
     entry.sp_rounds = +document.getElementById('t-sp-rounds').value || null;
     entry.sp_bbj = +document.getElementById('t-sp-bbj').value || null;
     entry.sp_wb = document.getElementById('t-sp-wb').value;
+    entry.fc_avg = +document.getElementById('t-sp-fc-avg').value || null;
+    entry.fc_max = +document.getElementById('t-sp-fc-max').value || null;
+    entry.fc = entry.fc_max; // compatibilité locale avec anciennes données
   }
   const savedTraining=await sbSave('trainings',entry); if(savedTraining&&savedTraining.id)entry.id=savedTraining.id; db.trainings.push(entry);
   
@@ -1110,6 +1125,9 @@ function renderCoachZone(db){
   const bikeErgo=recent.filter(t=>['bike','ergo','mob'].includes(t.type)).reduce((s,t)=>s+(+t.duree||30),0);
   const spCount=recent.filter(t=>['compromised','simulation'].includes(t.type)).length;
   const z2Hard=recent.filter(t=>['z2','long','bike','ergo'].includes(t.type)&&(+t.rpe)>=6).length;
+  const cardioSessions=recent.filter(t=>getFcAvg(t));
+  const fcAvgRecent=cardioSessions.length?Math.round(avg(cardioSessions.map(t=>getFcAvg(t)))):null;
+  const cardioDriftFlag=recent.filter(t=>['z2','long','bike','ergo'].includes(t.type)&&getFcAvg(t)&&(+t.rpe)>=6).length;
   let readiness=100;
   readiness-=Math.min(35,Math.round(legLoad/90));
   readiness-=Math.min(20,Math.max(0,recent.filter(t=>(+t.rpe)>=8.5).length-1)*8);
@@ -1117,11 +1135,12 @@ function renderCoachZone(db){
   readiness=Math.max(35,Math.min(100,readiness));
   const color=readiness>=75?'var(--ok)':readiness>=60?'var(--am)':'var(--rd)';
   const msg=readiness>=75?'Charge maîtrisée : tu peux pousser les séances clés.':readiness>=60?'Charge correcte mais jambes à surveiller : privilégie vélo/ergo pour le volume facile.':'Risque surcharge : protège ischios/mollets, évite excentrique lourd et BBJ volumineux.';
-  const action=z2Hard? 'Ta Z2 coûte trop cher : baisse l’allure ou passe en vélo flush.': spCount===0&&recent.length>=4 ? 'Aucun stimulus HYROX spécifique récent : ok en blocs A/B/C, à corriger en pré-comp.' : 'Priorité : qualité sur force/VO2, volume facile sans dette mécanique.';
-  zone.innerHTML=`<div class="stat-grid3">
+  const action=cardioDriftFlag? 'Ta séance facile coûte cher en FC/RPE : baisse l’intensité ou bascule en vélo flush.': z2Hard? 'Ta Z2 coûte trop cher : baisse l’allure ou passe en vélo flush.': spCount===0&&recent.length>=4 ? 'Aucun stimulus HYROX spécifique récent : ok en blocs A/B/C, à corriger en pré-comp.' : 'Priorité : qualité sur force/VO2, volume facile sans dette mécanique.';
+  zone.innerHTML=`<div class="stat-grid">
     <div class="stat-box"><div class="val" style="color:${color}">${readiness}</div><div class="lbl">Readiness</div></div>
     <div class="stat-box"><div class="val">${Math.round(runImpact)}</div><div class="lbl">Min impact run</div></div>
     <div class="stat-box"><div class="val">${spCount}</div><div class="lbl">SP/Sim 7j</div></div>
+    <div class="stat-box"><div class="val">${fcAvgRecent||'—'}</div><div class="lbl">FC moy. 7j</div></div>
   </div>
   <div class="alert ${readiness>=75?'alert-ok':readiness>=60?'alert-warn':'alert-bad'}"><span class="alert-icon">🧠</span><div><b>${msg}</b><br>${action}</div></div>`;
 }
@@ -1165,6 +1184,8 @@ function renderAlerts(db) {
   const z2TooHard = last7.filter(t=>['z2','long','bike','ergo'].includes(t.type) && (+t.rpe)>=6).length;
   if(legStress>=5 || (legStress>=4&&posteriorChain>=1)) alerts.push({type:'warn', icon:'🦵', text:'<b>Charge jambes élevée</b> — trop de contraintes impact/excentrique sur 7 jours. Garde le volume, mais bascule le facile en vélo/ergo.'});
   if(z2TooHard>=1) alerts.push({type:'warn', icon:'🚴', text:'Z2 / récup trop coûteuse : RPE ≥6. Baisse l’intensité ou remplace par vélo flush.'});
+  const cardioCostly = last7.filter(t=>['z2','long','bike','ergo'].includes(t.type)&&getFcAvg(t)&&(+t.rpe)>=6).length;
+  if(cardioCostly>=1) alerts.push({type:'warn', icon:'❤️', text:'<b>Coût cardio élevé</b> — une séance facile présente FC moyenne renseignée + RPE ≥6. Surveille dérive, chaleur, sommeil et récupération.'});
 
   // ② Alerte poids : perte > 500g/sem
   const poids = (db.poids||[]).filter(p=>p.moment==='matin').sort((a,b)=>b.date.localeCompare(a.date));
@@ -1467,6 +1488,8 @@ function renderHistory(filter) {
         tags.push({txt:`RPE ${item.rpe}`, cls});
       }
       if (item.allure) tags.push({txt:item.allure+'/km', cls:'etag'});
+      if (getFcAvg(item)) tags.push({txt:'FC moy '+getFcAvg(item)+' bpm', cls:'etag'});
+      if (getFcMax(item)) tags.push({txt:'FC max '+getFcMax(item)+' bpm', cls:'etag'});
       if (item.squat) {
         const rm = item.squat_reps ? Math.round(item.squat*(1+item.squat_reps/30)*4)/4 : null;
         tags.push({txt:'Squat '+item.squat+'kg'+(rm?` → 1RM ~${rm}kg`:''), cls:'etag'});
