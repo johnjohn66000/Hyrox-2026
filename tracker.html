@@ -808,14 +808,22 @@ async function sbDel(table,entryOrId){
     // 1) Suppression fiable pour les entrées créées avec local_id : local_id + device_id.
     if(localId!==undefined && localId!==null && localId!==''){
       const url=SUPA_URL+'/rest/v1/'+table+'?local_id=eq.'+encodeURIComponent(String(localId))+'&device_id=eq.'+encodeURIComponent(DEVICE_ID);
-      const r=await fetch(url,{method:'DELETE',headers:SB});
-      const txt=await r.text().catch(()=> '');
+      let r=await fetch(url,{method:'DELETE',headers:SB});
+      let txt=await r.text().catch(()=> '');
       if(r.ok){
-        // Avec Prefer:return=representation, Supabase renvoie [] si aucune ligne n'a été supprimée.
-        // On ne considère OK que si une ligne est réellement revenue, sinon on tente le fallback id.
         try{ const rows = txt ? JSON.parse(txt) : []; if(Array.isArray(rows) && rows.length>0) return true; }catch(e){}
       }else{
         console.warn('sb delete by local_id fail',table,localId,txt);
+      }
+      // Fallback si le device_id a changé après effacement des données du téléphone :
+      // on supprime par local_id seul, ce qui permet de nettoyer les anciennes lignes du même tracker.
+      const url2=SUPA_URL+'/rest/v1/'+table+'?local_id=eq.'+encodeURIComponent(String(localId));
+      r=await fetch(url2,{method:'DELETE',headers:SB});
+      txt=await r.text().catch(()=> '');
+      if(r.ok){
+        try{ const rows = txt ? JSON.parse(txt) : []; if(Array.isArray(rows) && rows.length>0) return true; }catch(e){ return true; }
+      }else{
+        console.warn('sb delete by local_id only fail',table,localId,txt);
       }
     }
     // 2) Fallback pour les anciennes entrées / entrées synchronisées : id Supabase.
@@ -927,6 +935,15 @@ function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;',
 function parsePaceToSec(p){return timeToSec(p);}
 function isRecentDate(date,days){if(!date)return false;const d=new Date(date);const now=new Date();return (now-d)/(1000*60*60*24)<=days;}
 function tableForCat(cat){return {training:'trainings',test:'tests',poids:'poids',race:'races',charge:'charges',mensur:'mensur'}[cat]||cat;}
+function entryDeleteKey(entry){
+  if(!entry) return '';
+  return String(entry.local_id || entry.supabase_id || entry.id || '');
+}
+function sameEntryKey(entry,key){
+  if(!entry) return false;
+  const k=String(key);
+  return String(entry.id)===k || String(entry.local_id)===k || String(entry.supabase_id)===k;
+}
 function getFcAvg(t){const v=Number(t&&t.fc_avg);return Number.isFinite(v)&&v>0?v:null;}
 function getFcMax(t){const v=Number(t&&t.fc_max);if(Number.isFinite(v)&&v>0)return v;const legacy=Number(t&&t.fc);return Number.isFinite(legacy)&&legacy>0?legacy:null;}
 function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
@@ -1689,23 +1706,33 @@ function renderHistory(filter) {
         <div class="entry-meta">${meta}${item.comment ? ' · ' + item.comment : ''}</div>
         ${tags.length ? `<div class="entry-tags">${tagsHtml}</div>` : ''}
       </div>
-      <button class="del-btn" onclick="deleteEntry(${JSON.stringify(String(item.id))}, '${item._cat}')">✕</button>
+      <button class="del-btn" onclick="deleteEntry(${JSON.stringify(entryDeleteKey(item))}, '${item._cat}')">✕</button>
     </div>`;
   }).join('');
 }
 
 async function deleteEntry(id, cat) {
+  if (!id || id === 'undefined' || id === 'null') {
+    alert('Impossible de supprimer : identifiant introuvable. Lance une synchro puis réessaie.');
+    return;
+  }
   if (!confirm('Supprimer cette entrée ?')) return;
   const db = loadDB();
   const key = cat==='training' ? 'trainings' : cat==='test' ? 'tests' : cat==='poids' ? 'poids' : null;
-  const entry = key ? (db[key]||[]).find(t=>String(t.id)===String(id) || String(t.local_id)===String(id) || String(t.supabase_id)===String(id)) : null;
-  if (cat==='training') db.trainings = db.trainings.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
-  if (cat==='test') db.tests = db.tests.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
-  if (cat==='poids') db.poids = db.poids.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
+  if(!key) return;
+  const entry = (db[key]||[]).find(t=>sameEntryKey(t,id));
+
+  // Suppression locale immédiate : l’interface doit se mettre à jour même si Supabase répond lentement.
+  db[key] = (db[key]||[]).filter(t=>!sameEntryKey(t,id));
   saveDB(db);
   renderHistory(loadUiState().histType || 'all');
-  const ok = await sbDel(tableForCat(cat), entry || id);
-  if(!ok) alert('Entrée supprimée du téléphone, mais suppression Supabase non confirmée. Vérifie la table ou synchronise.');
+  renderDashboard();
+
+  const ok = await sbDel(tableForCat(cat), entry || {local_id:id,id:id});
+  if(!ok) {
+    console.warn('Suppression Supabase non confirmée', {cat,id,entry});
+    alert('Entrée supprimée du téléphone, mais suppression Supabase non confirmée. Si elle réapparaît après Sync, ajoute bien la colonne local_id dans Supabase.');
+  }
 }
 
 // ════════════════════════════════════
@@ -1747,7 +1774,7 @@ function renderRaces() {
         </div>
         ${r.comment ? `<div class="entry-meta" style="margin-top:2px;font-style:italic">${r.comment}</div>` : ''}
       </div>
-      <button class="del-btn" onclick="deleteRace(${JSON.stringify(String(r.id))})">✕</button>
+      <button class="del-btn" onclick="deleteRace(${JSON.stringify(entryDeleteKey(r))})">✕</button>
     </div>`
   ).join('');
 
@@ -1797,13 +1824,18 @@ function renderRaces() {
 }
 
 async function deleteRace(id) {
+  if (!id || id === 'undefined' || id === 'null') {
+    alert('Impossible de supprimer : identifiant introuvable. Lance une synchro puis réessaie.');
+    return;
+  }
   if (!confirm('Supprimer cette course ?')) return;
   const db = loadDB();
-  const entry = (db.races||[]).find(r=>String(r.id)===String(id) || String(r.local_id)===String(id) || String(r.supabase_id)===String(id));
-  db.races = db.races.filter(r=>String(r.id)!==String(id) && String(r.local_id)!==String(id) && String(r.supabase_id)!==String(id));
+  const entry = (db.races||[]).find(r=>sameEntryKey(r,id));
+  db.races = (db.races||[]).filter(r=>!sameEntryKey(r,id));
   saveDB(db);
   renderRaces();
-  const ok = await sbDel('races', entry || id);
+  renderDashboard();
+  const ok = await sbDel('races', entry || {local_id:id,id:id});
   if(!ok) alert('Course supprimée du téléphone, mais suppression Supabase non confirmée.');
 }
 
@@ -2125,7 +2157,7 @@ function renderChargesHistory(selectedExo) {
             }).slice(0,4).join('')}
           </div>
         </div>
-        <button class="del-btn" onclick="deleteCharge(${JSON.stringify(String(c.id))})">✕</button>
+        <button class="del-btn" onclick="deleteCharge(${JSON.stringify(entryDeleteKey(c))})">✕</button>
       </div>`;
     }).join('')}`;
   
@@ -2138,13 +2170,18 @@ function renderChargesHistory(selectedExo) {
 }
 
 async function deleteCharge(id) {
+  if (!id || id === 'undefined' || id === 'null') {
+    alert('Impossible de supprimer : identifiant introuvable. Lance une synchro puis réessaie.');
+    return;
+  }
   if (!confirm('Supprimer cette série ?')) return;
   const db = loadDB();
-  const entry = (db.charges||[]).find(c=>String(c.id)===String(id) || String(c.local_id)===String(id) || String(c.supabase_id)===String(id));
-  db.charges = (db.charges||[]).filter(c => String(c.id)!==String(id) && String(c.local_id)!==String(id) && String(c.supabase_id)!==String(id));
+  const entry = (db.charges||[]).find(c=>sameEntryKey(c,id));
+  db.charges = (db.charges||[]).filter(c=>!sameEntryKey(c,id));
   saveDB(db);
   renderChargesHistory();
-  const ok = await sbDel('charges', entry || id);
+  renderDashboard();
+  const ok = await sbDel('charges', entry || {local_id:id,id:id});
   if(!ok) alert('Série supprimée du téléphone, mais suppression Supabase non confirmée.');
 }
 
