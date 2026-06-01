@@ -1076,14 +1076,21 @@ function showTab(t, opts={}) {
 }
 
 function showLogType(type) {
-  if (!['training','poids','test'].includes(type)) type = 'training';
-  saveUiState({logType:type});
-  ['training','poids','test'].forEach(t => {
-    document.getElementById('log-'+t).style.display = t===type ? 'block' : 'none';
+  ['training','poids','test'].forEach(function(t) {
+    var el = document.getElementById('log-'+t);
+    if (el) el.style.display = (type === t) ? 'block' : 'none';
   });
-  document.querySelectorAll('#log-subtabs .stab').forEach((b,i) => {
-    b.classList.toggle('on', ['training','poids','test'][i]===type);
+  document.querySelectorAll('#log-subtabs .stab').forEach(function(b,i) {
+    b.classList.toggle('on', ['training','poids','test'][i] === type);
   });
+  // 'home' = show subtabs but no form — user picks what to log
+  if (type === 'home') {
+    ['training','poids','test'].forEach(function(t) {
+      var el = document.getElementById('log-'+t);
+      if (el) el.style.display = 'none';
+    });
+    document.querySelectorAll('#log-subtabs .stab').forEach(function(b) { b.classList.remove('on'); });
+  }
 }
 
 function showHistType(type) {
@@ -1316,6 +1323,16 @@ async function saveTraining() {
   clearCurrentDraft();
   const chargesOk = !chargeResults.length || chargeResults.every(Boolean);
   showSupabaseSaveStatus(!!savedTraining && chargesOk, chargesOk ? 'trainings' : 'trainings/charges');
+
+  // Feedback visuel
+  var fb = document.getElementById('save-feedback');
+  if (fb) {
+    fb.textContent = 'Seance enregistree';
+    fb.style.display = 'block';
+    setTimeout(function() { fb.style.display = 'none'; }, 2500);
+  }
+  // Revenir a l accueil du log
+  showLogType('home');
 }
 
 async function savePoids() {
