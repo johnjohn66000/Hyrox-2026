@@ -1739,7 +1739,7 @@ function renderHistory(filter) {
     } else {
       const typeLabels = {vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',compromised:'Compromised',
         simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',ergo:'Ergo',mob:'Mobilité'};
-      title = typeLabels[item.type] || item.type;
+      title = (item.type && typeLabels[item.type]) ? typeLabels[item.type] : (item.type || 'Seance');
       if (item.duree) title += ` — ${item.duree} min`;
       meta = fmtDate(item.date);
       if (item.rpe) {
@@ -1755,15 +1755,13 @@ function renderHistory(filter) {
       if (item.allure) tags.push({txt:item.allure+'/km', cls:'etag'});
       if (getFcAvg(item)) tags.push({txt:'FC moy '+getFcAvg(item)+' bpm', cls:'etag'});
       if (getFcMax(item)) tags.push({txt:'FC max '+getFcMax(item)+' bpm', cls:'etag'});
-      if (item.squat) {
-        const rm = item.squat_reps ? Math.round(item.squat*(1+item.squat_reps/30)*4)/4 : null;
-        tags.push({txt:'Squat '+item.squat+'kg'+(rm?` → 1RM ~${rm}kg`:''), cls:'etag'});
+      if (item.exercises && item.exercises.length) {
+        item.exercises.slice(0,3).forEach(function(exo){if(!exo.series||!exo.series.length)return;var best=exo.series.reduce(function(a,b){return(a.rm||0)>(b.rm||0)?a:b;},{rm:0,kg:0,reps:0});if(best.kg)tags.push({txt:(exo.label||exo.key)+' '+best.kg+'kg x'+best.reps+' ~'+best.rm+'kg',cls:'etag-ok'});});
+      } else {
+        if(item.squat)tags.push({txt:'Squat '+item.squat+'kg',cls:'etag'});
+        if(item.bench)tags.push({txt:'Bench '+item.bench+'kg',cls:'etag'});
       }
-      if (item.bench) {
-        const rm = item.bench_reps ? Math.round(item.bench*(1+item.bench_reps/30)*4)/4 : null;
-        tags.push({txt:'Bench '+item.bench+'kg'+(rm?` → 1RM ~${rm}kg`:''), cls:'etag'});
-      }
-      if (item.sp_wb) tags.push({txt:'WB '+item.sp_wb, cls:'etag'});
+      if(item.sp_wb)tags.push({txt:'WB '+item.sp_wb,cls:'etag'});
     }
 
     const tagsHtml = tags.map(t=>`<span class="etag ${t.cls}">${t.txt}</span>`).join('');
