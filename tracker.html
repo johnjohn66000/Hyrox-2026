@@ -145,6 +145,12 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 .history-detail-row:last-child{border-bottom:0}
 .history-detail-row b{color:var(--tx2)}
 .history-series{margin-left:.3rem;color:var(--tx2)}
+.history-detail{max-height:none!important;overflow:visible!important;white-space:normal}
+.history-exercises-list{display:flex;flex-direction:column;gap:.35rem;margin-top:.35rem}
+.history-exercise-card{background:var(--bg3);border:1px solid var(--bo);border-radius:7px;padding:.45rem .5rem;overflow:visible}
+.history-exercise-name{font-weight:900;color:var(--tx);font-size:11px;margin-bottom:.2rem}
+.history-exercise-series{font-family:monospace;font-size:10.5px;color:var(--tx2);line-height:1.55}
+.history-exercise-empty{font-family:monospace;font-size:10.5px;color:var(--tx4);font-style:italic}
 
 </style>
 </head>
@@ -1377,15 +1383,26 @@ function historyDetailHtml(item){
     if(item.comment) row('Commentaire', item.comment);
     if(item.exercises && item.exercises.length){
       rows.push('<div class="history-detail-title">Exercices</div>');
-      item.exercises.forEach(function(exo){
-        rows.push('<div class="history-detail-row"><span colspan="2"><b>'+escapeHtml(exo.label||exo.key)+'</b></span></div>');
-        (exo.series||[]).forEach(function(ser,i){
-          var kgTxt=(ser.kg!==undefined && ser.kg!==null && ser.kg!=='') ? ser.kg : '—';
-          var repsTxt=(ser.reps!==undefined && ser.reps!==null && ser.reps!=='') ? ser.reps : '—';
-          var txt=kgTxt+' kg × '+repsTxt+(ser.rm?' · ~'+ser.rm+' kg 1RM':'');
-          rows.push('<div class="history-series">Série '+(i+1)+' : '+escapeHtml(txt)+'</div>');
-        });
+      rows.push('<div class="history-exo-count"><b>'+item.exercises.length+'</b> exercice'+(item.exercises.length>1?'s':'')+' enregistré'+(item.exercises.length>1?'s':'')+'</div>');
+      var exoHtml = '<div class="history-exercises-list">';
+      item.exercises.forEach(function(exo, exoIndex){
+        var exoName = escapeHtml(exo.label || exo.key || ('Exercice '+(exoIndex+1)));
+        exoHtml += '<div class="history-exercise-card"><div class="history-exercise-name">'+(exoIndex+1)+'. '+exoName+'</div>';
+        var series = Array.isArray(exo.series) ? exo.series : [];
+        if(!series.length){
+          exoHtml += '<div class="history-exercise-empty">Aucune série renseignée</div>';
+        } else {
+          series.forEach(function(ser,i){
+            var kgTxt=(ser.kg!==undefined && ser.kg!==null && ser.kg!=='') ? ser.kg : '—';
+            var repsTxt=(ser.reps!==undefined && ser.reps!==null && ser.reps!=='') ? ser.reps : '—';
+            var txt='Série '+(i+1)+' : '+kgTxt+' kg × '+repsTxt+(ser.rm?' · ~'+ser.rm+' kg 1RM':'');
+            exoHtml += '<div class="history-exercise-series">'+escapeHtml(txt)+'</div>';
+          });
+        }
+        exoHtml += '</div>';
       });
+      exoHtml += '</div>';
+      rows.push(exoHtml);
     }
   } else if(item._cat==='test'){
     row('Date', fmtDate(item.date)); row('Type', item.type); row('Résultat', item.result); row('Cible', item.cible); row('Commentaire', item.comment);
@@ -1926,7 +1943,7 @@ function renderHistory(filter) {
       if (getFcAvg(item)) tags.push({txt:'FC moy '+getFcAvg(item)+' bpm', cls:'etag'});
       if (getFcMax(item)) tags.push({txt:'FC max '+getFcMax(item)+' bpm', cls:'etag'});
       if (item.exercises && item.exercises.length) {
-        item.exercises.slice(0,3).forEach(function(exo){
+        item.exercises.forEach(function(exo){
           var txt = exerciseSummaryTag(exo);
           if(txt) tags.push({txt:txt, cls:(txt.includes('1RM')?'etag-ok':'etag')});
         });
