@@ -2371,12 +2371,13 @@ function updateChargeCalculator() {
   const pctInput = document.getElementById('calc-pct');
   const result = document.getElementById('calc-result');
   if (!result || !pctInput) return;
-  let rm = parseFloat(rmInput?.value || '');
   const autoRM = exo ? (getLatestRMForExo(exo) || getBestRMForExo(exo)) : null;
-  if (!Number.isFinite(rm) && autoRM) {
-    rm = autoRM;
-    if (rmInput) rmInput.placeholder = 'auto : ' + autoRM + ' kg';
+  if (rmInput && !rmInput.value) {
+    rmInput.placeholder = autoRM ? ('auto : ' + autoRM + ' kg') : 'aucun 1RM auto';
   }
+  let rm = parseFloat(rmInput?.value || '');
+  const rmSource = Number.isFinite(rm) ? 'manuel' : (autoRM ? 'auto' : '');
+  if (!Number.isFinite(rm) && autoRM) rm = autoRM;
   const pct = parseFloat(pctInput.value);
   if (!Number.isFinite(rm) || !Number.isFinite(pct)) {
     result.style.display = 'none';
@@ -2385,7 +2386,21 @@ function updateChargeCalculator() {
   const raw = rm * pct / 100;
   const rounded = round25(raw);
   result.style.display = 'flex';
-  result.innerHTML = `<span class="alert-icon">🧮</span><div><b>${rounded} kg</b> à ${pct}% de ${rm} kg 1RM <br><span style="font-family:monospace;font-size:10px;color:var(--tx3)">calcul brut : ${raw.toFixed(1)} kg · arrondi au 2,5 kg</span></div>`;
+  result.innerHTML = `<span class="alert-icon">🧮</span><div><b>${rounded} kg</b> à ${pct}% de ${rm} kg 1RM ${rmSource ? '('+rmSource+')' : ''}<br><span style="font-family:monospace;font-size:10px;color:var(--tx3)">calcul brut : ${raw.toFixed(1)} kg · arrondi au 2,5 kg</span></div>`;
+}
+
+function resetCalcRmOnExerciseChange() {
+  const exo = document.getElementById('calc-exo')?.value || '';
+  const rmInput = document.getElementById('calc-rm');
+  const result = document.getElementById('calc-result');
+  if (rmInput) {
+    rmInput.value = '';
+    const autoRM = exo ? (getLatestRMForExo(exo) || getBestRMForExo(exo)) : null;
+    rmInput.placeholder = autoRM ? ('auto : ' + autoRM + ' kg') : 'aucun 1RM auto';
+  }
+  if (result) result.style.display = 'none';
+  updateChargeCalculator();
+  saveCurrentDraft();
 }
 
 function applyCalcToCharge() {
@@ -2404,9 +2419,9 @@ function renderChargeCalculatorOptions() {
   if (!calc || calc.dataset.ready === '1') return;
   calc.innerHTML = '<option value="">— Choisir —</option>' + Object.entries(EXO_LABELS).map(([key,label]) => `<option value="${escapeHtml(key)}">${escapeHtml(label)}</option>`).join('');
   calc.dataset.ready = '1';
-  calc.addEventListener('change', updateChargeCalculator);
-  const rm = document.getElementById('calc-rm'); if (rm) rm.addEventListener('input', updateChargeCalculator);
-  const pct = document.getElementById('calc-pct'); if (pct) pct.addEventListener('input', updateChargeCalculator);
+  calc.addEventListener('change', resetCalcRmOnExerciseChange);
+  const rm = document.getElementById('calc-rm'); if (rm) rm.addEventListener('input', function(){ updateChargeCalculator(); saveCurrentDraft(); });
+  const pct = document.getElementById('calc-pct'); if (pct) pct.addEventListener('input', function(){ updateChargeCalculator(); saveCurrentDraft(); });
 }
 
 function displayRMResult(exo, kg, reps, rm) {
