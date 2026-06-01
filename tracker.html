@@ -306,10 +306,12 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
         <option value="squat">Back squat</option>
         <option value="front_squat">Front squat</option>
         <option value="rdl">RDL bilatéral</option>
+        <option value="deadlift">SDT / Deadlift</option>
         <option value="hip_thrust">Hip thrust</option>
         <option value="bulgarian">Bulgarian split squat</option>
         <option value="leg_press">Leg press</option>
         <option value="nordic">Nordic curl</option>
+        <option value="nordic_assiste">Nordic assisté</option>
         <option value="good_morning">Good morning</option>
         <option value="kb_swing">KB swing</option>
         <option value="box_jump">Box jump</option>
@@ -317,11 +319,14 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
       </optgroup>
       <optgroup label="Haut du corps">
         <option value="bench">Développé couché</option>
+        <option value="db_bench">DC haltères</option>
         <option value="bench_incline">Développé incliné</option>
+        <option value="db_incline">DI haltères</option>
         <option value="pullup">Pull-up lestés</option>
         <option value="press">Strict press</option>
         <option value="push_press">Push press</option>
         <option value="pendlay">Pendlay row</option>
+        <option value="rowing">Rowing</option>
         <option value="yates">Yates row</option>
         <option value="lat_pulldown">Lat pulldown</option>
         <option value="curl">Curl barre</option>
@@ -333,6 +338,9 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
       <optgroup label="HYROX">
         <option value="farmer">Farmer carry (kg/main)</option>
         <option value="sled_push">Sled push</option>
+        <option value="sled_pull">Sled pull</option>
+        <option value="ski_erg">SkiErg</option>
+        <option value="row_erg">Rameur / RowErg</option>
         <option value="wall_ball">Wall ball</option>
         <option value="sandbag">Sandbag lunge</option>
         <option value="bbj">Burpee broad jump</option>
@@ -542,23 +550,32 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
           <option value="squat">Back squat</option>
           <option value="front_squat">Front squat</option>
           <option value="rdl">RDL bilatéral</option>
+          <option value="deadlift">SDT / Deadlift</option>
           <option value="hip_thrust">Hip thrust</option>
           <option value="bulgarian">Bulgarian split squat</option>
           <option value="good_morning">Good morning</option>
+          <option value="nordic_assiste">Nordic assisté</option>
         </optgroup>
         <optgroup label="Haut du corps">
           <option value="bench">Développé couché</option>
+          <option value="db_bench">DC haltères</option>
           <option value="bench_incline">Développé incliné</option>
+          <option value="db_incline">DI haltères</option>
           <option value="pullup">Pull-up lestés</option>
           <option value="press">Strict press</option>
           <option value="push_press">Push press</option>
           <option value="pendlay">Pendlay row</option>
+          <option value="rowing">Rowing</option>
           <option value="curl">Curl barre</option>
           <option value="skull">Skull crusher</option>
           <option value="dips">Dips lestés</option>
         </optgroup>
         <optgroup label="HYROX spécifique">
           <option value="farmer">Farmer carry (2× kg)</option>
+          <option value="sled_push">Sled push</option>
+          <option value="sled_pull">Sled pull</option>
+          <option value="ski_erg">SkiErg</option>
+          <option value="row_erg">Rameur / RowErg</option>
           <option value="kb_swing">KB swing</option>
           <option value="nordic">Nordic (lest additionnel)</option>
         </optgroup>
@@ -798,68 +815,28 @@ function showSupabaseSaveStatus(ok, table){
 }
 async function sbLoad(table){const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?device_id=eq.'+DEVICE_ID+'&order=created_at.desc',{headers:SB});return r.ok?await r.json():[];}
 async function sbDel(table,entryOrId){
-  const entry = (entryOrId && typeof entryOrId === 'object') ? entryOrId : {id:entryOrId};
-  const idsTried = [];
-
-  async function delBy(queryLabel, query){
-    if(!query) return false;
-    const url = SUPA_URL + '/rest/v1/' + table + '?' + query;
-    try{
-      const r = await fetch(url,{method:'DELETE',headers:SB});
-      const txt = await r.text().catch(()=> '');
-      idsTried.push({queryLabel, ok:r.ok, status:r.status, response:txt});
-      if(!r.ok){
-        console.warn('sb delete fail', table, queryLabel, r.status, txt);
-        return false;
-      }
-      // Avec Prefer:return=representation, Supabase renvoie les lignes supprimées.
-      // Si la réponse est vide malgré 200/204, on considère la requête valide,
-      // car certaines configurations PostgREST ne renvoient pas le body.
-      if(!txt) return true;
-      try{
-        const rows = JSON.parse(txt);
-        return !Array.isArray(rows) || rows.length > 0;
-      }catch(e){
-        return true;
-      }
-    }catch(e){
-      idsTried.push({queryLabel, ok:false, status:'fetch_error', response:String(e)});
-      console.warn('sb delete fetch fail', table, queryLabel, e);
-      return false;
-    }
-  }
-
-  const deviceQ = 'device_id=eq.' + encodeURIComponent(DEVICE_ID);
+  const entry = (entryOrId && typeof entryOrId === 'object') ? entryOrId : {id:entryOrId,local_id:entryOrId};
   const remoteId = entry.supabase_id;
-  const localId = entry.local_id;
-  const rawId = entry.id || entryOrId;
-
-  // 1) Cas le plus fiable : id Supabase connu.
-  // On teste avec device_id puis sans device_id pour gérer les cas où le téléphone a changé de device_id.
-  if(remoteId !== undefined && remoteId !== null && remoteId !== ''){
-    const idQ = 'id=eq.' + encodeURIComponent(String(remoteId));
-    if(await delBy('supabase_id + device_id', idQ + '&' + deviceQ)) return true;
-    if(await delBy('supabase_id only', idQ)) return true;
-  }
-
-  // 2) Cas recommandé : local_id stable envoyé par le tracker.
-  if(localId !== undefined && localId !== null && localId !== ''){
-    const localQ = 'local_id=eq.' + encodeURIComponent(String(localId));
-    if(await delBy('local_id + device_id', localQ + '&' + deviceQ)) return true;
-    if(await delBy('local_id only', localQ)) return true;
-  }
-
-  // 3) Fallback : id présent dans l'objet. Après sync, entry.id est souvent l'id Supabase.
-  // Pour les très anciennes entrées, il peut être l'id local ; la requête ne supprimera rien mais ne casse pas l'UI.
-  if(rawId !== undefined && rawId !== null && rawId !== ''){
-    const idQ = 'id=eq.' + encodeURIComponent(String(rawId));
-    if(await delBy('id + device_id', idQ + '&' + deviceQ)) return true;
-    if(await delBy('id only', idQ)) return true;
-  }
-
-  window.__lastSupabaseDeleteError = {table, entry, idsTried};
-  console.warn('Suppression Supabase non confirmée', window.__lastSupabaseDeleteError);
-  return false;
+  const localId = entry.local_id || entry.id;
+  if((remoteId===undefined||remoteId===null||remoteId==='') && (localId===undefined||localId===null||localId===''))return false;
+  try{
+    // 1) Suppression la plus fiable pour les nouvelles entrées : local_id + device_id
+    if(localId!==undefined && localId!==null && localId!==''){
+      const url=SUPA_URL+'/rest/v1/'+table+'?local_id=eq.'+encodeURIComponent(String(localId))+'&device_id=eq.'+encodeURIComponent(DEVICE_ID);
+      const r=await fetch(url,{method:'DELETE',headers:SB});
+      if(r.ok)return true;
+      const txt=await r.text();
+      console.warn('sb delete by local_id fail',table,localId,txt);
+    }
+    // 2) Fallback pour les anciennes entrées qui ont gardé l'id Supabase en local
+    const idToDelete = remoteId || entry.id;
+    if(idToDelete!==undefined && idToDelete!==null && idToDelete!==''){
+      const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+encodeURIComponent(String(idToDelete)),{method:'DELETE',headers:SB});
+      if(!r.ok)console.warn('sb delete by id fail',table,idToDelete,await r.text());
+      return r.ok;
+    }
+    return false;
+  }catch(e){console.warn('sb delete offline/fail',table,entryOrId,e);return false;}
 }
 async function syncAll(){const el=document.getElementById('sync-status');if(el)el.textContent='Sync...';try{await sbEnsureDevice();const[tr,po,te,ra,ch,me]=await Promise.all([sbLoad('trainings'),sbLoad('poids'),sbLoad('tests'),sbLoad('races'),sbLoad('charges'),sbLoad('mensur')]);const db={trainings:tr,poids:po,tests:te,races:ra,charges:ch,mensur:me};saveDB(db);if(el){el.textContent='✅ '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});el.style.color='var(--gr)';}return db;}catch(e){if(el){el.textContent='❌ Offline';el.style.color='var(--rd)';}return loadDB();}}
 // ═══════════════
@@ -868,84 +845,6 @@ async function syncAll(){const el=document.getElementById('sync-status');if(el)e
 // DATA LAYER
 // ════════════════════════════════════
 const DB_KEY = 'hyrox_tracker_v1';
-const UI_STATE_KEY = 'hyrox_tracker_ui_state_v1';
-const DRAFT_KEY = 'hyrox_tracker_draft_v1';
-
-function loadUiState() {
-  try { return JSON.parse(localStorage.getItem(UI_STATE_KEY)) || {}; }
-  catch { return {}; }
-}
-function saveUiState(patch) {
-  try {
-    const current = loadUiState();
-    localStorage.setItem(UI_STATE_KEY, JSON.stringify({...current, ...patch}));
-  } catch(e) {}
-}
-
-function saveCurrentDraft() {
-  try {
-    const ids = [
-      't-date','t-type','t-duree','t-dist','t-allure','t-intervals','t-fc-avg','t-fc-max','t-fc','t-sp-allure','t-sp-total','t-sp-rounds','t-sp-bbj','t-sp-wb','t-sp-fc-avg','t-sp-fc-max','t-rpe','t-qualite','t-comment',
-      'p-date','p-val','p-moment',
-      'ts-date','ts-type','ts-result','ts-cible','ts-comment',
-      'r-date','r-event','r-total','r-ov','r-ag','r-total-fin','r-ski','r-sled-p','r-sled-pu','r-bbj','r-row','r-farmers','r-fentes','r-wb','r-rox','r-run','r-fonc','r-comment',
-      'ch-exo','ch-kg','ch-reps','ch-sets','ch-date','ch-rpe',
-      'm-date','m-taille','m-poitrine','m-cuisse','m-biceps','m-note'
-    ];
-    const fields = {};
-    ids.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) fields[id] = el.value;
-    });
-    const activeTab = (document.querySelector('.sec.on')?.id || 'tab-dashboard').replace('tab-','');
-    const visibleLog = ['training','poids','test'].find(t => document.getElementById('log-'+t)?.style.display !== 'none') || 'training';
-    localStorage.setItem(DRAFT_KEY, JSON.stringify({fields, strExos: window._strExos || [], activeTab, logType: visibleLog, savedAt: Date.now()}));
-  } catch(e) {}
-}
-
-function clearCurrentDraft() {
-  try { localStorage.removeItem(DRAFT_KEY); } catch(e) {}
-}
-
-function restoreCurrentDraft() {
-  try {
-    const raw = localStorage.getItem(DRAFT_KEY);
-    if (!raw) return;
-    const draft = JSON.parse(raw);
-    Object.entries(draft.fields || {}).forEach(([id, value]) => {
-      const el = document.getElementById(id);
-      if (el && value !== undefined && value !== null && value !== '') el.value = value;
-    });
-    if (Array.isArray(draft.strExos)) {
-      window._strExos = draft.strExos;
-      if (typeof renderStrExercises === 'function') renderStrExercises();
-    }
-    if (draft.logType && typeof showLogType === 'function') showLogType(draft.logType);
-    if (document.getElementById('t-type')) document.getElementById('t-type').dispatchEvent(new Event('change'));
-    if (document.getElementById('ts-type')) document.getElementById('ts-type').dispatchEvent(new Event('change'));
-    if (document.getElementById('t-rpe')) updateRpe(document.getElementById('t-rpe').value);
-  } catch(e) {}
-}
-
-function setupDraftAutosave() {
-  document.addEventListener('input', e => {
-    if (e.target && (e.target.matches('input') || e.target.matches('select') || e.target.matches('textarea'))) saveCurrentDraft();
-  });
-  document.addEventListener('change', e => {
-    if (e.target && (e.target.matches('input') || e.target.matches('select') || e.target.matches('textarea'))) saveCurrentDraft();
-  });
-  window.addEventListener('beforeunload', e => {
-    const raw = localStorage.getItem(DRAFT_KEY);
-    if (!raw) return;
-    const draft = JSON.parse(raw);
-    const f = draft.fields || {};
-    const hasMeaningful = Object.entries(f).some(([k,v]) => v && !['t-rpe','ch-rpe'].includes(k));
-    if (hasMeaningful) {
-      e.preventDefault();
-      e.returnValue = '';
-    }
-  });
-}
 
 function emptyDB(){return {trainings:[],poids:[],tests:[],races:[],charges:[],mensur:[]};}
 function normalizeDB(db){return {...emptyDB(), ...(db||{})};}
@@ -954,19 +853,9 @@ function loadDB() {
   catch { return emptyDB(); }
 }
 function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
-function jsArg(v){return String(v??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/[\r\n]/g,' ');}
 function parsePaceToSec(p){return timeToSec(p);}
 function isRecentDate(date,days){if(!date)return false;const d=new Date(date);const now=new Date();return (now-d)/(1000*60*60*24)<=days;}
 function tableForCat(cat){return {training:'trainings',test:'tests',poids:'poids',race:'races',charge:'charges',mensur:'mensur'}[cat]||cat;}
-function entryDeleteKey(entry){
-  if(!entry) return '';
-  return String(entry.local_id || entry.supabase_id || entry.id || '');
-}
-function sameEntryKey(entry,key){
-  if(!entry) return false;
-  const k=String(key);
-  return String(entry.id)===k || String(entry.local_id)===k || String(entry.supabase_id)===k;
-}
 function getFcAvg(t){const v=Number(t&&t.fc_avg);return Number.isFinite(v)&&v>0?v:null;}
 function getFcMax(t){const v=Number(t&&t.fc_max);if(Number.isFinite(v)&&v>0)return v;const legacy=Number(t&&t.fc);return Number.isFinite(legacy)&&legacy>0?legacy:null;}
 function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
@@ -1017,31 +906,23 @@ function today() { return new Date().toISOString().split('T')[0]; }
 // ════════════════════════════════════
 // NAVIGATION
 // ════════════════════════════════════
-function showTab(t, opts={}) {
-  const tabs = ['dashboard','log','history','race','charges','mensur'];
-  if (!tabs.includes(t) || !document.getElementById('tab-'+t)) t = 'dashboard';
-  saveUiState({activeTab:t});
-  if (!opts.silentHash) {
-    try { history.replaceState(null, '', '#'+t); } catch(e) {}
-  }
+function showTab(t) {
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
   document.getElementById('tab-'+t).classList.add('on');
   document.querySelectorAll('.tab').forEach((b,i) => {
-    b.classList.toggle('on', tabs[i]===t);
+    b.classList.toggle('on', ['dashboard','log','history','race','charges','mensur'][i]===t);
   });
   document.querySelectorAll('.dock-btn').forEach((b,i) => {
-    b.classList.toggle('on', tabs[i]===t);
+    b.classList.toggle('on', ['dashboard','log','history','race','charges','mensur'][i]===t);
   });
   if (t==='dashboard') renderDashboard();
-  if (t==='history') renderHistory(loadUiState().histType || 'all');
+  if (t==='history') renderHistory('all');
   if (t==='race') renderRaces();
   if (t==='charges') renderChargesHistory();
   if (t==='mensur') renderMensur();
 }
 
 function showLogType(type) {
-  if (!['training','poids','test'].includes(type)) type = 'training';
-  saveUiState({logType:type});
   ['training','poids','test'].forEach(t => {
     document.getElementById('log-'+t).style.display = t===type ? 'block' : 'none';
   });
@@ -1051,9 +932,8 @@ function showLogType(type) {
 }
 
 function showHistType(type) {
-  saveUiState({histType:type});
   document.querySelectorAll('#tab-history .stab').forEach(b => b.classList.remove('on'));
-  if (typeof event !== 'undefined' && event.target) event.target.classList.add('on');
+  event.target.classList.add('on');
   renderHistory(type);
 }
 
@@ -1088,21 +968,9 @@ window.addEventListener('load', () => {
   const t = today();
   ['t-date','p-date','ts-date','r-date','ch-date','m-date'].forEach(id => {
     const el = document.getElementById(id);
-    if (el && !el.value) el.value = t;
+    if (el) el.value = t;
   });
-  setupDraftAutosave();
-  restoreCurrentDraft();
-  const tabs = ['dashboard','log','history','race','charges','mensur'];
-  const hashTab = (location.hash || '').replace('#','');
-  const ui = loadUiState();
-  const draft = (() => { try { return JSON.parse(localStorage.getItem(DRAFT_KEY)) || {}; } catch { return {}; } })();
-  const targetTab = tabs.includes(hashTab) ? hashTab : (draft.activeTab || ui.activeTab || 'dashboard');
-  showTab(targetTab, {silentHash: tabs.includes(hashTab)});
-});
-
-window.addEventListener('hashchange', () => {
-  const t = (location.hash || '').replace('#','');
-  if (['dashboard','log','history','race','charges','mensur'].includes(t)) showTab(t, {silentHash:true});
+  renderDashboard();
 });
 
 // ════════════════════════════════════
@@ -1111,15 +979,15 @@ window.addEventListener('hashchange', () => {
 
 // ════ MUSCU — EXERCICES PAR SÉRIES ════
 const EXO_NAMES = {
-  squat:'Back squat',front_squat:'Front squat',rdl:'RDL bilatéral',
+  squat:'Back squat',front_squat:'Front squat',rdl:'RDL bilatéral',deadlift:'SDT / Deadlift',
   hip_thrust:'Hip thrust',bulgarian:'Bulgarian split squat',leg_press:'Leg press',
-  nordic:'Nordic curl',good_morning:'Good morning',kb_swing:'KB swing',
+  nordic:'Nordic curl',nordic_assiste:'Nordic assisté',good_morning:'Good morning',kb_swing:'KB swing',
   box_jump:'Box jump',mollets:'Mollets debout',
-  bench:'Développé couché',bench_incline:'Développé incliné',pullup:'Pull-up lestés',
-  press:'Strict press',push_press:'Push press',pendlay:'Pendlay row',yates:'Yates row',
+  bench:'Développé couché',db_bench:'DC haltères',bench_incline:'Développé incliné',db_incline:'DI haltères',pullup:'Pull-up lestés',
+  press:'Strict press',push_press:'Push press',pendlay:'Pendlay row',rowing:'Rowing',yates:'Yates row',
   lat_pulldown:'Lat pulldown',curl:'Curl barre',skull:'Skull crusher',
   dips:'Dips lestés',face_pull:'Face pull',hammer:'Curl marteau',
-  farmer:'Farmer carry',sled_push:'Sled push',wall_ball:'Wall ball',
+  farmer:'Farmer carry',sled_push:'Sled push',sled_pull:'Sled pull',ski_erg:'SkiErg',row_erg:'Rameur / RowErg',wall_ball:'Wall ball',
   sandbag:'Sandbag lunge',bbj:'Burpee broad jump'
 };
 
@@ -1133,30 +1001,27 @@ function strAddExercise() {
   window._strExos.push({key, series:[{kg:'',reps:''}]});
   sel.value = '';
   renderStrExercises();
-  saveCurrentDraft();
 }
 
 function strAddSerie(key) {
   const e = window._strExos.find(e=>e.key===key);
-  if(e){e.series.push({kg:'',reps:''});renderStrExercises();saveCurrentDraft();}
+  if(e){e.series.push({kg:'',reps:''});renderStrExercises();}
 }
 
 function strRemoveSerie(key,idx) {
   const e = window._strExos.find(e=>e.key===key);
-  if(e){e.series.splice(idx,1);if(!e.series.length)e.series.push({kg:'',reps:''});renderStrExercises();saveCurrentDraft();}
+  if(e){e.series.splice(idx,1);if(!e.series.length)e.series.push({kg:'',reps:''});renderStrExercises();}
 }
 
 function strRemoveExo(key) {
   window._strExos = window._strExos.filter(e=>e.key!==key);
   renderStrExercises();
-  saveCurrentDraft();
 }
 
 function strUpdate(key,idx,field,val) {
   const e = window._strExos.find(e=>e.key===key);
   if(!e||!e.series[idx])return;
   e.series[idx][field]=val;
-  saveCurrentDraft();
   const kg=parseFloat(e.series[idx].kg), reps=parseInt(e.series[idx].reps);
   const el=document.getElementById('rm-prev-'+key+'-'+idx);
   if(el&&kg&&reps){el.textContent='~'+(Math.round(kg*(1+reps/30)*4)/4)+' kg 1RM';el.style.color='var(--gr)';}
@@ -1269,7 +1134,6 @@ async function saveTraining() {
     }  }
   
   saveDB(db);
-  clearCurrentDraft();
   showSupabaseSaveStatus(!!savedTraining, 'trainings');
 }
 
@@ -1279,7 +1143,7 @@ async function savePoids() {
   if(!entry.date || !entry.val){ alert('Date et poids obligatoires.'); return; }
   entry.local_id = String(entry.id);
   const saved=await sbSave('poids',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
-  db.poids.push(entry); saveDB(db); clearCurrentDraft();
+  db.poids.push(entry); saveDB(db);
   document.getElementById('poids-feedback').style.display = 'block';
   setTimeout(() => document.getElementById('poids-feedback').style.display='none', 2000);
 }
@@ -1290,7 +1154,7 @@ async function saveTest() {
   if(!entry.date || !entry.type || !entry.result){ alert('Date, type et résultat obligatoires.'); return; }
   entry.local_id = String(entry.id);
   const saved=await sbSave('tests',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
-  db.tests.push(entry); saveDB(db); clearCurrentDraft();
+  db.tests.push(entry); saveDB(db);
   document.getElementById('test-feedback').style.display = 'block';
   setTimeout(() => document.getElementById('test-feedback').style.display='none', 2000);
 }
@@ -1321,7 +1185,7 @@ async function saveRace() {
     comment: document.getElementById('r-comment').value
   };
   race.local_id = String(race.id);
-  const savedRace=await sbSave('races',race); if(savedRace&&savedRace.id)race.supabase_id=savedRace.id; db.races.push(race); saveDB(db); clearCurrentDraft();
+  const savedRace=await sbSave('races',race); if(savedRace&&savedRace.id)race.supabase_id=savedRace.id; db.races.push(race); saveDB(db);
   document.getElementById('race-feedback').style.display = 'block';
   setTimeout(() => {
     document.getElementById('race-feedback').style.display='none';
@@ -1729,57 +1593,24 @@ function renderHistory(filter) {
         <div class="entry-meta">${meta}${item.comment ? ' · ' + item.comment : ''}</div>
         ${tags.length ? `<div class="entry-tags">${tagsHtml}</div>` : ''}
       </div>
-      <button type="button" class="del-btn js-delete-entry" data-cat="${escapeHtml(item._cat)}" data-id="${escapeHtml(entryDeleteKey(item))}">✕</button>
+      <button class="del-btn" onclick="deleteEntry(${JSON.stringify(String(item.id))}, '${item._cat}')">✕</button>
     </div>`;
   }).join('');
 }
 
-
-function getCurrentHistoryFilter(){
-  try { return loadUiState().histType || 'all'; } catch(e) { return 'all'; }
-}
-function rerenderAfterDelete(cat){
-  try {
-    if (cat === 'race') renderRaces();
-    else if (cat === 'charge') renderChargesHistory();
-    else renderHistory(getCurrentHistoryFilter());
-    renderDashboard();
-  } catch(e) { console.warn('rerenderAfterDelete fail', e); }
-}
-async function hardDeleteEntry(cat, id){
-  if (!cat || !id) return;
-  const keyMap = {training:'trainings', test:'tests', poids:'poids', race:'races', charge:'charges'};
-  const tableMap = {training:'trainings', test:'tests', poids:'poids', race:'races', charge:'charges'};
-  const key = keyMap[cat];
-  if (!key) return;
+async function deleteEntry(id, cat) {
+  if (!confirm('Supprimer cette entrée ?')) return;
   const db = loadDB();
-  const list = db[key] || [];
-  const entry = list.find(x => sameEntryKey(x, id)) || {id:id, local_id:id};
-  db[key] = list.filter(x => !sameEntryKey(x, id));
+  const key = cat==='training' ? 'trainings' : cat==='test' ? 'tests' : cat==='poids' ? 'poids' : null;
+  const entry = key ? (db[key]||[]).find(t=>String(t.id)===String(id) || String(t.local_id)===String(id) || String(t.supabase_id)===String(id)) : null;
+  if (cat==='training') db.trainings = db.trainings.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
+  if (cat==='test') db.tests = db.tests.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
+  if (cat==='poids') db.poids = db.poids.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
+  const ok = await sbDel(tableForCat(cat), entry || id);
   saveDB(db);
-  rerenderAfterDelete(cat);
-  try {
-    const ok = await sbDel(tableMap[cat], entry);
-    if (!ok) console.warn('Suppression Supabase non confirmée', {cat,id,entry});
-  } catch(e) {
-    console.warn('Suppression Supabase impossible', {cat,id,e});
-  }
+  renderHistory('all');
+  if(!ok) alert('Entrée supprimée du téléphone, mais suppression Supabase non confirmée. Vérifie la table ou synchronise.');
 }
-function setupDeleteButtons(){
-  if (window.__hyroxDeleteDelegationReady) return;
-  window.__hyroxDeleteDelegationReady = true;
-  document.addEventListener('click', function(e){
-    const btn = e.target.closest('.js-delete-entry');
-    if (!btn) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const cat = btn.dataset.cat;
-    const id = btn.dataset.id;
-    hardDeleteEntry(cat, id);
-  }, true);
-}
-
-async function deleteEntry(id, cat) { return hardDeleteEntry(cat, id); }
 
 // ════════════════════════════════════
 // RACE RENDER + ANALYSIS
@@ -1820,7 +1651,7 @@ function renderRaces() {
         </div>
         ${r.comment ? `<div class="entry-meta" style="margin-top:2px;font-style:italic">${r.comment}</div>` : ''}
       </div>
-      <button type="button" class="del-btn js-delete-entry" data-cat="race" data-id="${escapeHtml(entryDeleteKey(r))}">✕</button>
+      <button class="del-btn" onclick="deleteRace(${JSON.stringify(String(r.id))})">✕</button>
     </div>`
   ).join('');
 
@@ -1869,7 +1700,16 @@ function renderRaces() {
   }
 }
 
-async function deleteRace(id) { return hardDeleteEntry('race', id); }
+async function deleteRace(id) {
+  if (!confirm('Supprimer cette course ?')) return;
+  const db = loadDB();
+  const entry = (db.races||[]).find(r=>String(r.id)===String(id) || String(r.local_id)===String(id) || String(r.supabase_id)===String(id));
+  db.races = db.races.filter(r=>String(r.id)!==String(id) && String(r.local_id)!==String(id) && String(r.supabase_id)!==String(id));
+  const ok = await sbDel('races', entry || id);
+  saveDB(db);
+  renderRaces();
+  if(!ok) alert('Course supprimée du téléphone, mais suppression Supabase non confirmée.');
+}
 
 // ════════════════════════════════════
 // CHART (lightweight SVG)
@@ -1977,12 +1817,12 @@ async function clearAll() {
 // ════════════════════════════════════
 
 const EXO_LABELS = {
-  squat:'Back squat', front_squat:'Front squat', rdl:'RDL bilatéral',
-  hip_thrust:'Hip thrust', bulgarian:'Bulgarian split squat', good_morning:'Good morning',
-  bench:'Développé couché', bench_incline:'Développé incliné', pullup:'Pull-up lestés',
-  press:'Strict press', push_press:'Push press', pendlay:'Pendlay row',
+  squat:'Back squat', front_squat:'Front squat', rdl:'RDL bilatéral', deadlift:'SDT / Deadlift',
+  hip_thrust:'Hip thrust', bulgarian:'Bulgarian split squat', good_morning:'Good morning', nordic_assiste:'Nordic assisté',
+  bench:'Développé couché', db_bench:'DC haltères', bench_incline:'Développé incliné', db_incline:'DI haltères', pullup:'Pull-up lestés',
+  press:'Strict press', push_press:'Push press', pendlay:'Pendlay row', rowing:'Rowing',
   curl:'Curl barre', skull:'Skull crusher', dips:'Dips lestés',
-  farmer:'Farmer carry', kb_swing:'KB swing', nordic:'Nordic'
+  farmer:'Farmer carry', sled_push:'Sled push', sled_pull:'Sled pull', ski_erg:'SkiErg', row_erg:'Rameur / RowErg', kb_swing:'KB swing', nordic:'Nordic'
 };
 
 // Intensités cibles du plan par exercice
@@ -2027,7 +1867,7 @@ async function saveCharge() {
   const entry={ id: Date.now(), date, exo, kg, reps, sets, rpe, rm_estimated: rm };
   entry.local_id = String(entry.id);
   const saved=await sbSave('charges',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
-  db.charges.push(entry); saveDB(db); clearCurrentDraft();
+  db.charges.push(entry); saveDB(db);
   displayRMResult(exo, kg, reps, rm);
   renderChargesHistory();
   const fb = document.getElementById('ch-feedback');
@@ -2045,7 +1885,7 @@ function displayRMResult(exo, kg, reps, rm) {
     `${kg} kg × (1 + ${reps}/30) = ${rm} kg`;
   
   // Choose intensities based on exercise type
-  const isCompound = ['squat','front_squat','rdl','bench','bench_incline','press','push_press'].includes(exo);
+  const isCompound = ['squat','front_squat','rdl','deadlift','bench','db_bench','bench_incline','db_incline','press','push_press','pendlay','rowing'].includes(exo);
   const intensities = isCompound ? PLAN_INTENSITIES : HYROX_INTENSITIES;
   
   const tableEl = document.getElementById('rm-table');
@@ -2189,7 +2029,7 @@ function renderChargesHistory(selectedExo) {
             }).slice(0,4).join('')}
           </div>
         </div>
-        <button type="button" class="del-btn js-delete-entry" data-cat="charge" data-id="${escapeHtml(entryDeleteKey(c))}">✕</button>
+        <button class="del-btn" onclick="deleteCharge(${JSON.stringify(String(c.id))})">✕</button>
       </div>`;
     }).join('')}`;
   
@@ -2201,7 +2041,16 @@ function renderChargesHistory(selectedExo) {
   drawLineChart(canvas, data, {color:'var(--gr)', min: Math.min(...data.map(d=>d.y))-5, max: Math.max(...data.map(d=>d.y))+5});
 }
 
-async function deleteCharge(id) { return hardDeleteEntry('charge', id); }
+async function deleteCharge(id) {
+  if (!confirm('Supprimer cette série ?')) return;
+  const db = loadDB();
+  const entry = (db.charges||[]).find(c=>String(c.id)===String(id) || String(c.local_id)===String(id) || String(c.supabase_id)===String(id));
+  db.charges = (db.charges||[]).filter(c => String(c.id)!==String(id) && String(c.local_id)!==String(id) && String(c.supabase_id)!==String(id));
+  const ok = await sbDel('charges', entry || id);
+  saveDB(db);
+  renderChargesHistory();
+  if(!ok) alert('Série supprimée du téléphone, mais suppression Supabase non confirmée.');
+}
 
 
 
@@ -2242,7 +2091,7 @@ async function saveMensur() {
   }
 
   entry.local_id = String(entry.id);
-  const saved=await sbSave('mensur',entry); if(saved&&saved.id)entry.supabase_id=saved.id; db.mensur.push(entry); saveDB(db); clearCurrentDraft();
+  const saved=await sbSave('mensur',entry); if(saved&&saved.id)entry.supabase_id=saved.id; db.mensur.push(entry); saveDB(db);
 
   const fb = document.getElementById('m-feedback');
   fb.style.display = 'block';
@@ -2326,21 +2175,8 @@ function renderMensur() {
 }
 
 // Init
-// Ne pas appeler showTab('dashboard') au chargement : cela écrase l'onglet mémorisé.
-// L'initialisation réelle est faite dans le listener load plus haut, qui restaure l'onglet actif.
-window.addEventListener('load',()=>{
-  syncAll().then(()=>{
-    const active = (document.querySelector('.sec.on')?.id || 'tab-dashboard').replace('tab-','');
-    // Après la synchro, on rerend l'onglet réellement affiché sans jamais forcer le dashboard.
-    if (active==='dashboard') renderDashboard();
-    else if (active==='history') renderHistory(loadUiState().histType || 'all');
-    else if (active==='race') renderRaces();
-    else if (active==='charges') renderChargesHistory();
-    else if (active==='mensur') renderMensur();
-  });
-});
-
-try { setupDeleteButtons(); } catch(e) {}
+showTab('dashboard');
+window.addEventListener('load',()=>syncAll().then(()=>renderDashboard()));
 </script>
 </body>
 </html>
