@@ -141,7 +141,7 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 <header class="hdr">
   <div class="hdr-badge">HYROX TRACKER · 2026</div>
   <h1>Performances & Analyse</h1>
-  <div class="hdr-sub">Objectif 1h10 · 15 novembre 2026</div>
+  <div class="hdr-sub">Objectif 1h10 · <span id="sync-status" style="font-family:monospace;font-size:9px;color:var(--tx4)">⏳</span> <button onclick="syncAll().then(()=>{renderDashboard();renderHistory('all');renderRaces();renderChargesHistory();renderMensur();})" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:4px;color:var(--tx3);font-family:monospace;font-size:9px;padding:1px 6px;cursor:pointer">↻ Sync</button></div>
   <div style="margin-top:.3rem">
     <a href="plan.html" style="display:inline-flex;align-items:center;gap:.4rem;
       background:#003d35;border:1px solid #009e87;border-radius:6px;
@@ -703,6 +703,19 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 </nav>
 
 <script>
+// ══ SUPABASE ══
+const SUPA_URL='https://bafypharhwkaqymjvqge.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhZnlwaGFyaHdrYXF5bWp2cWdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyODM0MTYsImV4cCI6MjA5NTg1OTQxNn0.NT7eGzDqUdTBOJMj6spixsb0QhnITjYWSXOkRtc1Uw4';
+function getDeviceId(){let id=localStorage.getItem('hyrox_device_id');if(!id){id='dev_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);localStorage.setItem('hyrox_device_id',id);}return id;}
+const DEVICE_ID=getDeviceId();
+const SB={'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','x-device-id':DEVICE_ID,'Prefer':'return=representation'};
+async function sbEnsureDevice(){const r=await fetch(SUPA_URL+'/rest/v1/device_users?device_id=eq.'+DEVICE_ID,{headers:SB});const d=await r.json();if(!d.length)await fetch(SUPA_URL+'/rest/v1/device_users',{method:'POST',headers:SB,body:JSON.stringify({device_id:DEVICE_ID})});}
+async function sbSave(table,entry){const p={...entry,device_id:DEVICE_ID};delete p.id;const r=await fetch(SUPA_URL+'/rest/v1/'+table,{method:'POST',headers:SB,body:JSON.stringify(p)});if(!r.ok)console.warn('sb save fail',await r.text());}
+async function sbLoad(table){const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?device_id=eq.'+DEVICE_ID+'&order=created_at.desc',{headers:SB});return r.ok?await r.json()[];}
+async function sbDel(table,id){await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+id,{method:'DELETE',headers:SB});}
+async function syncAll(){const el=document.getElementById('sync-status');if(el)el.textContent='Sync...';try{await sbEnsureDevice();const[tr,po,te,ra,ch,me]=await Promise.all([sbLoad('trainings'),sbLoad('poids'),sbLoad('tests'),sbLoad('races'),sbLoad('charges'),sbLoad('mensur')]);const db={trainings:tr,poids:po,tests:te,races:ra,charges:ch,mensur:me};saveDB(db);if(el){el.textContent='✅ '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});el.style.color='var(--gr)';}return db;}catch(e){if(el){el.textContent='❌ Offline';el.style.color='var(--rd)';}return loadDB();}}
+// ═══════════════
+
 // ════════════════════════════════════
 // DATA LAYER
 // ════════════════════════════════════
@@ -874,7 +887,7 @@ function saveTraining() {
     entry.sp_bbj = +document.getElementById('t-sp-bbj').value || null;
     entry.sp_wb = document.getElementById('t-sp-wb').value;
   }
-  db.trainings.push(entry);
+  db.trainings.push(entry); sbSave('trainings',entry);
   
   // Auto-extract charges for 1RM calculation
   if (['str_bas','str_haut','str_full'].includes(type)) {
@@ -965,8 +978,7 @@ function saveRace() {
     fonc_total: document.getElementById('r-fonc').value,
     comment: document.getElementById('r-comment').value
   };
-  db.races.push(race);
-  saveDB(db);
+  db.races.push(race); sbSave('races',race); saveDB(db);
   document.getElementById('race-feedback').style.display = 'block';
   setTimeout(() => {
     document.getElementById('race-feedback').style.display='none';
@@ -1817,8 +1829,7 @@ function saveMensur() {
     return;
   }
 
-  db.mensur.push(entry);
-  saveDB(db);
+  db.mensur.push(entry); sbSave('mensur',entry); saveDB(db);
 
   const fb = document.getElementById('m-feedback');
   fb.style.display = 'block';
@@ -1903,6 +1914,7 @@ function renderMensur() {
 
 // Init
 showTab('dashboard');
+window.addEventListener('load',()=>syncAll().then(()=>renderDashboard()));
 </script>
 </body>
 </html>
