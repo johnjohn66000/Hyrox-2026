@@ -169,6 +169,11 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
   <!-- Alertes intelligentes -->
   <div id="alerts-zone"></div>
 
+  <div class="card">
+    <div class="card-title">Coach HYROX <span>analyse automatique</span></div>
+    <div id="coach-zone"></div>
+  </div>
+
   <!-- Stats rapides -->
   <div class="card">
     <div class="card-title">Cette semaine</div>
@@ -262,6 +267,7 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
           <option value="str_haut">Muscu — Half-body haut</option>
           <option value="str_full">Muscu — Full body</option>
           <option value="ergo">Ergomètres (Row/Ski)</option>
+          <option value="bike">Vélo Z2 / Flush</option>
           <option value="mob">Mobilité</option>
         </select>
       </div>
@@ -412,7 +418,7 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
       </div>
       <div class="field-row">
         <div class="field"><label>Résultat (mm:ss ou kg)</label><input type="text" id="ts-result" placeholder="ex : 23:45 ou 105 kg"></div>
-        <div class="field"><label>Cible</label><input type="text" id="ts-cible" placeholder="ex : 22:00" readonly id="ts-cible"></div>
+        <div class="field"><label>Cible</label><input type="text" id="ts-cible" placeholder="ex : 22:00" readonly></div>
       </div>
       <div class="field"><label>Commentaire</label>
         <input type="text" id="ts-comment" placeholder="Conditions, ressenti...">
@@ -724,9 +730,25 @@ function getDeviceId(){let id=localStorage.getItem('hyrox_device_id');if(!id){id
 const DEVICE_ID=getDeviceId();
 const SB={'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','x-device-id':DEVICE_ID,'Prefer':'return=representation'};
 async function sbEnsureDevice(){const r=await fetch(SUPA_URL+'/rest/v1/device_users?device_id=eq.'+DEVICE_ID,{headers:SB});const d=await r.json();if(!d.length)await fetch(SUPA_URL+'/rest/v1/device_users',{method:'POST',headers:SB,body:JSON.stringify({device_id:DEVICE_ID})});}
-async function sbSave(table,entry){const p={...entry,device_id:DEVICE_ID};delete p.id;const r=await fetch(SUPA_URL+'/rest/v1/'+table,{method:'POST',headers:SB,body:JSON.stringify(p)});if(!r.ok)console.warn('sb save fail',await r.text());}
+async function sbSave(table,entry){
+  try{
+    const p={...entry,device_id:DEVICE_ID};
+    delete p.id; // conserve la logique Supabase existante : id géré côté table
+    const r=await fetch(SUPA_URL+'/rest/v1/'+table,{method:'POST',headers:SB,body:JSON.stringify(p)});
+    if(!r.ok){console.warn('sb save fail',table,await r.text());return null;}
+    const data=await r.json().catch(()=>[]);
+    return Array.isArray(data)?(data[0]||null):data;
+  }catch(e){console.warn('sb save offline/fail',table,e);return null;}
+}
 async function sbLoad(table){const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?device_id=eq.'+DEVICE_ID+'&order=created_at.desc',{headers:SB});return r.ok?await r.json():[];}
-async function sbDel(table,id){await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+id,{method:'DELETE',headers:SB});}
+async function sbDel(table,id){
+  if(id===undefined||id===null||id==='')return false;
+  try{
+    const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+encodeURIComponent(id),{method:'DELETE',headers:SB});
+    if(!r.ok)console.warn('sb delete fail',table,id,await r.text());
+    return r.ok;
+  }catch(e){console.warn('sb delete offline/fail',table,id,e);return false;}
+}
 async function syncAll(){const el=document.getElementById('sync-status');if(el)el.textContent='Sync...';try{await sbEnsureDevice();const[tr,po,te,ra,ch,me]=await Promise.all([sbLoad('trainings'),sbLoad('poids'),sbLoad('tests'),sbLoad('races'),sbLoad('charges'),sbLoad('mensur')]);const db={trainings:tr,poids:po,tests:te,races:ra,charges:ch,mensur:me};saveDB(db);if(el){el.textContent='✅ '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});el.style.color='var(--gr)';}return db;}catch(e){if(el){el.textContent='❌ Offline';el.style.color='var(--rd)';}return loadDB();}}
 // ═══════════════
 
@@ -735,10 +757,16 @@ async function syncAll(){const el=document.getElementById('sync-status');if(el)e
 // ════════════════════════════════════
 const DB_KEY = 'hyrox_tracker_v1';
 
+function emptyDB(){return {trainings:[],poids:[],tests:[],races:[],charges:[],mensur:[]};}
+function normalizeDB(db){return {...emptyDB(), ...(db||{})};}
 function loadDB() {
-  try { return JSON.parse(localStorage.getItem(DB_KEY)) || {trainings:[],poids:[],tests:[],races:[]}; }
-  catch { return {trainings:[],poids:[],tests:[],races:[]}; }
+  try { return normalizeDB(JSON.parse(localStorage.getItem(DB_KEY))); }
+  catch { return emptyDB(); }
 }
+function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function parsePaceToSec(p){return timeToSec(p);}
+function isRecentDate(date,days){if(!date)return false;const d=new Date(date);const now=new Date();return (now-d)/(1000*60*60*24)<=days;}
+function tableForCat(cat){return {training:'trainings',test:'tests',poids:'poids',race:'races',charge:'charges',mensur:'mensur'}[cat]||cat;}
 function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
 
 // Cibles par type de test
@@ -756,13 +784,13 @@ const CIBLES = {
 const RPE_CIBLES = {
   vma:'8.5–9', tempo:'7.5–8', z2:'4–5', long:'4–6',
   compromised:'7.5–8', simulation:'race', str_bas:'7.5–8.5',
-  str_haut:'7.5–8', str_full:'7–8', ergo:'6–7', mob:'2–3'
+  str_haut:'7.5–8', str_full:'7–8', ergo:'6–7', bike:'3–5', mob:'2–3'
 };
 
 const TYPE_ICONS = {
   vma:'⚡', tempo:'🏃', z2:'🚶', long:'🛤️', compromised:'💥',
   simulation:'🏁', str_bas:'🦵', str_haut:'💪', str_full:'🏋️',
-  ergo:'🚣', mob:'🧘', poids:'⚖️', test:'🎯', race:'🏆'
+  ergo:'🚣', bike:'🚴', mob:'🧘', poids:'⚖️', test:'🎯', race:'🏆'
 };
 
 function timeToSec(t) {
@@ -916,26 +944,27 @@ function renderStrExercises() {
     return;
   }
   box.innerHTML = window._strExos.map(exo=>{
-    const name = EXO_NAMES[exo.key]||exo.key;
+    const name = escapeHtml(EXO_NAMES[exo.key]||exo.key);
     const rows = exo.series.map((s,i)=>{
       const rm = (s.kg&&s.reps)?('~'+(Math.round(parseFloat(s.kg)*(1+parseInt(s.reps)/30)*4)/4)+' kg 1RM'):'';
-      return '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;align-items:center;margin:.2rem 0">'
-        +'<input type="number" step="0.5" placeholder="kg" value="'+s.kg+'" oninput="strUpdate(''+exo.key+'','+i+','kg',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">'
-        +'<input type="number" placeholder="reps" value="'+s.reps+'" oninput="strUpdate(''+exo.key+'','+i+','reps',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">'
-        +'<span id="rm-prev-'+exo.key+'-'+i+'" style="font-family:monospace;font-size:10px;color:'+(rm?'var(--gr)':'var(--tx4)')+'">'+( rm||'1RM auto')+'</span>'
-        +'<button onclick="strRemoveSerie(''+exo.key+'','+i+')" style="background:transparent;border:0;color:var(--tx4);font-size:15px;cursor:pointer;line-height:1;padding:0">×</button>'
-        +'</div>';
+      return `<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;align-items:center;margin:.2rem 0">
+        <input type="number" step="0.5" placeholder="kg" value="${escapeHtml(s.kg)}" oninput="strUpdate('${exo.key}',${i},'kg',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">
+        <input type="number" placeholder="reps" value="${escapeHtml(s.reps)}" oninput="strUpdate('${exo.key}',${i},'reps',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">
+        <span id="rm-prev-${exo.key}-${i}" style="font-family:monospace;font-size:10px;color:${rm?'var(--gr)':'var(--tx4)'}">${rm||'1RM auto'}</span>
+        <button onclick="strRemoveSerie('${exo.key}',${i})" style="background:transparent;border:0;color:var(--tx4);font-size:15px;cursor:pointer;line-height:1;padding:0">×</button>
+      </div>`;
     }).join('');
-    return '<div style="background:var(--bg2);border:1px solid var(--bo2);border-radius:8px;padding:.55rem .65rem;margin-bottom:.4rem">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem">'
-      +'<span style="font-size:12.5px;font-weight:700;color:var(--tx)">'+name+'</span>'
-      +'<button onclick="strRemoveExo(''+exo.key+'')" style="background:transparent;border:0;color:var(--tx4);font-family:monospace;font-size:10px;cursor:pointer">Retirer</button>'
-      +'</div>'
-      +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;font-family:monospace;font-size:9px;color:var(--tx4);margin-bottom:.2rem">'
-      +'<span>Poids (kg)</span><span>Reps</span><span>1RM estimé</span><span></span></div>'
-      +rows
-      +'<button onclick="strAddSerie(''+exo.key+'')" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;color:var(--tx3);font-family:monospace;font-size:10px;padding:.25rem .6rem;cursor:pointer;margin-top:.3rem">+ Série</button>'
-      +'</div>';
+    return `<div style="background:var(--bg2);border:1px solid var(--bo2);border-radius:8px;padding:.55rem .65rem;margin-bottom:.4rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem">
+        <span style="font-size:12.5px;font-weight:700;color:var(--tx)">${name}</span>
+        <button onclick="strRemoveExo('${exo.key}')" style="background:transparent;border:0;color:var(--tx4);font-family:monospace;font-size:10px;cursor:pointer">Retirer</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;font-family:monospace;font-size:9px;color:var(--tx4);margin-bottom:.2rem">
+        <span>Poids (kg)</span><span>Reps</span><span>1RM estimé</span><span></span>
+      </div>
+      ${rows}
+      <button onclick="strAddSerie('${exo.key}')" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;color:var(--tx3);font-family:monospace;font-size:10px;padding:.25rem .6rem;cursor:pointer;margin-top:.3rem">+ Série</button>
+    </div>`;
   }).join('');
 }
 
@@ -947,7 +976,7 @@ document.getElementById('t-type').addEventListener('change', function(){
   }
 });
 // ═══════════════════════════════════════
-function saveTraining() {
+async function saveTraining() {
   const db = loadDB();
   const type = document.getElementById('t-type').value;
   if (!type) { alert('Choisis un type de séance.'); return; }
@@ -989,7 +1018,7 @@ function saveTraining() {
     entry.sp_bbj = +document.getElementById('t-sp-bbj').value || null;
     entry.sp_wb = document.getElementById('t-sp-wb').value;
   }
-  db.trainings.push(entry); sbSave('trainings',entry);
+  const savedTraining=await sbSave('trainings',entry); if(savedTraining&&savedTraining.id)entry.id=savedTraining.id; db.trainings.push(entry);
   
   // Auto-extract charges for 1RM calculation
   if (['str_bas','str_haut','str_full'].includes(type)) {
@@ -1012,35 +1041,27 @@ function saveTraining() {
   setTimeout(() => fb.style.display='none', 2000);
 }
 
-function savePoids() {
+async function savePoids() {
   const db = loadDB();
-  db.poids.push({
-    id: Date.now(),
-    date: document.getElementById('p-date').value,
-    val: +document.getElementById('p-val').value,
-    moment: document.getElementById('p-moment').value
-  });
-  saveDB(db);
+  const entry={id: Date.now(),date: document.getElementById('p-date').value,val: +document.getElementById('p-val').value,moment: document.getElementById('p-moment').value};
+  if(!entry.date || !entry.val){ alert('Date et poids obligatoires.'); return; }
+  const saved=await sbSave('poids',entry); if(saved&&saved.id)entry.id=saved.id;
+  db.poids.push(entry); saveDB(db);
   document.getElementById('poids-feedback').style.display = 'block';
   setTimeout(() => document.getElementById('poids-feedback').style.display='none', 2000);
 }
 
-function saveTest() {
+async function saveTest() {
   const db = loadDB();
-  db.tests.push({
-    id: Date.now(),
-    date: document.getElementById('ts-date').value,
-    type: document.getElementById('ts-type').value,
-    result: document.getElementById('ts-result').value,
-    cible: document.getElementById('ts-cible').value,
-    comment: document.getElementById('ts-comment').value
-  });
-  saveDB(db);
+  const entry={id: Date.now(),date: document.getElementById('ts-date').value,type: document.getElementById('ts-type').value,result: document.getElementById('ts-result').value,cible: document.getElementById('ts-cible').value,comment: document.getElementById('ts-comment').value};
+  if(!entry.date || !entry.type || !entry.result){ alert('Date, type et résultat obligatoires.'); return; }
+  const saved=await sbSave('tests',entry); if(saved&&saved.id)entry.id=saved.id;
+  db.tests.push(entry); saveDB(db);
   document.getElementById('test-feedback').style.display = 'block';
   setTimeout(() => document.getElementById('test-feedback').style.display='none', 2000);
 }
 
-function saveRace() {
+async function saveRace() {
   const db = loadDB();
   const race = {
     id: Date.now(),
@@ -1065,7 +1086,7 @@ function saveRace() {
     fonc_total: document.getElementById('r-fonc').value,
     comment: document.getElementById('r-comment').value
   };
-  db.races.push(race); sbSave('races',race); saveDB(db);
+  const savedRace=await sbSave('races',race); if(savedRace&&savedRace.id)race.id=savedRace.id; db.races.push(race); saveDB(db);
   document.getElementById('race-feedback').style.display = 'block';
   setTimeout(() => {
     document.getElementById('race-feedback').style.display='none';
@@ -1076,9 +1097,39 @@ function saveRace() {
 // ════════════════════════════════════
 // DASHBOARD ANALYSIS ENGINE
 // ════════════════════════════════════
+
+function getLastNDays(items,days){return (items||[]).filter(x=>isRecentDate(x.date,days));}
+function avg(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;}
+function renderCoachZone(db){
+  const zone=document.getElementById('coach-zone'); if(!zone)return;
+  const recent=getLastNDays(db.trainings||[],7);
+  const runTypes=['vma','tempo','z2','long','compromised','simulation'];
+  const legTypes=['vma','tempo','long','compromised','simulation','str_bas'];
+  const runImpact=recent.filter(t=>runTypes.includes(t.type)).reduce((s,t)=>s+(+t.duree||45),0);
+  const legLoad=recent.filter(t=>legTypes.includes(t.type)).reduce((s,t)=>s+(+t.rpe||6)*(+t.duree||45),0);
+  const bikeErgo=recent.filter(t=>['bike','ergo','mob'].includes(t.type)).reduce((s,t)=>s+(+t.duree||30),0);
+  const spCount=recent.filter(t=>['compromised','simulation'].includes(t.type)).length;
+  const z2Hard=recent.filter(t=>['z2','long','bike','ergo'].includes(t.type)&&(+t.rpe)>=6).length;
+  let readiness=100;
+  readiness-=Math.min(35,Math.round(legLoad/90));
+  readiness-=Math.min(20,Math.max(0,recent.filter(t=>(+t.rpe)>=8.5).length-1)*8);
+  readiness+=Math.min(10,Math.round(bikeErgo/60)*2);
+  readiness=Math.max(35,Math.min(100,readiness));
+  const color=readiness>=75?'var(--ok)':readiness>=60?'var(--am)':'var(--rd)';
+  const msg=readiness>=75?'Charge maîtrisée : tu peux pousser les séances clés.':readiness>=60?'Charge correcte mais jambes à surveiller : privilégie vélo/ergo pour le volume facile.':'Risque surcharge : protège ischios/mollets, évite excentrique lourd et BBJ volumineux.';
+  const action=z2Hard? 'Ta Z2 coûte trop cher : baisse l’allure ou passe en vélo flush.': spCount===0&&recent.length>=4 ? 'Aucun stimulus HYROX spécifique récent : ok en blocs A/B/C, à corriger en pré-comp.' : 'Priorité : qualité sur force/VO2, volume facile sans dette mécanique.';
+  zone.innerHTML=`<div class="stat-grid3">
+    <div class="stat-box"><div class="val" style="color:${color}">${readiness}</div><div class="lbl">Readiness</div></div>
+    <div class="stat-box"><div class="val">${Math.round(runImpact)}</div><div class="lbl">Min impact run</div></div>
+    <div class="stat-box"><div class="val">${spCount}</div><div class="lbl">SP/Sim 7j</div></div>
+  </div>
+  <div class="alert ${readiness>=75?'alert-ok':readiness>=60?'alert-warn':'alert-bad'}"><span class="alert-icon">🧠</span><div><b>${msg}</b><br>${action}</div></div>`;
+}
+
 function renderDashboard() {
   const db = loadDB();
   renderAlerts(db);
+  renderCoachZone(db);
   renderWeekStats(db);
   renderForceProgression(db);
   renderPoidsChart(db);
@@ -1106,6 +1157,14 @@ function renderAlerts(db) {
   } else if (highRpe.length >= 2) {
     alerts.push({type:'warn', icon:'⚠️', text:'RPE élevé sur 2 séances récentes. Surveille la récupération cette semaine.'});
   }
+
+  // HYROX — surcharge jambes / Z2 trop dure
+  const last7 = getLastNDays(trainings,7);
+  const legStress = last7.filter(t=>['vma','tempo','long','compromised','simulation','str_bas'].includes(t.type)).length;
+  const posteriorChain = last7.filter(t=>t.type==='str_bas' && /rdl|nordic|good morning|ischio/i.test((t.comment||'')+JSON.stringify(t.exercises||[]))).length;
+  const z2TooHard = last7.filter(t=>['z2','long','bike','ergo'].includes(t.type) && (+t.rpe)>=6).length;
+  if(legStress>=5 || (legStress>=4&&posteriorChain>=1)) alerts.push({type:'warn', icon:'🦵', text:'<b>Charge jambes élevée</b> — trop de contraintes impact/excentrique sur 7 jours. Garde le volume, mais bascule le facile en vélo/ergo.'});
+  if(z2TooHard>=1) alerts.push({type:'warn', icon:'🚴', text:'Z2 / récup trop coûteuse : RPE ≥6. Baisse l’intensité ou remplace par vélo flush.'});
 
   // ② Alerte poids : perte > 500g/sem
   const poids = (db.poids||[]).filter(p=>p.moment==='matin').sort((a,b)=>b.date.localeCompare(a.date));
@@ -1438,6 +1497,7 @@ function deleteEntry(id, cat) {
   if (cat==='training') db.trainings = db.trainings.filter(t=>t.id!==id);
   if (cat==='test') db.tests = db.tests.filter(t=>t.id!==id);
   if (cat==='poids') db.poids = db.poids.filter(t=>t.id!==id);
+  sbDel(tableForCat(cat), id);
   saveDB(db);
   renderHistory('all');
 }
@@ -1534,6 +1594,7 @@ function deleteRace(id) {
   if (!confirm('Supprimer cette course ?')) return;
   const db = loadDB();
   db.races = db.races.filter(r=>r.id!==id);
+  sbDel('races', id);
   saveDB(db);
   renderRaces();
 }
@@ -1676,7 +1737,7 @@ function epley(kg, reps) {
 // Round to nearest 2.5kg for practical use
 function round25(kg) { return Math.round(kg / 2.5) * 2.5; }
 
-function saveCharge() {
+async function saveCharge() {
   const db = loadDB();
   const exo = document.getElementById('ch-exo').value;
   const kg = parseFloat(document.getElementById('ch-kg').value);
@@ -1684,21 +1745,14 @@ function saveCharge() {
   const sets = parseInt(document.getElementById('ch-sets').value) || 1;
   const date = document.getElementById('ch-date').value;
   const rpe = parseFloat(document.getElementById('ch-rpe').value);
-  
   if (!exo || !kg || !reps) { alert('Exercice, charge et reps obligatoires.'); return; }
-  
   const rm = epley(kg, reps);
-  
   if (!db.charges) db.charges = [];
-  db.charges.push({ id: Date.now(), date, exo, kg, reps, sets, rpe, rm_estimated: rm });
-  saveDB(db);
-  
-  // Show result
+  const entry={ id: Date.now(), date, exo, kg, reps, sets, rpe, rm_estimated: rm };
+  const saved=await sbSave('charges',entry); if(saved&&saved.id)entry.id=saved.id;
+  db.charges.push(entry); saveDB(db);
   displayRMResult(exo, kg, reps, rm);
-  
-  // Refresh history tabs
   renderChargesHistory();
-  
   const fb = document.getElementById('ch-feedback');
   fb.style.display = 'block';
   setTimeout(() => fb.style.display = 'none', 2000);
@@ -1874,6 +1928,7 @@ function deleteCharge(id) {
   if (!confirm('Supprimer cette série ?')) return;
   const db = loadDB();
   db.charges = (db.charges||[]).filter(c => c.id !== id);
+  sbDel('charges', id);
   saveDB(db);
   renderChargesHistory();
 }
@@ -1895,7 +1950,7 @@ const MENSUR_FIELDS = [
   { key: 'biceps',   label: 'Biceps',   unit: 'cm', color: '#ffb800', icon: '💪', trend: 'up' },
 ];
 
-function saveMensur() {
+async function saveMensur() {
   const db = loadDB();
   if (!db.mensur) db.mensur = [];
 
@@ -1916,7 +1971,7 @@ function saveMensur() {
     return;
   }
 
-  db.mensur.push(entry); sbSave('mensur',entry); saveDB(db);
+  const saved=await sbSave('mensur',entry); if(saved&&saved.id)entry.id=saved.id; db.mensur.push(entry); saveDB(db);
 
   const fb = document.getElementById('m-feedback');
   fb.style.display = 'block';
