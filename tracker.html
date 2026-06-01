@@ -977,19 +977,23 @@ function today() { return new Date().toISOString().split('T')[0]; }
 // ════════════════════════════════════
 // NAVIGATION
 // ════════════════════════════════════
-function showTab(t) {
-  if (!document.getElementById('tab-'+t)) t = 'dashboard';
+function showTab(t, opts={}) {
+  const tabs = ['dashboard','log','history','race','charges','mensur'];
+  if (!tabs.includes(t) || !document.getElementById('tab-'+t)) t = 'dashboard';
   saveUiState({activeTab:t});
+  if (!opts.silentHash) {
+    try { history.replaceState(null, '', '#'+t); } catch(e) {}
+  }
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
   document.getElementById('tab-'+t).classList.add('on');
   document.querySelectorAll('.tab').forEach((b,i) => {
-    b.classList.toggle('on', ['dashboard','log','history','race','charges','mensur'][i]===t);
+    b.classList.toggle('on', tabs[i]===t);
   });
   document.querySelectorAll('.dock-btn').forEach((b,i) => {
-    b.classList.toggle('on', ['dashboard','log','history','race','charges','mensur'][i]===t);
+    b.classList.toggle('on', tabs[i]===t);
   });
   if (t==='dashboard') renderDashboard();
-  if (t==='history') renderHistory('all');
+  if (t==='history') renderHistory(loadUiState().histType || 'all');
   if (t==='race') renderRaces();
   if (t==='charges') renderChargesHistory();
   if (t==='mensur') renderMensur();
@@ -1048,10 +1052,17 @@ window.addEventListener('load', () => {
   });
   setupDraftAutosave();
   restoreCurrentDraft();
+  const tabs = ['dashboard','log','history','race','charges','mensur'];
+  const hashTab = (location.hash || '').replace('#','');
   const ui = loadUiState();
   const draft = (() => { try { return JSON.parse(localStorage.getItem(DRAFT_KEY)) || {}; } catch { return {}; } })();
-  const targetTab = draft.activeTab || ui.activeTab || 'dashboard';
-  showTab(targetTab);
+  const targetTab = tabs.includes(hashTab) ? hashTab : (draft.activeTab || ui.activeTab || 'dashboard');
+  showTab(targetTab, {silentHash: tabs.includes(hashTab)});
+});
+
+window.addEventListener('hashchange', () => {
+  const t = (location.hash || '').replace('#','');
+  if (['dashboard','log','history','race','charges','mensur'].includes(t)) showTab(t, {silentHash:true});
 });
 
 // ════════════════════════════════════
@@ -1691,9 +1702,9 @@ async function deleteEntry(id, cat) {
   if (cat==='training') db.trainings = db.trainings.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
   if (cat==='test') db.tests = db.tests.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
   if (cat==='poids') db.poids = db.poids.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
-  const ok = await sbDel(tableForCat(cat), entry || id);
   saveDB(db);
-  renderHistory('all');
+  renderHistory(loadUiState().histType || 'all');
+  const ok = await sbDel(tableForCat(cat), entry || id);
   if(!ok) alert('Entrée supprimée du téléphone, mais suppression Supabase non confirmée. Vérifie la table ou synchronise.');
 }
 
@@ -1790,9 +1801,9 @@ async function deleteRace(id) {
   const db = loadDB();
   const entry = (db.races||[]).find(r=>String(r.id)===String(id) || String(r.local_id)===String(id) || String(r.supabase_id)===String(id));
   db.races = db.races.filter(r=>String(r.id)!==String(id) && String(r.local_id)!==String(id) && String(r.supabase_id)!==String(id));
-  const ok = await sbDel('races', entry || id);
   saveDB(db);
   renderRaces();
+  const ok = await sbDel('races', entry || id);
   if(!ok) alert('Course supprimée du téléphone, mais suppression Supabase non confirmée.');
 }
 
@@ -2131,9 +2142,9 @@ async function deleteCharge(id) {
   const db = loadDB();
   const entry = (db.charges||[]).find(c=>String(c.id)===String(id) || String(c.local_id)===String(id) || String(c.supabase_id)===String(id));
   db.charges = (db.charges||[]).filter(c => String(c.id)!==String(id) && String(c.local_id)!==String(id) && String(c.supabase_id)!==String(id));
-  const ok = await sbDel('charges', entry || id);
   saveDB(db);
   renderChargesHistory();
+  const ok = await sbDel('charges', entry || id);
   if(!ok) alert('Série supprimée du téléphone, mais suppression Supabase non confirmée.');
 }
 
@@ -2263,14 +2274,14 @@ function renderMensur() {
 // Ne pas appeler showTab('dashboard') au chargement : cela écrase l'onglet mémorisé.
 // L'initialisation réelle est faite dans le listener load plus haut, qui restaure l'onglet actif.
 window.addEventListener('load',()=>{
-  const currentTab = (loadUiState().activeTab || 'dashboard');
   syncAll().then(()=>{
-    // Après la synchro, on rerend l'onglet courant au lieu de renvoyer au dashboard.
-    if (currentTab==='dashboard') renderDashboard();
-    else if (currentTab==='history') renderHistory(loadUiState().histType || 'all');
-    else if (currentTab==='race') renderRaces();
-    else if (currentTab==='charges') renderChargesHistory();
-    else if (currentTab==='mensur') renderMensur();
+    const active = (document.querySelector('.sec.on')?.id || 'tab-dashboard').replace('tab-','');
+    // Après la synchro, on rerend l'onglet réellement affiché sans jamais forcer le dashboard.
+    if (active==='dashboard') renderDashboard();
+    else if (active==='history') renderHistory(loadUiState().histType || 'all');
+    else if (active==='race') renderRaces();
+    else if (active==='charges') renderChargesHistory();
+    else if (active==='mensur') renderMensur();
   });
 });
 </script>
