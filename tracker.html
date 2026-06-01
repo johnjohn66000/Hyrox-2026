@@ -1229,6 +1229,23 @@ function strUpdate(key,idx,field,val) {
   if(el&&kg&&reps){el.textContent='~'+(Math.round(kg*(1+reps/30)*4)/4)+' kg 1RM';el.style.color='var(--gr)';}
 }
 
+function syncStrExercisesFromDom(){
+  // Sécurise l'enregistrement sur mobile : la dernière valeur saisie peut ne pas
+  // avoir déclenché oninput avant le clic sur « Enregistrer ». On relit donc le DOM.
+  try{
+    document.querySelectorAll('[data-str-key][data-str-idx][data-str-field]').forEach(function(input){
+      var key = input.getAttribute('data-str-key');
+      var idx = parseInt(input.getAttribute('data-str-idx'),10);
+      var field = input.getAttribute('data-str-field');
+      var e = (window._strExos||[]).find(function(x){return x.key===key;});
+      if(!e) return;
+      if(!e.series[idx]) e.series[idx] = {kg:'',reps:''};
+      e.series[idx][field] = input.value;
+    });
+    saveCurrentDraft();
+  }catch(e){console.warn('syncStrExercisesFromDom fail', e);}
+}
+
 function renderStrExercises() {
   const box = document.getElementById('str-exercises-list');
   if(!box)return;
@@ -1241,8 +1258,8 @@ function renderStrExercises() {
     const rows = exo.series.map((s,i)=>{
       const rm = (s.kg&&s.reps)?('~'+(Math.round(parseFloat(s.kg)*(1+parseInt(s.reps)/30)*4)/4)+' kg 1RM'):'';
       return `<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;align-items:center;margin:.2rem 0">
-        <input type="number" step="0.5" placeholder="kg" value="${escapeHtml(s.kg)}" oninput="strUpdate('${exo.key}',${i},'kg',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">
-        <input type="number" placeholder="reps" value="${escapeHtml(s.reps)}" oninput="strUpdate('${exo.key}',${i},'reps',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">
+        <input type="number" step="0.5" placeholder="kg" value="${escapeHtml(s.kg)}" data-str-key="${escapeHtml(exo.key)}" data-str-idx="${i}" data-str-field="kg" oninput="strUpdate('${exo.key}',${i},'kg',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">
+        <input type="number" placeholder="reps" value="${escapeHtml(s.reps)}" data-str-key="${escapeHtml(exo.key)}" data-str-idx="${i}" data-str-field="reps" oninput="strUpdate('${exo.key}',${i},'reps',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">
         <span id="rm-prev-${exo.key}-${i}" style="font-family:monospace;font-size:10px;color:${rm?'var(--gr)':'var(--tx4)'}">${rm||'1RM auto'}</span>
         <button onclick="strRemoveSerie('${exo.key}',${i})" style="background:transparent;border:0;color:var(--tx4);font-size:15px;cursor:pointer;line-height:1;padding:0">×</button>
       </div>`;
@@ -1374,6 +1391,7 @@ async function saveTraining() {
     entry.fc = entry.fc_max; // compatibilité locale avec anciennes données
   }
   if (['str_bas','str_haut','str_full'].includes(type)) {
+    if (typeof syncStrExercisesFromDom === 'function') syncStrExercisesFromDom();
     entry.exercises = (window._strExos||[]).map(exo=>({
       key: exo.key,
       label: EXO_NAMES[exo.key]||exo.key,
