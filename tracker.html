@@ -741,9 +741,11 @@ window.__lastSupabaseError = null;
 async function sbSave(table,entry){
   window.__lastSupabaseError = null;
   try{
-    const p={...entry,device_id:DEVICE_ID};
+    const localId = entry.local_id || entry.id || (Date.now()+'_'+Math.random().toString(36).slice(2));
+    const p={...entry,device_id:DEVICE_ID,local_id:String(localId)};
     if(table==='trainings'){ delete p.fc; } // évite l'échec si la colonne legacy fc n'existe pas
-    delete p.id; // conserve la logique Supabase existante : id géré côté table
+    delete p.id;          // id reste géré par Supabase
+    delete p.supabase_id; // colonne locale uniquement
     const r=await fetch(SUPA_URL+'/rest/v1/'+table,{method:'POST',headers:SB,body:JSON.stringify(p)});
     if(!r.ok){
       const txt=await r.text();
@@ -774,13 +776,29 @@ function showSupabaseSaveStatus(ok, table){
   setTimeout(()=>{fb.style.display='none';}, ok ? 2500 : 9000);
 }
 async function sbLoad(table){const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?device_id=eq.'+DEVICE_ID+'&order=created_at.desc',{headers:SB});return r.ok?await r.json():[];}
-async function sbDel(table,id){
-  if(id===undefined||id===null||id==='')return false;
+async function sbDel(table,entryOrId){
+  const entry = (entryOrId && typeof entryOrId === 'object') ? entryOrId : {id:entryOrId,local_id:entryOrId};
+  const remoteId = entry.supabase_id;
+  const localId = entry.local_id || entry.id;
+  if((remoteId===undefined||remoteId===null||remoteId==='') && (localId===undefined||localId===null||localId===''))return false;
   try{
-    const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+encodeURIComponent(id),{method:'DELETE',headers:SB});
-    if(!r.ok)console.warn('sb delete fail',table,id,await r.text());
-    return r.ok;
-  }catch(e){console.warn('sb delete offline/fail',table,id,e);return false;}
+    // 1) Suppression la plus fiable pour les nouvelles entrées : local_id + device_id
+    if(localId!==undefined && localId!==null && localId!==''){
+      const url=SUPA_URL+'/rest/v1/'+table+'?local_id=eq.'+encodeURIComponent(String(localId))+'&device_id=eq.'+encodeURIComponent(DEVICE_ID);
+      const r=await fetch(url,{method:'DELETE',headers:SB});
+      if(r.ok)return true;
+      const txt=await r.text();
+      console.warn('sb delete by local_id fail',table,localId,txt);
+    }
+    // 2) Fallback pour les anciennes entrées qui ont gardé l'id Supabase en local
+    const idToDelete = remoteId || entry.id;
+    if(idToDelete!==undefined && idToDelete!==null && idToDelete!==''){
+      const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+encodeURIComponent(String(idToDelete)),{method:'DELETE',headers:SB});
+      if(!r.ok)console.warn('sb delete by id fail',table,idToDelete,await r.text());
+      return r.ok;
+    }
+    return false;
+  }catch(e){console.warn('sb delete offline/fail',table,entryOrId,e);return false;}
 }
 async function syncAll(){const el=document.getElementById('sync-status');if(el)el.textContent='Sync...';try{await sbEnsureDevice();const[tr,po,te,ra,ch,me]=await Promise.all([sbLoad('trainings'),sbLoad('poids'),sbLoad('tests'),sbLoad('races'),sbLoad('charges'),sbLoad('mensur')]);const db={trainings:tr,poids:po,tests:te,races:ra,charges:ch,mensur:me};saveDB(db);if(el){el.textContent='✅ '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});el.style.color='var(--gr)';}return db;}catch(e){if(el){el.textContent='❌ Offline';el.style.color='var(--rd)';}return loadDB();}}
 // ═══════════════
@@ -1058,7 +1076,8 @@ async function saveTraining() {
     entry.fc_max = +document.getElementById('t-sp-fc-max').value || null;
     entry.fc = entry.fc_max; // compatibilité locale avec anciennes données
   }
-  const savedTraining=await sbSave('trainings',entry); if(savedTraining&&savedTraining.id)entry.id=savedTraining.id; db.trainings.push(entry);
+  entry.local_id = String(entry.id);
+  const savedTraining=await sbSave('trainings',entry); if(savedTraining&&savedTraining.id)entry.supabase_id=savedTraining.id; db.trainings.push(entry);
   
   // Auto-extract charges for 1RM calculation
   if (['str_bas','str_haut','str_full'].includes(type)) {
@@ -1068,9 +1087,10 @@ async function saveTraining() {
       entry.exercises.forEach(exo=>{
         exo.series.forEach(s=>{
           if(!s.kg||!s.reps)return;
-          const ch={date:entry.date,exo:exo.key,kg:s.kg,reps:s.reps,sets:1,rpe:entry.rpe||7,rm_estimated:s.rm,auto:true};
-          db.charges.push({id:Date.now()+Math.random(),...ch,training_id:entry.id});
-          sbSave('charges',ch);
+          const chargeId=Date.now()+Math.random();
+          const ch={id:chargeId,local_id:String(chargeId),date:entry.date,exo:exo.key,kg:s.kg,reps:s.reps,sets:1,rpe:entry.rpe||7,rm_estimated:s.rm,auto:true,training_id:entry.id};
+          db.charges.push(ch);
+          sbSave('charges',ch).then(saved=>{ if(saved&&saved.id){ ch.supabase_id=saved.id; saveDB(db); } });
         });
       });
     }  }
@@ -1083,7 +1103,8 @@ async function savePoids() {
   const db = loadDB();
   const entry={id: Date.now(),date: document.getElementById('p-date').value,val: +document.getElementById('p-val').value,moment: document.getElementById('p-moment').value};
   if(!entry.date || !entry.val){ alert('Date et poids obligatoires.'); return; }
-  const saved=await sbSave('poids',entry); if(saved&&saved.id)entry.id=saved.id;
+  entry.local_id = String(entry.id);
+  const saved=await sbSave('poids',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
   db.poids.push(entry); saveDB(db);
   document.getElementById('poids-feedback').style.display = 'block';
   setTimeout(() => document.getElementById('poids-feedback').style.display='none', 2000);
@@ -1093,7 +1114,8 @@ async function saveTest() {
   const db = loadDB();
   const entry={id: Date.now(),date: document.getElementById('ts-date').value,type: document.getElementById('ts-type').value,result: document.getElementById('ts-result').value,cible: document.getElementById('ts-cible').value,comment: document.getElementById('ts-comment').value};
   if(!entry.date || !entry.type || !entry.result){ alert('Date, type et résultat obligatoires.'); return; }
-  const saved=await sbSave('tests',entry); if(saved&&saved.id)entry.id=saved.id;
+  entry.local_id = String(entry.id);
+  const saved=await sbSave('tests',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
   db.tests.push(entry); saveDB(db);
   document.getElementById('test-feedback').style.display = 'block';
   setTimeout(() => document.getElementById('test-feedback').style.display='none', 2000);
@@ -1124,7 +1146,8 @@ async function saveRace() {
     fonc_total: document.getElementById('r-fonc').value,
     comment: document.getElementById('r-comment').value
   };
-  const savedRace=await sbSave('races',race); if(savedRace&&savedRace.id)race.id=savedRace.id; db.races.push(race); saveDB(db);
+  race.local_id = String(race.id);
+  const savedRace=await sbSave('races',race); if(savedRace&&savedRace.id)race.supabase_id=savedRace.id; db.races.push(race); saveDB(db);
   document.getElementById('race-feedback').style.display = 'block';
   setTimeout(() => {
     document.getElementById('race-feedback').style.display='none';
@@ -1537,15 +1560,18 @@ function renderHistory(filter) {
   }).join('');
 }
 
-function deleteEntry(id, cat) {
+async function deleteEntry(id, cat) {
   if (!confirm('Supprimer cette entrée ?')) return;
   const db = loadDB();
-  if (cat==='training') db.trainings = db.trainings.filter(t=>t.id!==id);
-  if (cat==='test') db.tests = db.tests.filter(t=>t.id!==id);
-  if (cat==='poids') db.poids = db.poids.filter(t=>t.id!==id);
-  sbDel(tableForCat(cat), id);
+  const key = cat==='training' ? 'trainings' : cat==='test' ? 'tests' : cat==='poids' ? 'poids' : null;
+  const entry = key ? (db[key]||[]).find(t=>String(t.id)===String(id) || String(t.local_id)===String(id) || String(t.supabase_id)===String(id)) : null;
+  if (cat==='training') db.trainings = db.trainings.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
+  if (cat==='test') db.tests = db.tests.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
+  if (cat==='poids') db.poids = db.poids.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
+  const ok = await sbDel(tableForCat(cat), entry || id);
   saveDB(db);
   renderHistory('all');
+  if(!ok) alert('Entrée supprimée du téléphone, mais suppression Supabase non confirmée. Vérifie la table ou synchronise.');
 }
 
 // ════════════════════════════════════
@@ -1636,13 +1662,15 @@ function renderRaces() {
   }
 }
 
-function deleteRace(id) {
+async function deleteRace(id) {
   if (!confirm('Supprimer cette course ?')) return;
   const db = loadDB();
-  db.races = db.races.filter(r=>r.id!==id);
-  sbDel('races', id);
+  const entry = (db.races||[]).find(r=>String(r.id)===String(id) || String(r.local_id)===String(id) || String(r.supabase_id)===String(id));
+  db.races = db.races.filter(r=>String(r.id)!==String(id) && String(r.local_id)!==String(id) && String(r.supabase_id)!==String(id));
+  const ok = await sbDel('races', entry || id);
   saveDB(db);
   renderRaces();
+  if(!ok) alert('Course supprimée du téléphone, mais suppression Supabase non confirmée.');
 }
 
 // ════════════════════════════════════
@@ -1731,12 +1759,16 @@ function handleImport(input) {
   };
   reader.readAsText(file);
 }
-function clearAll() {
-  if (confirm('Effacer toutes les données ? Cette action est irréversible.')) {
+async function clearAll() {
+  if (confirm('Effacer toutes les données du téléphone ET de Supabase pour cet appareil ? Cette action est irréversible.')) {
+    const tables=['trainings','poids','tests','races','charges','mensur'];
+    await Promise.all(tables.map(table=>fetch(SUPA_URL+'/rest/v1/'+table+'?device_id=eq.'+encodeURIComponent(DEVICE_ID),{method:'DELETE',headers:SB}).catch(e=>console.warn('clear supabase fail',table,e))));
     localStorage.removeItem(DB_KEY);
     renderDashboard();
     renderHistory('all');
     renderRaces();
+    renderChargesHistory();
+    renderMensur();
   }
 }
 
@@ -1783,7 +1815,7 @@ function epley(kg, reps) {
 // Round to nearest 2.5kg for practical use
 function round25(kg) { return Math.round(kg / 2.5) * 2.5; }
 
-async function saveCharge() {
+async async function saveCharge() {
   const db = loadDB();
   const exo = document.getElementById('ch-exo').value;
   const kg = parseFloat(document.getElementById('ch-kg').value);
@@ -1795,7 +1827,8 @@ async function saveCharge() {
   const rm = epley(kg, reps);
   if (!db.charges) db.charges = [];
   const entry={ id: Date.now(), date, exo, kg, reps, sets, rpe, rm_estimated: rm };
-  const saved=await sbSave('charges',entry); if(saved&&saved.id)entry.id=saved.id;
+  entry.local_id = String(entry.id);
+  const saved=await sbSave('charges',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
   db.charges.push(entry); saveDB(db);
   displayRMResult(exo, kg, reps, rm);
   renderChargesHistory();
@@ -1970,13 +2003,15 @@ function renderChargesHistory(selectedExo) {
   drawLineChart(canvas, data, {color:'var(--gr)', min: Math.min(...data.map(d=>d.y))-5, max: Math.max(...data.map(d=>d.y))+5});
 }
 
-function deleteCharge(id) {
+async function deleteCharge(id) {
   if (!confirm('Supprimer cette série ?')) return;
   const db = loadDB();
-  db.charges = (db.charges||[]).filter(c => c.id !== id);
-  sbDel('charges', id);
+  const entry = (db.charges||[]).find(c=>String(c.id)===String(id) || String(c.local_id)===String(id) || String(c.supabase_id)===String(id));
+  db.charges = (db.charges||[]).filter(c => String(c.id)!==String(id) && String(c.local_id)!==String(id) && String(c.supabase_id)!==String(id));
+  const ok = await sbDel('charges', entry || id);
   saveDB(db);
   renderChargesHistory();
+  if(!ok) alert('Série supprimée du téléphone, mais suppression Supabase non confirmée.');
 }
 
 
@@ -2017,7 +2052,8 @@ async function saveMensur() {
     return;
   }
 
-  const saved=await sbSave('mensur',entry); if(saved&&saved.id)entry.id=saved.id; db.mensur.push(entry); saveDB(db);
+  entry.local_id = String(entry.id);
+  const saved=await sbSave('mensur',entry); if(saved&&saved.id)entry.supabase_id=saved.id; db.mensur.push(entry); saveDB(db);
 
   const fb = document.getElementById('m-feedback');
   fb.style.display = 'block';
