@@ -2004,14 +2004,15 @@ function rerenderAfterDelete(cat){
   try {
     if (cat === 'race') renderRaces();
     else if (cat === 'charge') renderChargesHistory();
+    else if (cat === 'mensur') renderMensur();
     else renderHistory(getCurrentHistoryFilter());
     renderDashboard();
   } catch(e) { console.warn('rerenderAfterDelete fail', e); }
 }
 async function hardDeleteEntry(cat, id){
   if (!cat || !id) return;
-  const keyMap = {training:'trainings', test:'tests', poids:'poids', race:'races', charge:'charges'};
-  const tableMap = {training:'trainings', test:'tests', poids:'poids', race:'races', charge:'charges'};
+  const keyMap = {training:'trainings', test:'tests', poids:'poids', race:'races', charge:'charges', mensur:'mensur'};
+  const tableMap = {training:'trainings', test:'tests', poids:'poids', race:'races', charge:'charges', mensur:'mensur'};
   const key = keyMap[cat];
   if (!key) return;
   const db = loadDB();
@@ -2485,20 +2486,51 @@ const MENSUR_FIELDS = [
   { key: 'biceps',   label: 'Biceps',   unit: 'cm', color: '#ffb800', icon: '💪', trend: 'up' },
 ];
 
-async function saveMensur() {
-  const db = loadDB();
-  if (!db.mensur) db.mensur = [];
 
+function resetMensurFormAfterSave() {
+  try {
+    MENSUR_FIELDS.forEach(f => {
+      const el = document.getElementById('m-' + f.key);
+      if (el) el.value = '';
+    });
+    const note = document.getElementById('m-note');
+    if (note) note.value = '';
+    const date = document.getElementById('m-date');
+    if (date) date.value = today();
+    clearCurrentDraft();
+  } catch(e) {
+    console.warn('resetMensurFormAfterSave fail', e);
+  }
+}
+
+function showMensurSaveStatus(ok, saved) {
+  const fb = document.getElementById('m-feedback');
+  if (!fb) return;
+  fb.style.display = 'block';
+  fb.style.color = ok ? 'var(--gr)' : 'var(--rd)';
+  fb.textContent = ok ? '✅ Mensurations enregistrées · Supabase OK' : '⚠️ Supabase a refusé l’enregistrement des mensurations';
+  if (!ok && window.__lastSupabaseError) {
+    fb.textContent += ' · ' + (window.__lastSupabaseError.status || '') + ' ' + (window.__lastSupabaseError.message || '');
+  }
+  setTimeout(() => { fb.style.display = 'none'; }, 3000);
+}
+
+async function saveMensur() {
   const entry = {
     id: Date.now(),
+    local_id: String(Date.now()),
     date: document.getElementById('m-date').value,
     note: document.getElementById('m-note').value,
   };
 
   let hasValue = false;
   MENSUR_FIELDS.forEach(f => {
-    const val = parseFloat(document.getElementById('m-' + f.key).value);
-    if (val > 0) { entry[f.key] = val; hasValue = true; }
+    const raw = document.getElementById('m-' + f.key).value;
+    const val = parseFloat(raw);
+    if (raw !== '' && !Number.isNaN(val)) {
+      entry[f.key] = val;
+      if (val > 0) hasValue = true;
+    }
   });
 
   if (!entry.date || !hasValue) {
@@ -2506,26 +2538,43 @@ async function saveMensur() {
     return;
   }
 
-  entry.local_id = String(entry.id);
-  const saved=await sbSave('mensur',entry); if(saved&&saved.supabase_id)entry.supabase_id=saved.supabase_id; db.mensur.push(entry); saveDB(db); clearCurrentDraft();
+  const saved = await sbSave('mensur', entry);
+  if (!saved) {
+    showMensurSaveStatus(false, saved);
+    return;
+  }
 
-  const fb = document.getElementById('m-feedback');
-  fb.style.display = 'block';
-  setTimeout(() => { fb.style.display = 'none'; renderMensur(); }, 1500);
+  showMensurSaveStatus(true, saved);
+  resetMensurFormAfterSave();
+
+  // Supabase est la source principale : on recharge la table puis on rerend Corps.
+  try {
+    const db = await syncAll();
+    saveDB(db);
+  } catch(e) {
+    console.warn('sync après mensuration impossible', e);
+  }
+  renderMensur();
+  renderDashboard();
 }
+
 
 function renderMensur() {
   const db = loadDB();
-  const entries = (db.mensur || []).sort((a, b) => a.date.localeCompare(b.date));
+  const entries = (db.mensur || [])
+    .filter(Boolean)
+    .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
 
   const empty = document.getElementById('m-empty');
   const charts = document.getElementById('m-charts-section');
   const card = document.getElementById('m-current-card');
+  const tableEl = document.getElementById('m-history-table');
 
   if (!entries.length) {
     empty.style.display = 'block';
     charts.style.display = 'none';
     card.style.display = 'none';
+    if (tableEl) tableEl.innerHTML = '';
     return;
   }
 
@@ -2536,26 +2585,29 @@ function renderMensur() {
   const last = entries[entries.length - 1];
   const first = entries[0];
 
-  // Last values card
+  // Dernières valeurs
   document.getElementById('m-last-date').textContent = fmtDate(last.date);
   const statsEl = document.getElementById('m-current-stats');
   statsEl.innerHTML = MENSUR_FIELDS.map(f => {
-    if (!last[f.key]) return '';
+    if (last[f.key] === undefined || last[f.key] === null || last[f.key] === '') return '';
     const firstVal = first[f.key];
-    const delta = firstVal ? (last[f.key] - firstVal).toFixed(1) : null;
+    const delta = (firstVal !== undefined && firstVal !== null && firstVal !== '') ? (last[f.key] - firstVal).toFixed(1) : null;
     const sign = delta > 0 ? '+' : '';
     const deltaColor = (f.trend === 'down' && delta < 0) || (f.trend === 'up' && delta > 0)
       ? 'color:var(--ok)' : delta != 0 ? 'color:var(--am)' : 'color:var(--tx4)';
     return `<div class="stat-box">
-      <div class="val" style="color:${f.color}">${last[f.key]}</div>
-      <div class="lbl">${f.label} cm</div>
+      <div class="val" style="color:${f.color}">${escapeHtml(last[f.key])}</div>
+      <div class="lbl">${escapeHtml(f.label)} cm</div>
       ${delta !== null ? `<div class="delta" style="${deltaColor}">${sign}${delta} cm</div>` : ''}
     </div>`;
   }).filter(Boolean).join('');
 
-  // Draw each chart
+  // Courbes
   MENSUR_FIELDS.forEach(f => {
-    const vals = entries.filter(e => e[f.key]).map(e => ({ x: fmtDate(e.date), y: e[f.key] }));
+    const vals = entries
+      .filter(e => e[f.key] !== undefined && e[f.key] !== null && e[f.key] !== '')
+      .map(e => ({ x: fmtDate(e.date), y: Number(e[f.key]) }))
+      .filter(v => Number.isFinite(v.y));
     if (!vals.length) return;
 
     const canvas = document.getElementById('chart-' + f.key);
@@ -2563,7 +2615,6 @@ function renderMensur() {
     const maxY = Math.max(...vals.map(v => v.y)) + 2;
     drawLineChart(canvas, vals, { color: f.color, min: minY, max: maxY });
 
-    // Delta label
     const deltaEl = document.getElementById('delta-' + f.key);
     if (vals.length >= 2) {
       const diff = (vals[vals.length-1].y - vals[0].y).toFixed(1);
@@ -2572,23 +2623,32 @@ function renderMensur() {
       const col = (f.trend === 'down' && diff < 0) || (f.trend === 'up' && diff > 0)
         ? 'var(--ok)' : diff != 0 ? 'var(--am)' : 'var(--tx4)';
       deltaEl.innerHTML = `<span style="color:${col}">${arrow} ${sign}${diff} cm</span> depuis le ${vals[0].x}`;
+    } else if (deltaEl) {
+      deltaEl.innerHTML = '';
     }
   });
 
-  // History table
-  const tableEl = document.getElementById('m-history-table');
-  tableEl.innerHTML = `
-    <div style="display:grid;grid-template-columns:80px repeat(4,1fr);gap:.2rem;font-family:monospace;font-size:9.5px;color:var(--tx4);padding:.2rem 0;border-bottom:1px solid var(--bo2)">
-      <span>Date</span>
-      ${MENSUR_FIELDS.map(f => `<span style="color:${f.color}">${f.label}</span>`).join('')}
-    </div>` +
-    [...entries].reverse().slice(0, 10).map(e => `
-      <div style="display:grid;grid-template-columns:80px repeat(4,1fr);gap:.2rem;font-family:monospace;font-size:10.5px;padding:.3rem 0;border-bottom:1px solid var(--bo)">
-        <span style="color:var(--tx4)">${fmtDate(e.date)}</span>
-        ${MENSUR_FIELDS.map(f => `<span style="color:${e[f.key] ? 'var(--tx2)' : 'var(--tx4)'}">${e[f.key] ? e[f.key] + ' cm' : '—'}</span>`).join('')}
-      </div>`).join('') +
-    (entries.length > 10 ? `<div style="font-family:monospace;font-size:9px;color:var(--tx4);text-align:center;padding:.3rem">${entries.length - 10} entrées plus anciennes masquées</div>` : '');
+  // Historique complet + suppression unitaire depuis l'onglet Corps
+  if (tableEl) {
+    tableEl.innerHTML = `
+      <div style="display:grid;grid-template-columns:70px repeat(4,1fr) 28px;gap:.2rem;font-family:monospace;font-size:9.5px;color:var(--tx4);padding:.2rem 0;border-bottom:1px solid var(--bo2)">
+        <span>Date</span>
+        ${MENSUR_FIELDS.map(f => `<span style="color:${f.color}">${escapeHtml(f.label)}</span>`).join('')}
+        <span></span>
+      </div>` +
+      [...entries].reverse().map(e => {
+        const delKey = entryDeleteKey(e);
+        return `<div class="entry" style="display:grid;grid-template-columns:70px repeat(4,1fr) 28px;gap:.2rem;align-items:center;font-family:monospace;font-size:10.5px;padding:.35rem 0;border-bottom:1px solid var(--bo);background:transparent;border-left:0;border-right:0;border-top:0;border-radius:0;margin:0">
+          <span style="color:var(--tx4)">${escapeHtml(fmtDate(e.date))}</span>
+          ${MENSUR_FIELDS.map(f => `<span style="color:${e[f.key] !== undefined && e[f.key] !== null && e[f.key] !== '' ? 'var(--tx2)' : 'var(--tx4)'}">${e[f.key] !== undefined && e[f.key] !== null && e[f.key] !== '' ? escapeHtml(e[f.key]) + ' cm' : '—'}</span>`).join('')}
+          <button type="button" class="del-btn js-delete-entry" data-cat="mensur" data-id="${escapeHtml(delKey)}" title="Supprimer cette mesure">✕</button>
+          ${e.note ? `<div style="grid-column:1/-1;color:var(--tx4);font-size:9.5px;padding-top:.1rem">Note : ${escapeHtml(e.note)}</div>` : ''}
+        </div>`;
+      }).join('');
+    setupDeleteButtons();
+  }
 }
+
 
 // Init
 // Ne pas appeler showTab('dashboard') au chargement : cela écrase l'onglet mémorisé.
