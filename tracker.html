@@ -887,18 +887,28 @@ async function sbDel(table,entryOrId){
   }
 
   // 2) Cas recommandé : local_id stable envoyé par le tracker.
+  // On teste la colonne local_id puis le JSON data->>local_id, car certains inserts
+  // ont pu passer par le payload sécurisé minimal {device_id, data} sans colonne local_id remplie.
   if(localId !== undefined && localId !== null && localId !== ''){
-    const localQ = 'local_id=eq.' + encodeURIComponent(String(localId));
+    const local = encodeURIComponent(String(localId));
+    const localQ = 'local_id=eq.' + local;
     if(await delBy('local_id + device_id', localQ + '&' + deviceQ)) return true;
     if(await delBy('local_id only', localQ)) return true;
+    const dataLocalQ = 'data->>local_id=eq.' + local;
+    if(await delBy('data.local_id + device_id', dataLocalQ + '&' + deviceQ)) return true;
+    if(await delBy('data.local_id only', dataLocalQ)) return true;
   }
 
   // 3) Fallback : id présent dans l'objet. Après sync, entry.id est souvent l'id Supabase.
   // Pour les très anciennes entrées, il peut être l'id local ; la requête ne supprimera rien mais ne casse pas l'UI.
   if(rawId !== undefined && rawId !== null && rawId !== ''){
-    const idQ = 'id=eq.' + encodeURIComponent(String(rawId));
+    const raw = encodeURIComponent(String(rawId));
+    const idQ = 'id=eq.' + raw;
     if(await delBy('id + device_id', idQ + '&' + deviceQ)) return true;
     if(await delBy('id only', idQ)) return true;
+    const dataIdQ = 'data->>id=eq.' + raw;
+    if(await delBy('data.id + device_id', dataIdQ + '&' + deviceQ)) return true;
+    if(await delBy('data.id only', dataIdQ)) return true;
   }
 
   window.__lastSupabaseDeleteError = {table, entry, idsTried};
@@ -1390,7 +1400,7 @@ async function saveTraining() {
     entry.fc = entry.fc_max; // compatibilité locale avec anciennes données
   }
   entry.local_id = String(entry.id);
-  const savedTraining=await sbSave('trainings',entry); if(savedTraining&&savedTraining.id)entry.supabase_id=savedTraining.id; db.trainings.push(entry);
+  const savedTraining=await sbSave('trainings',entry); if(savedTraining&&savedTraining.supabase_id)entry.supabase_id=savedTraining.supabase_id; db.trainings.push(entry);
   window._pendingChargeSaves = [];
   
   // Auto-extract charges for 1RM calculation
@@ -1405,7 +1415,7 @@ async function saveTraining() {
           const ch={id:chargeId,local_id:String(chargeId),date:entry.date,exo:exo.key,kg:s.kg,reps:s.reps,sets:1,rpe:entry.rpe||7,rm_estimated:s.rm,auto:true,training_id:entry.id};
           db.charges.push(ch);
           if(!window._pendingChargeSaves) window._pendingChargeSaves = [];
-          window._pendingChargeSaves.push(sbSave('charges',ch).then(saved=>{ if(saved&&saved.id){ ch.supabase_id=saved.id; saveDB(db); return true; } return false; }).catch(()=>false));
+          window._pendingChargeSaves.push(sbSave('charges',ch).then(saved=>{ if(saved&&saved.supabase_id){ ch.supabase_id=saved.supabase_id; saveDB(db); return true; } return false; }).catch(()=>false));
         });
       });
     }  }
@@ -1427,7 +1437,7 @@ async function savePoids() {
   const entry={id: Date.now(),date: document.getElementById('p-date').value,val: +document.getElementById('p-val').value,moment: document.getElementById('p-moment').value};
   if(!entry.date || !entry.val){ alert('Date et poids obligatoires.'); return; }
   entry.local_id = String(entry.id);
-  const saved=await sbSave('poids',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
+  const saved=await sbSave('poids',entry); if(saved&&saved.supabase_id)entry.supabase_id=saved.supabase_id;
   db.poids.push(entry); saveDB(db); clearCurrentDraft();
   document.getElementById('poids-feedback').style.display = 'block';
   setTimeout(() => document.getElementById('poids-feedback').style.display='none', 2000);
@@ -1438,7 +1448,7 @@ async function saveTest() {
   const entry={id: Date.now(),date: document.getElementById('ts-date').value,type: document.getElementById('ts-type').value,result: document.getElementById('ts-result').value,cible: document.getElementById('ts-cible').value,comment: document.getElementById('ts-comment').value};
   if(!entry.date || !entry.type || !entry.result){ alert('Date, type et résultat obligatoires.'); return; }
   entry.local_id = String(entry.id);
-  const saved=await sbSave('tests',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
+  const saved=await sbSave('tests',entry); if(saved&&saved.supabase_id)entry.supabase_id=saved.supabase_id;
   db.tests.push(entry); saveDB(db); clearCurrentDraft();
   document.getElementById('test-feedback').style.display = 'block';
   setTimeout(() => document.getElementById('test-feedback').style.display='none', 2000);
@@ -1470,7 +1480,7 @@ async function saveRace() {
     comment: document.getElementById('r-comment').value
   };
   race.local_id = String(race.id);
-  const savedRace=await sbSave('races',race); if(savedRace&&savedRace.id)race.supabase_id=savedRace.id; db.races.push(race); saveDB(db); clearCurrentDraft();
+  const savedRace=await sbSave('races',race); if(savedRace&&savedRace.supabase_id)race.supabase_id=savedRace.supabase_id; db.races.push(race); saveDB(db); clearCurrentDraft();
   document.getElementById('race-feedback').style.display = 'block';
   setTimeout(() => {
     document.getElementById('race-feedback').style.display='none';
@@ -2181,7 +2191,7 @@ async function saveCharge() {
   if (!db.charges) db.charges = [];
   const entry={ id: Date.now(), date, exo, kg, reps, sets, rpe, rm_estimated: rm };
   entry.local_id = String(entry.id);
-  const saved=await sbSave('charges',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
+  const saved=await sbSave('charges',entry); if(saved&&saved.supabase_id)entry.supabase_id=saved.supabase_id;
   db.charges.push(entry); saveDB(db); clearCurrentDraft();
   displayRMResult(exo, kg, reps, rm);
   renderChargesHistory();
@@ -2397,7 +2407,7 @@ async function saveMensur() {
   }
 
   entry.local_id = String(entry.id);
-  const saved=await sbSave('mensur',entry); if(saved&&saved.id)entry.supabase_id=saved.id; db.mensur.push(entry); saveDB(db); clearCurrentDraft();
+  const saved=await sbSave('mensur',entry); if(saved&&saved.supabase_id)entry.supabase_id=saved.supabase_id; db.mensur.push(entry); saveDB(db); clearCurrentDraft();
 
   const fb = document.getElementById('m-feedback');
   fb.style.display = 'block';
