@@ -1036,7 +1036,11 @@ function today() { return new Date().toISOString().split('T')[0]; }
 function showTab(t, opts={}) {
   const tabs = ['dashboard','log','history','race','charges','mensur'];
   if (!tabs.includes(t) || !document.getElementById('tab-'+t)) t = 'dashboard';
+  // Persistance triple : URL hash + localStorage + sessionStorage.
+  // Objectif : rester sur le même onglet après actualisation, même si le navigateur mobile perd le hash.
   saveUiState({activeTab:t});
+  try { localStorage.setItem('hyrox_tracker_active_tab_v1', t); } catch(e) {}
+  try { sessionStorage.setItem('hyrox_tracker_active_tab_v1', t); } catch(e) {}
   if (!opts.silentHash) {
     try { history.replaceState(null, '', '#'+t); } catch(e) {}
   }
@@ -1112,7 +1116,9 @@ window.addEventListener('load', () => {
   const hashTab = (location.hash || '').replace('#','');
   const ui = loadUiState();
   const draft = (() => { try { return JSON.parse(localStorage.getItem(DRAFT_KEY)) || {}; } catch { return {}; } })();
-  const targetTab = tabs.includes(hashTab) ? hashTab : (draft.activeTab || ui.activeTab || 'dashboard');
+  const ssTab = (() => { try { return sessionStorage.getItem('hyrox_tracker_active_tab_v1'); } catch(e) { return null; } })();
+  const lsTab = (() => { try { return localStorage.getItem('hyrox_tracker_active_tab_v1'); } catch(e) { return null; } })();
+  const targetTab = tabs.includes(hashTab) ? hashTab : (tabs.includes(ssTab) ? ssTab : (tabs.includes(lsTab) ? lsTab : (tabs.includes(draft.activeTab) ? draft.activeTab : (tabs.includes(ui.activeTab) ? ui.activeTab : 'dashboard'))));
   showTab(targetTab, {silentHash: tabs.includes(hashTab)});
 });
 
@@ -2358,6 +2364,32 @@ window.addEventListener('load',()=>{
 });
 
 try { setupDeleteButtons(); } catch(e) {}
+
+// Restauration robuste de l'onglet actif après refresh mobile.
+// Certains navigateurs affichent l'état HTML initial puis écrasent l'état pendant la synchro :
+// on réapplique l'onglet sauvegardé plusieurs fois pendant le chargement, sans toucher à Supabase.
+(function(){
+  const tabs = ['dashboard','log','history','race','charges','mensur'];
+  function getSavedTab(){
+    const hashTab = (location.hash || '').replace('#','');
+    if (tabs.includes(hashTab)) return hashTab;
+    try { const ss = sessionStorage.getItem('hyrox_tracker_active_tab_v1'); if (tabs.includes(ss)) return ss; } catch(e) {}
+    try { const ls = localStorage.getItem('hyrox_tracker_active_tab_v1'); if (tabs.includes(ls)) return ls; } catch(e) {}
+    try { const ui = JSON.parse(localStorage.getItem('hyrox_tracker_ui_state_v1') || '{}'); if (tabs.includes(ui.activeTab)) return ui.activeTab; } catch(e) {}
+    try { const draft = JSON.parse(localStorage.getItem('hyrox_tracker_draft_v1') || '{}'); if (tabs.includes(draft.activeTab)) return draft.activeTab; } catch(e) {}
+    return 'dashboard';
+  }
+  function restoreSavedTab(){
+    const t = getSavedTab();
+    if (typeof showTab === 'function') showTab(t, {silentHash:false});
+  }
+  // immédiat + après les callbacks load/sync
+  try { restoreSavedTab(); } catch(e) {}
+  document.addEventListener('DOMContentLoaded', () => { try { restoreSavedTab(); } catch(e) {} });
+  window.addEventListener('load', () => {
+    [0, 100, 500, 1200].forEach(ms => setTimeout(() => { try { restoreSavedTab(); } catch(e) {} }, ms));
+  });
+})();
 </script>
 </body>
 </html>
