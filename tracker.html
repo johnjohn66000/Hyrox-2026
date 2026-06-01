@@ -284,15 +284,15 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
       </div>
 
       <div id="t-str-fields" style="display:none">
-  <div class="sep-label">Exercices — sélectionne et saisis les séries</div>
-
-  <!-- Liste des exercices actifs -->
-  <div id="str-exercises-list"></div>
-
-  <!-- Bouton ajouter un exercice -->
-  <div style="margin-top:.5rem">
-    <select id="str-add-select" style="width:calc(100% - 90px);background:var(--bg3);border:1px solid var(--bo2);border-radius:6px;padding:.4rem .5rem;color:var(--tx);font-family:monospace;font-size:12px;-webkit-appearance:none">
-      <option value="">+ Ajouter un exercice...</option>
+  <div class="sep-label">Exercices de la séance</div>
+  <div id="str-exercises-list">
+    <div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem 0">
+      Ajoute tes exercices ci-dessous
+    </div>
+  </div>
+  <div style="display:flex;gap:.4rem;margin-top:.4rem;align-items:center">
+    <select id="str-add-select" style="flex:1;background:var(--bg3);border:1px solid var(--bo2);border-radius:6px;padding:.42rem .5rem;color:var(--tx);font-family:monospace;font-size:12px;-webkit-appearance:none;outline:none">
+      <option value="">— Choisir un exercice —</option>
       <optgroup label="Jambes">
         <option value="squat">Back squat</option>
         <option value="front_squat">Front squat</option>
@@ -304,6 +304,7 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
         <option value="good_morning">Good morning</option>
         <option value="kb_swing">KB swing</option>
         <option value="box_jump">Box jump</option>
+        <option value="mollets">Mollets debout</option>
       </optgroup>
       <optgroup label="Haut du corps">
         <option value="bench">Développé couché</option>
@@ -318,15 +319,17 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
         <option value="skull">Skull crusher</option>
         <option value="dips">Dips lestés</option>
         <option value="face_pull">Face pull</option>
+        <option value="hammer">Curl marteau</option>
       </optgroup>
       <optgroup label="HYROX">
         <option value="farmer">Farmer carry (kg/main)</option>
         <option value="sled_push">Sled push</option>
         <option value="wall_ball">Wall ball</option>
         <option value="sandbag">Sandbag lunge</option>
+        <option value="bbj">Burpee broad jump</option>
       </optgroup>
     </select>
-    <button onclick="strAddExercise()" class="btn btn-sec btn-sm" style="width:82px;margin-left:6px;margin-top:0;vertical-align:middle">Ajouter</button>
+    <button onclick="strAddExercise()" style="background:var(--gr);color:#000;border:0;border-radius:6px;padding:.42rem .8rem;font-family:monospace;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent">+ Ajouter</button>
   </div>
 </div>
 
@@ -855,122 +858,95 @@ window.addEventListener('load', () => {
 // SAVE FUNCTIONS
 // ════════════════════════════════════
 
-// ════════════════════════════════════
-// MUSCU — LOG PAR EXERCICE + SÉRIES
-// ════════════════════════════════════
-
-const EXO_LIST = {
-  squat:'Back squat', front_squat:'Front squat', rdl:'RDL bilatéral',
-  hip_thrust:'Hip thrust', bulgarian:'Bulgarian split sq.', leg_press:'Leg press',
-  nordic:'Nordic curl', good_morning:'Good morning', kb_swing:'KB swing', box_jump:'Box jump',
-  bench:'Développé couché', bench_incline:'Développé incliné', pullup:'Pull-up lestés',
-  press:'Strict press', push_press:'Push press', pendlay:'Pendlay row', yates:'Yates row',
-  lat_pulldown:'Lat pulldown', curl:'Curl barre', skull:'Skull crusher',
-  dips:'Dips lestés', face_pull:'Face pull',
-  farmer:'Farmer carry', sled_push:'Sled push', wall_ball:'Wall ball', sandbag:'Sandbag lunge'
+// ════ MUSCU — EXERCICES PAR SÉRIES ════
+const EXO_NAMES = {
+  squat:'Back squat',front_squat:'Front squat',rdl:'RDL bilatéral',
+  hip_thrust:'Hip thrust',bulgarian:'Bulgarian split squat',leg_press:'Leg press',
+  nordic:'Nordic curl',good_morning:'Good morning',kb_swing:'KB swing',
+  box_jump:'Box jump',mollets:'Mollets debout',
+  bench:'Développé couché',bench_incline:'Développé incliné',pullup:'Pull-up lestés',
+  press:'Strict press',push_press:'Push press',pendlay:'Pendlay row',yates:'Yates row',
+  lat_pulldown:'Lat pulldown',curl:'Curl barre',skull:'Skull crusher',
+  dips:'Dips lestés',face_pull:'Face pull',hammer:'Curl marteau',
+  farmer:'Farmer carry',sled_push:'Sled push',wall_ball:'Wall ball',
+  sandbag:'Sandbag lunge',bbj:'Burpee broad jump'
 };
 
-// State: list of active exercises with their series
-window._strExos = window._strExos || [];
+window._strExos = [];
 
 function strAddExercise() {
   const sel = document.getElementById('str-add-select');
   const key = sel.value;
   if (!key) return;
-  if (window._strExos.find(e => e.key === key)) { sel.value=''; return; }
-  window._strExos.push({ key, series: [{ kg:'', reps:'' }] });
+  if (window._strExos.find(e=>e.key===key)) { sel.value=''; return; }
+  window._strExos.push({key, series:[{kg:'',reps:''}]});
   sel.value = '';
   renderStrExercises();
 }
 
-function strAddSerie(exoKey) {
-  const exo = window._strExos.find(e => e.key === exoKey);
-  if (exo) { exo.series.push({ kg:'', reps:'' }); renderStrExercises(); }
+function strAddSerie(key) {
+  const e = window._strExos.find(e=>e.key===key);
+  if(e){e.series.push({kg:'',reps:''});renderStrExercises();}
 }
 
-function strRemoveSerie(exoKey, idx) {
-  const exo = window._strExos.find(e => e.key === exoKey);
-  if (exo) { exo.series.splice(idx, 1); if (!exo.series.length) exo.series.push({kg:'',reps:''}); renderStrExercises(); }
+function strRemoveSerie(key,idx) {
+  const e = window._strExos.find(e=>e.key===key);
+  if(e){e.series.splice(idx,1);if(!e.series.length)e.series.push({kg:'',reps:''});renderStrExercises();}
 }
 
-function strRemoveExo(exoKey) {
-  window._strExos = window._strExos.filter(e => e.key !== exoKey);
+function strRemoveExo(key) {
+  window._strExos = window._strExos.filter(e=>e.key!==key);
   renderStrExercises();
 }
 
-function strUpdateSerie(exoKey, idx, field, val) {
-  const exo = window._strExos.find(e => e.key === exoKey);
-  if (exo && exo.series[idx]) {
-    exo.series[idx][field] = val;
-    // Live 1RM preview
-    const kg = parseFloat(exo.series[idx].kg);
-    const reps = parseInt(exo.series[idx].reps);
-    if (kg && reps) {
-      const rm = Math.round(kg * (1 + reps/30) * 4) / 4;
-      const preview = document.getElementById('rm-preview-'+exoKey+'-'+idx);
-      if (preview) { preview.textContent = '→ ~'+rm+' kg 1RM'; preview.style.color='var(--gr)'; }
-    }
-  }
+function strUpdate(key,idx,field,val) {
+  const e = window._strExos.find(e=>e.key===key);
+  if(!e||!e.series[idx])return;
+  e.series[idx][field]=val;
+  const kg=parseFloat(e.series[idx].kg), reps=parseInt(e.series[idx].reps);
+  const el=document.getElementById('rm-prev-'+key+'-'+idx);
+  if(el&&kg&&reps){el.textContent='~'+(Math.round(kg*(1+reps/30)*4)/4)+' kg 1RM';el.style.color='var(--gr)';}
 }
 
 function renderStrExercises() {
-  const container = document.getElementById('str-exercises-list');
-  if (!container) return;
-  if (!window._strExos.length) {
-    container.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.4rem">Aucun exercice — utilise la liste ci-dessous pour en ajouter.</div>';
+  const box = document.getElementById('str-exercises-list');
+  if(!box)return;
+  if(!window._strExos.length){
+    box.innerHTML='<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem 0">Ajoute tes exercices ci-dessous</div>';
     return;
   }
-  container.innerHTML = window._strExos.map(exo => {
-    const label = EXO_LIST[exo.key] || exo.key;
-    const seriesHTML = exo.series.map((s, i) => {
-      const kg = s.kg || '';
-      const reps = s.reps || '';
-      let rm = '';
-      if (kg && reps) rm = '~' + (Math.round(parseFloat(kg)*(1+parseInt(reps)/30)*4)/4) + ' kg 1RM';
-      return `<div style="display:grid;grid-template-columns:80px 64px 1fr 24px;gap:.3rem;align-items:center;margin:.25rem 0">
-        <input type="number" step="0.5" placeholder="kg" value="${kg}"
-          style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%"
-          oninput="strUpdateSerie('${exo.key}',${i},'kg',this.value)">
-        <input type="number" placeholder="reps" value="${reps}"
-          style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%"
-          oninput="strUpdateSerie('${exo.key}',${i},'reps',this.value)">
-        <span id="rm-preview-${exo.key}-${i}" style="font-family:monospace;font-size:10px;color:${rm?'var(--gr)':'var(--tx4)'}">
-          ${rm || 'kg + reps → 1RM'}
-        </span>
-        <button onclick="strRemoveSerie('${exo.key}',${i})" style="background:transparent;border:0;color:var(--tx4);font-size:14px;cursor:pointer;padding:0;line-height:1">×</button>
-      </div>`;
+  box.innerHTML = window._strExos.map(exo=>{
+    const name = EXO_NAMES[exo.key]||exo.key;
+    const rows = exo.series.map((s,i)=>{
+      const rm = (s.kg&&s.reps)?('~'+(Math.round(parseFloat(s.kg)*(1+parseInt(s.reps)/30)*4)/4)+' kg 1RM'):'';
+      return '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;align-items:center;margin:.2rem 0">'
+        +'<input type="number" step="0.5" placeholder="kg" value="'+s.kg+'" oninput="strUpdate(''+exo.key+'','+i+','kg',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">'
+        +'<input type="number" placeholder="reps" value="'+s.reps+'" oninput="strUpdate(''+exo.key+'','+i+','reps',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">'
+        +'<span id="rm-prev-'+exo.key+'-'+i+'" style="font-family:monospace;font-size:10px;color:'+(rm?'var(--gr)':'var(--tx4)')+'">'+( rm||'1RM auto')+'</span>'
+        +'<button onclick="strRemoveSerie(''+exo.key+'','+i+')" style="background:transparent;border:0;color:var(--tx4);font-size:15px;cursor:pointer;line-height:1;padding:0">×</button>'
+        +'</div>';
     }).join('');
-    return `<div style="background:var(--bg2);border:1px solid var(--bo2);border-radius:8px;padding:.55rem .65rem;margin-bottom:.4rem">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
-        <span style="font-size:12.5px;font-weight:700;color:var(--tx)">${label}</span>
-        <button onclick="strRemoveExo('${exo.key}')" style="background:transparent;border:0;color:var(--tx4);font-size:11px;cursor:pointer;font-family:monospace">Retirer</button>
-      </div>
-      <div style="font-family:monospace;font-size:9px;color:var(--tx4);margin-bottom:.3rem;display:grid;grid-template-columns:80px 64px 1fr 24px;gap:.3rem">
-        <span>Poids (kg)</span><span>Reps</span><span>1RM estimé</span><span></span>
-      </div>
-      ${seriesHTML}
-      <button onclick="strAddSerie('${exo.key}')" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;color:var(--tx3);font-family:monospace;font-size:10px;padding:.25rem .6rem;cursor:pointer;margin-top:.3rem">+ Série</button>
-    </div>`;
+    return '<div style="background:var(--bg2);border:1px solid var(--bo2);border-radius:8px;padding:.55rem .65rem;margin-bottom:.4rem">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem">'
+      +'<span style="font-size:12.5px;font-weight:700;color:var(--tx)">'+name+'</span>'
+      +'<button onclick="strRemoveExo(''+exo.key+'')" style="background:transparent;border:0;color:var(--tx4);font-family:monospace;font-size:10px;cursor:pointer">Retirer</button>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;font-family:monospace;font-size:9px;color:var(--tx4);margin-bottom:.2rem">'
+      +'<span>Poids (kg)</span><span>Reps</span><span>1RM estimé</span><span></span></div>'
+      +rows
+      +'<button onclick="strAddSerie(''+exo.key+'')" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;color:var(--tx3);font-family:monospace;font-size:10px;padding:.25rem .6rem;cursor:pointer;margin-top:.3rem">+ Série</button>'
+      +'</div>';
   }).join('');
 }
 
-// Reset exercises when session type changes
-document.getElementById('t-type').addEventListener('change', function() {
-  if (['str_bas','str_haut','str_full'].includes(this.value)) {
-    window._strExos = [];
-    // Pre-populate with plan exercises
-    const presets = {
-      str_bas: ['squat','rdl','hip_thrust','nordic','kb_swing'],
-      str_haut: ['bench','pullup','press','pendlay','curl','skull'],
-      str_full: ['squat','bench','rdl'],
-    };
-    (presets[this.value] || []).forEach(key => {
-      window._strExos.push({ key, series: [{ kg:'', reps:'' }] });
-    });
+// Reset on type change — no presets
+document.getElementById('t-type').addEventListener('change', function(){
+  if(['str_bas','str_haut','str_full'].includes(this.value)){
+    window._strExos=[];
     renderStrExercises();
   }
 });
-
+// ═══════════════════════════════════════
 function saveTraining() {
   const db = loadDB();
   const type = document.getElementById('t-type').value;
@@ -991,22 +967,20 @@ function saveTraining() {
     entry.fc = +document.getElementById('t-fc').value || null;
   }
   if (['str_bas','str_haut','str_full'].includes(type)) {
-    entry.squat =       +document.getElementById('t-squat').value || null;
-    entry.squat_reps =  +document.getElementById('t-squat-reps').value || 5;
-    entry.squat_rpe =   +document.getElementById('t-squat-rpe').value || null;
-    entry.bench =       +document.getElementById('t-bench').value || null;
-    entry.bench_reps =  +document.getElementById('t-bench-reps').value || 6;
-    entry.bench_rpe =   +document.getElementById('t-bench-rpe').value || null;
-    entry.rdl =         +document.getElementById('t-rdl').value || null;
-    entry.rdl_reps =    +document.getElementById('t-rdl-reps').value || 6;
-    entry.rdl_rpe =     +document.getElementById('t-rdl-rpe').value || null;
-    entry.hip =         +document.getElementById('t-hip').value || null;
-    entry.hip_reps =    +document.getElementById('t-hip-reps').value || 8;
-    entry.hip_rpe =     +document.getElementById('t-hip-rpe').value || null;
-    entry.pullup =      +document.getElementById('t-pullup').value || null;
-    entry.pullup_reps = +document.getElementById('t-pullup-reps').value || 5;
-    entry.pullup_rpe =  +document.getElementById('t-pullup-rpe').value || null;
-    entry.farmer =      +document.getElementById('t-farmer').value || null;
+    entry.exercises = (window._strExos||[]).map(exo=>({
+      key: exo.key,
+      label: EXO_NAMES[exo.key]||exo.key,
+      series: exo.series.filter(s=>s.kg&&s.reps).map(s=>({
+        kg: parseFloat(s.kg), reps: parseInt(s.reps),
+        rm: Math.round(parseFloat(s.kg)*(1+parseInt(s.reps)/30)*4)/4
+      }))
+    })).filter(e=>e.series.length>0);
+    // Legacy best-set fields for backward compat
+    entry.exercises.forEach(exo=>{
+      const best=exo.series.reduce((a,b)=>a.rm>b.rm?a:b,{rm:0,kg:0,reps:0});
+      const map={squat:'squat',bench:'bench',rdl:'rdl',hip_thrust:'hip',pullup:'pullup',farmer:'farmer'};
+      if(map[exo.key]){entry[map[exo.key]]=best.kg;entry[map[exo.key]+'_reps']=best.reps;}
+    });
   }
   if (['compromised','simulation'].includes(type)) {
     entry.sp_allure = document.getElementById('t-sp-allure').value;
@@ -1020,28 +994,17 @@ function saveTraining() {
   // Auto-extract charges for 1RM calculation
   if (['str_bas','str_haut','str_full'].includes(type)) {
     if (!db.charges) db.charges = [];
-    // Extract 1RM from entry.exercises (new format — series per exercise)
-    if (entry.exercises && entry.exercises.length) {
-      entry.exercises.forEach(exo => {
-        exo.series.forEach(s => {
-          if (!s.kg || !s.reps) return;
-          db.charges.push({
-            id: Date.now() + Math.random(),
-            date: entry.date,
-            exo: exo.key,
-            kg: s.kg,
-            reps: s.reps,
-            sets: 1,
-            rpe: entry.rpe || 7,
-            rm_estimated: s.rm,
-            auto: true,
-            training_id: entry.id,
-          });
-          sbSave('charges', {date: entry.date, exo: exo.key, kg: s.kg, reps: s.reps, sets: 1, rpe: entry.rpe||7, rm_estimated: s.rm, auto: true});
+    // Extract 1RM from all series
+    if(entry.exercises&&entry.exercises.length){
+      entry.exercises.forEach(exo=>{
+        exo.series.forEach(s=>{
+          if(!s.kg||!s.reps)return;
+          const ch={date:entry.date,exo:exo.key,kg:s.kg,reps:s.reps,sets:1,rpe:entry.rpe||7,rm_estimated:s.rm,auto:true};
+          db.charges.push({id:Date.now()+Math.random(),...ch,training_id:entry.id});
+          sbSave('charges',ch);
         });
       });
-    }
-  }
+    }  }
   
   saveDB(db);
   const fb = document.getElementById('save-feedback');
@@ -1445,16 +1408,11 @@ function renderHistory(filter) {
         tags.push({txt:`RPE ${item.rpe}`, cls});
       }
       if (item.allure) tags.push({txt:item.allure+'/km', cls:'etag'});
-      if (item.exercises && item.exercises.length) {
-        item.exercises.forEach(exo => {
-          const best = exo.series && exo.series.length ? exo.series.reduce((a,b)=>a.rm>b.rm?a:b,{rm:0,kg:0,reps:0}) : null;
-          if (best && best.kg) tags.push({txt:(EXO_LIST[exo.key]||exo.key)+' '+best.kg+'kg×'+best.reps+' → ~'+best.rm+'kg 1RM', cls:'etag-ok'});
-        });
-      } else if (item.squat) {
+      if (item.squat) {
         const rm = item.squat_reps ? Math.round(item.squat*(1+item.squat_reps/30)*4)/4 : null;
         tags.push({txt:'Squat '+item.squat+'kg'+(rm?` → 1RM ~${rm}kg`:''), cls:'etag'});
       }
-      if (!item.exercises && item.bench) {
+      if (item.bench) {
         const rm = item.bench_reps ? Math.round(item.bench*(1+item.bench_reps/30)*4)/4 : null;
         tags.push({txt:'Bench '+item.bench+'kg'+(rm?` → 1RM ~${rm}kg`:''), cls:'etag'});
       }
