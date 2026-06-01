@@ -846,7 +846,14 @@ async function sbSave(table,entry){
   return null;
 }
 
-async function sbLoad(table){const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?device_id=eq.'+DEVICE_ID+'&order=created_at.desc',{headers:SB});if(!r.ok)return [];const rows=await r.json().catch(()=>[]);return normalizeSupabaseRows(rows);}
+async function sbLoad(table){
+  // Supabase est la source principale. Ne pas filtrer par device_id :
+  // si le téléphone est vidé, un nouveau device_id est créé, mais les anciennes données doivent remonter.
+  const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?order=created_at.desc',{headers:SB});
+  if(!r.ok){ console.warn('sb load fail', table, r.status, await r.text().catch(()=>'')); return []; }
+  const rows=await r.json().catch(()=>[]);
+  return normalizeSupabaseRows(rows);
+}
 async function sbDel(table,entryOrId){
   const entry = (entryOrId && typeof entryOrId === 'object') ? entryOrId : {id:entryOrId};
   const idsTried = [];
@@ -921,7 +928,26 @@ async function sbDel(table,entryOrId){
   console.warn('Suppression Supabase non confirmée', window.__lastSupabaseDeleteError);
   return false;
 }
-async function syncAll(){const el=document.getElementById('sync-status');if(el)el.textContent='Sync...';try{await sbEnsureDevice();const[tr,po,te,ra,ch,me]=await Promise.all([sbLoad('trainings'),sbLoad('poids'),sbLoad('tests'),sbLoad('races'),sbLoad('charges'),sbLoad('mensur')]);const db={trainings:tr,poids:po,tests:te,races:ra,charges:ch,mensur:me};saveDB(db);if(el){el.textContent='✅ '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});el.style.color='var(--gr)';}return db;}catch(e){if(el){el.textContent='❌ Offline';el.style.color='var(--rd)';}return loadDB();}}
+async function syncAll(){
+  const el=document.getElementById('sync-status');
+  if(el)el.textContent='Sync Supabase...';
+  try{
+    await sbEnsureDevice();
+    const[tr,po,te,ra,ch,me]=await Promise.all([
+      sbLoad('trainings'),sbLoad('poids'),sbLoad('tests'),sbLoad('races'),sbLoad('charges'),sbLoad('mensur')
+    ]);
+    // Le cache local est remplacé par Supabase, il n'est plus la source de vérité.
+    const db={trainings:tr,poids:po,tests:te,races:ra,charges:ch,mensur:me};
+    saveDB(db);
+    if(el){el.textContent='✅ Supabase '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});el.style.color='var(--gr)';}
+    return db;
+  }catch(e){
+    console.warn('syncAll offline/fail', e);
+    if(el){el.textContent='❌ Supabase offline';el.style.color='var(--rd)';}
+    // fallback affichage uniquement si Supabase inaccessible
+    return loadDB();
+  }
+}
 // ═══════════════
 
 // ════════════════════════════════════
@@ -2194,10 +2220,12 @@ function handleImport(input) {
   reader.readAsText(file);
 }
 async function clearAll() {
-  if (confirm('Effacer toutes les données du téléphone ET de Supabase pour cet appareil ? Cette action est irréversible.')) {
+  if (confirm('Effacer toutes les données Supabase du tracker ? Cette action est irréversible.')) {
     const tables=['trainings','poids','tests','races','charges','mensur'];
-    await Promise.all(tables.map(table=>fetch(SUPA_URL+'/rest/v1/'+table+'?device_id=eq.'+encodeURIComponent(DEVICE_ID),{method:'DELETE',headers:SB}).catch(e=>console.warn('clear supabase fail',table,e))));
+    // App personnelle : Supabase est la source principale, on supprime toutes les lignes connues.
+    await Promise.all(tables.map(table=>fetch(SUPA_URL+'/rest/v1/'+table+'?data=not.is.null',{method:'DELETE',headers:SB}).catch(e=>console.warn('clear supabase fail',table,e))));
     localStorage.removeItem(DB_KEY);
+    saveDB(emptyDB());
     renderDashboard();
     renderHistory('all');
     renderRaces();
