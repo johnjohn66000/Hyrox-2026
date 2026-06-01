@@ -737,16 +737,41 @@ function getDeviceId(){let id=localStorage.getItem('hyrox_device_id');if(!id){id
 const DEVICE_ID=getDeviceId();
 const SB={'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','x-device-id':DEVICE_ID,'Prefer':'return=representation'};
 async function sbEnsureDevice(){const r=await fetch(SUPA_URL+'/rest/v1/device_users?device_id=eq.'+DEVICE_ID,{headers:SB});const d=await r.json();if(!d.length)await fetch(SUPA_URL+'/rest/v1/device_users',{method:'POST',headers:SB,body:JSON.stringify({device_id:DEVICE_ID})});}
+window.__lastSupabaseError = null;
 async function sbSave(table,entry){
+  window.__lastSupabaseError = null;
   try{
     const p={...entry,device_id:DEVICE_ID};
     if(table==='trainings'){ delete p.fc; } // évite l'échec si la colonne legacy fc n'existe pas
     delete p.id; // conserve la logique Supabase existante : id géré côté table
     const r=await fetch(SUPA_URL+'/rest/v1/'+table,{method:'POST',headers:SB,body:JSON.stringify(p)});
-    if(!r.ok){console.warn('sb save fail',table,await r.text());return null;}
+    if(!r.ok){
+      const txt=await r.text();
+      window.__lastSupabaseError = {table,status:r.status,message:txt,payload:p};
+      console.warn('sb save fail',table,r.status,txt,p);
+      return null;
+    }
     const data=await r.json().catch(()=>[]);
     return Array.isArray(data)?(data[0]||null):data;
-  }catch(e){console.warn('sb save offline/fail',table,e);return null;}
+  }catch(e){
+    window.__lastSupabaseError = {table,status:'offline/fetch',message:String(e),payload:entry};
+    console.warn('sb save offline/fail',table,e);
+    return null;
+  }
+}
+function showSupabaseSaveStatus(ok, table){
+  const fb=document.getElementById('save-feedback');
+  if(!fb)return;
+  fb.style.display='block';
+  fb.style.color = ok ? 'var(--gr)' : 'var(--am)';
+  if(ok){
+    fb.innerHTML='✅ Séance enregistrée localement + Supabase OK';
+  }else{
+    const err=window.__lastSupabaseError;
+    const msg=err ? (err.status+' · '+String(err.message).slice(0,220)) : 'erreur inconnue';
+    fb.innerHTML='⚠️ Séance enregistrée sur le téléphone, mais Supabase a refusé l’enregistrement.<br><span style="color:var(--tx3)">'+msg+'</span>';
+  }
+  setTimeout(()=>{fb.style.display='none';}, ok ? 2500 : 9000);
 }
 async function sbLoad(table){const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?device_id=eq.'+DEVICE_ID+'&order=created_at.desc',{headers:SB});return r.ok?await r.json():[];}
 async function sbDel(table,id){
@@ -1051,9 +1076,7 @@ async function saveTraining() {
     }  }
   
   saveDB(db);
-  const fb = document.getElementById('save-feedback');
-  fb.style.display = 'block';
-  setTimeout(() => fb.style.display='none', 2000);
+  showSupabaseSaveStatus(!!savedTraining, 'trainings');
 }
 
 async function savePoids() {
