@@ -798,25 +798,35 @@ function showSupabaseSaveStatus(ok, table){
 }
 async function sbLoad(table){const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?device_id=eq.'+DEVICE_ID+'&order=created_at.desc',{headers:SB});return r.ok?await r.json():[];}
 async function sbDel(table,entryOrId){
-  const entry = (entryOrId && typeof entryOrId === 'object') ? entryOrId : {id:entryOrId,local_id:entryOrId};
+  const entry = (entryOrId && typeof entryOrId === 'object') ? entryOrId : {id:entryOrId};
   const remoteId = entry.supabase_id;
-  const localId = entry.local_id || entry.id;
-  if((remoteId===undefined||remoteId===null||remoteId==='') && (localId===undefined||localId===null||localId===''))return false;
+  // Important : ne pas utiliser entry.id comme local_id.
+  // Après synchronisation, entry.id est souvent l'id Supabase ; si on le teste comme local_id,
+  // PostgREST peut répondre OK avec 0 ligne supprimée et empêcher le fallback par id.
+  const localId = entry.local_id;
   try{
-    // 1) Suppression la plus fiable pour les nouvelles entrées : local_id + device_id
+    // 1) Suppression fiable pour les entrées créées avec local_id : local_id + device_id.
     if(localId!==undefined && localId!==null && localId!==''){
       const url=SUPA_URL+'/rest/v1/'+table+'?local_id=eq.'+encodeURIComponent(String(localId))+'&device_id=eq.'+encodeURIComponent(DEVICE_ID);
       const r=await fetch(url,{method:'DELETE',headers:SB});
-      if(r.ok)return true;
-      const txt=await r.text();
-      console.warn('sb delete by local_id fail',table,localId,txt);
+      const txt=await r.text().catch(()=> '');
+      if(r.ok){
+        // Avec Prefer:return=representation, Supabase renvoie [] si aucune ligne n'a été supprimée.
+        // On ne considère OK que si une ligne est réellement revenue, sinon on tente le fallback id.
+        try{ const rows = txt ? JSON.parse(txt) : []; if(Array.isArray(rows) && rows.length>0) return true; }catch(e){}
+      }else{
+        console.warn('sb delete by local_id fail',table,localId,txt);
+      }
     }
-    // 2) Fallback pour les anciennes entrées qui ont gardé l'id Supabase en local
-    const idToDelete = remoteId || entry.id;
+    // 2) Fallback pour les anciennes entrées / entrées synchronisées : id Supabase.
+    const idToDelete = remoteId || entry.id || entryOrId;
     if(idToDelete!==undefined && idToDelete!==null && idToDelete!==''){
-      const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+encodeURIComponent(String(idToDelete)),{method:'DELETE',headers:SB});
-      if(!r.ok)console.warn('sb delete by id fail',table,idToDelete,await r.text());
-      return r.ok;
+      const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+encodeURIComponent(String(idToDelete))+'&device_id=eq.'+encodeURIComponent(DEVICE_ID),{method:'DELETE',headers:SB});
+      const txt=await r.text().catch(()=> '');
+      if(!r.ok)console.warn('sb delete by id fail',table,idToDelete,txt);
+      if(r.ok){
+        try{ const rows = txt ? JSON.parse(txt) : []; return !Array.isArray(rows) || rows.length>0; }catch(e){ return true; }
+      }
     }
     return false;
   }catch(e){console.warn('sb delete offline/fail',table,entryOrId,e);return false;}
@@ -828,6 +838,84 @@ async function syncAll(){const el=document.getElementById('sync-status');if(el)e
 // DATA LAYER
 // ════════════════════════════════════
 const DB_KEY = 'hyrox_tracker_v1';
+const UI_STATE_KEY = 'hyrox_tracker_ui_state_v1';
+const DRAFT_KEY = 'hyrox_tracker_draft_v1';
+
+function loadUiState() {
+  try { return JSON.parse(localStorage.getItem(UI_STATE_KEY)) || {}; }
+  catch { return {}; }
+}
+function saveUiState(patch) {
+  try {
+    const current = loadUiState();
+    localStorage.setItem(UI_STATE_KEY, JSON.stringify({...current, ...patch}));
+  } catch(e) {}
+}
+
+function saveCurrentDraft() {
+  try {
+    const ids = [
+      't-date','t-type','t-duree','t-dist','t-allure','t-intervals','t-fc-avg','t-fc-max','t-fc','t-sp-allure','t-sp-total','t-sp-rounds','t-sp-bbj','t-sp-wb','t-sp-fc-avg','t-sp-fc-max','t-rpe','t-qualite','t-comment',
+      'p-date','p-val','p-moment',
+      'ts-date','ts-type','ts-result','ts-cible','ts-comment',
+      'r-date','r-event','r-total','r-ov','r-ag','r-total-fin','r-ski','r-sled-p','r-sled-pu','r-bbj','r-row','r-farmers','r-fentes','r-wb','r-rox','r-run','r-fonc','r-comment',
+      'ch-exo','ch-kg','ch-reps','ch-sets','ch-date','ch-rpe',
+      'm-date','m-taille','m-poitrine','m-cuisse','m-biceps','m-note'
+    ];
+    const fields = {};
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) fields[id] = el.value;
+    });
+    const activeTab = (document.querySelector('.sec.on')?.id || 'tab-dashboard').replace('tab-','');
+    const visibleLog = ['training','poids','test'].find(t => document.getElementById('log-'+t)?.style.display !== 'none') || 'training';
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({fields, strExos: window._strExos || [], activeTab, logType: visibleLog, savedAt: Date.now()}));
+  } catch(e) {}
+}
+
+function clearCurrentDraft() {
+  try { localStorage.removeItem(DRAFT_KEY); } catch(e) {}
+}
+
+function restoreCurrentDraft() {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return;
+    const draft = JSON.parse(raw);
+    Object.entries(draft.fields || {}).forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (el && value !== undefined && value !== null && value !== '') el.value = value;
+    });
+    if (Array.isArray(draft.strExos)) {
+      window._strExos = draft.strExos;
+      if (typeof renderStrExercises === 'function') renderStrExercises();
+    }
+    if (draft.logType && typeof showLogType === 'function') showLogType(draft.logType);
+    if (document.getElementById('t-type')) document.getElementById('t-type').dispatchEvent(new Event('change'));
+    if (document.getElementById('ts-type')) document.getElementById('ts-type').dispatchEvent(new Event('change'));
+    if (document.getElementById('t-rpe')) updateRpe(document.getElementById('t-rpe').value);
+  } catch(e) {}
+}
+
+function setupDraftAutosave() {
+  document.addEventListener('input', e => {
+    if (e.target && (e.target.matches('input') || e.target.matches('select') || e.target.matches('textarea'))) saveCurrentDraft();
+  });
+  document.addEventListener('change', e => {
+    if (e.target && (e.target.matches('input') || e.target.matches('select') || e.target.matches('textarea'))) saveCurrentDraft();
+  });
+  window.addEventListener('beforeunload', e => {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return;
+    const draft = JSON.parse(raw);
+    const f = draft.fields || {};
+    const hasMeaningful = Object.entries(f).some(([k,v]) => v && !['t-rpe','ch-rpe'].includes(k));
+    if (hasMeaningful) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+}
 
 function emptyDB(){return {trainings:[],poids:[],tests:[],races:[],charges:[],mensur:[]};}
 function normalizeDB(db){return {...emptyDB(), ...(db||{})};}
@@ -890,6 +978,8 @@ function today() { return new Date().toISOString().split('T')[0]; }
 // NAVIGATION
 // ════════════════════════════════════
 function showTab(t) {
+  if (!document.getElementById('tab-'+t)) t = 'dashboard';
+  saveUiState({activeTab:t});
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
   document.getElementById('tab-'+t).classList.add('on');
   document.querySelectorAll('.tab').forEach((b,i) => {
@@ -906,6 +996,8 @@ function showTab(t) {
 }
 
 function showLogType(type) {
+  if (!['training','poids','test'].includes(type)) type = 'training';
+  saveUiState({logType:type});
   ['training','poids','test'].forEach(t => {
     document.getElementById('log-'+t).style.display = t===type ? 'block' : 'none';
   });
@@ -915,8 +1007,9 @@ function showLogType(type) {
 }
 
 function showHistType(type) {
+  saveUiState({histType:type});
   document.querySelectorAll('#tab-history .stab').forEach(b => b.classList.remove('on'));
-  event.target.classList.add('on');
+  if (typeof event !== 'undefined' && event.target) event.target.classList.add('on');
   renderHistory(type);
 }
 
@@ -951,9 +1044,14 @@ window.addEventListener('load', () => {
   const t = today();
   ['t-date','p-date','ts-date','r-date','ch-date','m-date'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.value = t;
+    if (el && !el.value) el.value = t;
   });
-  renderDashboard();
+  setupDraftAutosave();
+  restoreCurrentDraft();
+  const ui = loadUiState();
+  const draft = (() => { try { return JSON.parse(localStorage.getItem(DRAFT_KEY)) || {}; } catch { return {}; } })();
+  const targetTab = draft.activeTab || ui.activeTab || 'dashboard';
+  showTab(targetTab);
 });
 
 // ════════════════════════════════════
@@ -984,27 +1082,30 @@ function strAddExercise() {
   window._strExos.push({key, series:[{kg:'',reps:''}]});
   sel.value = '';
   renderStrExercises();
+  saveCurrentDraft();
 }
 
 function strAddSerie(key) {
   const e = window._strExos.find(e=>e.key===key);
-  if(e){e.series.push({kg:'',reps:''});renderStrExercises();}
+  if(e){e.series.push({kg:'',reps:''});renderStrExercises();saveCurrentDraft();}
 }
 
 function strRemoveSerie(key,idx) {
   const e = window._strExos.find(e=>e.key===key);
-  if(e){e.series.splice(idx,1);if(!e.series.length)e.series.push({kg:'',reps:''});renderStrExercises();}
+  if(e){e.series.splice(idx,1);if(!e.series.length)e.series.push({kg:'',reps:''});renderStrExercises();saveCurrentDraft();}
 }
 
 function strRemoveExo(key) {
   window._strExos = window._strExos.filter(e=>e.key!==key);
   renderStrExercises();
+  saveCurrentDraft();
 }
 
 function strUpdate(key,idx,field,val) {
   const e = window._strExos.find(e=>e.key===key);
   if(!e||!e.series[idx])return;
   e.series[idx][field]=val;
+  saveCurrentDraft();
   const kg=parseFloat(e.series[idx].kg), reps=parseInt(e.series[idx].reps);
   const el=document.getElementById('rm-prev-'+key+'-'+idx);
   if(el&&kg&&reps){el.textContent='~'+(Math.round(kg*(1+reps/30)*4)/4)+' kg 1RM';el.style.color='var(--gr)';}
@@ -1117,6 +1218,7 @@ async function saveTraining() {
     }  }
   
   saveDB(db);
+  clearCurrentDraft();
   showSupabaseSaveStatus(!!savedTraining, 'trainings');
 }
 
@@ -1126,7 +1228,7 @@ async function savePoids() {
   if(!entry.date || !entry.val){ alert('Date et poids obligatoires.'); return; }
   entry.local_id = String(entry.id);
   const saved=await sbSave('poids',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
-  db.poids.push(entry); saveDB(db);
+  db.poids.push(entry); saveDB(db); clearCurrentDraft();
   document.getElementById('poids-feedback').style.display = 'block';
   setTimeout(() => document.getElementById('poids-feedback').style.display='none', 2000);
 }
@@ -1137,7 +1239,7 @@ async function saveTest() {
   if(!entry.date || !entry.type || !entry.result){ alert('Date, type et résultat obligatoires.'); return; }
   entry.local_id = String(entry.id);
   const saved=await sbSave('tests',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
-  db.tests.push(entry); saveDB(db);
+  db.tests.push(entry); saveDB(db); clearCurrentDraft();
   document.getElementById('test-feedback').style.display = 'block';
   setTimeout(() => document.getElementById('test-feedback').style.display='none', 2000);
 }
@@ -1168,7 +1270,7 @@ async function saveRace() {
     comment: document.getElementById('r-comment').value
   };
   race.local_id = String(race.id);
-  const savedRace=await sbSave('races',race); if(savedRace&&savedRace.id)race.supabase_id=savedRace.id; db.races.push(race); saveDB(db);
+  const savedRace=await sbSave('races',race); if(savedRace&&savedRace.id)race.supabase_id=savedRace.id; db.races.push(race); saveDB(db); clearCurrentDraft();
   document.getElementById('race-feedback').style.display = 'block';
   setTimeout(() => {
     document.getElementById('race-feedback').style.display='none';
@@ -1850,7 +1952,7 @@ async function saveCharge() {
   const entry={ id: Date.now(), date, exo, kg, reps, sets, rpe, rm_estimated: rm };
   entry.local_id = String(entry.id);
   const saved=await sbSave('charges',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
-  db.charges.push(entry); saveDB(db);
+  db.charges.push(entry); saveDB(db); clearCurrentDraft();
   displayRMResult(exo, kg, reps, rm);
   renderChargesHistory();
   const fb = document.getElementById('ch-feedback');
@@ -2074,7 +2176,7 @@ async function saveMensur() {
   }
 
   entry.local_id = String(entry.id);
-  const saved=await sbSave('mensur',entry); if(saved&&saved.id)entry.supabase_id=saved.id; db.mensur.push(entry); saveDB(db);
+  const saved=await sbSave('mensur',entry); if(saved&&saved.id)entry.supabase_id=saved.id; db.mensur.push(entry); saveDB(db); clearCurrentDraft();
 
   const fb = document.getElementById('m-feedback');
   fb.style.display = 'block';
@@ -2158,8 +2260,19 @@ function renderMensur() {
 }
 
 // Init
-showTab('dashboard');
-window.addEventListener('load',()=>syncAll().then(()=>renderDashboard()));
+// Ne pas appeler showTab('dashboard') au chargement : cela écrase l'onglet mémorisé.
+// L'initialisation réelle est faite dans le listener load plus haut, qui restaure l'onglet actif.
+window.addEventListener('load',()=>{
+  const currentTab = (loadUiState().activeTab || 'dashboard');
+  syncAll().then(()=>{
+    // Après la synchro, on rerend l'onglet courant au lieu de renvoyer au dashboard.
+    if (currentTab==='dashboard') renderDashboard();
+    else if (currentTab==='history') renderHistory(loadUiState().histType || 'all');
+    else if (currentTab==='race') renderRaces();
+    else if (currentTab==='charges') renderChargesHistory();
+    else if (currentTab==='mensur') renderMensur();
+  });
+});
 </script>
 </body>
 </html>
