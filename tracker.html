@@ -134,6 +134,18 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 .dock-btn.on{color:var(--gr)}
 .dock-icon{font-size:1rem}
 @media(min-width:431px){body{border-left:1px solid var(--bo);border-right:1px solid var(--bo)}}
+
+/* History detail clickable cards */
+.entry.js-history-entry{cursor:pointer;transition:border-color .15s, background .15s}
+.entry.js-history-entry:active{border-color:var(--gr);background:var(--bg4)}
+.history-detail{display:none;margin-top:.45rem;padding:.55rem .6rem;background:var(--bg2);border:1px solid var(--bo2);border-radius:7px;font-family:monospace;font-size:10.5px;color:var(--tx3);line-height:1.55}
+.entry.open .history-detail{display:block}
+.history-detail-title{color:var(--tx2);font-weight:700;margin:.25rem 0 .15rem;text-transform:uppercase;font-size:9px;letter-spacing:.06em}
+.history-detail-row{display:flex;justify-content:space-between;gap:.6rem;border-bottom:1px solid var(--bo);padding:2px 0}
+.history-detail-row:last-child{border-bottom:0}
+.history-detail-row b{color:var(--tx2)}
+.history-series{margin-left:.3rem;color:var(--tx2)}
+
 </style>
 </head>
 <body>
@@ -1126,38 +1138,6 @@ function updateRpe(v) {
   document.getElementById('rpe-display').style.color = `hsl(${hue},80%,55%)`;
 }
 
-function resetTrainingFormAfterSave() {
-  try {
-    const keepDate = today();
-    const fieldsToClear = [
-      't-type','t-duree','t-dist','t-allure','t-intervals','t-fc-avg','t-fc-max',
-      't-sp-allure','t-sp-total','t-sp-rounds','t-sp-bbj','t-sp-wb','t-sp-fc-avg','t-sp-fc-max',
-      't-qualite','t-comment'
-    ];
-    fieldsToClear.forEach(function(id){
-      const el = document.getElementById(id);
-      if (el) el.value = '';
-    });
-    const dateEl = document.getElementById('t-date');
-    if (dateEl) dateEl.value = keepDate;
-    const rpeEl = document.getElementById('t-rpe');
-    if (rpeEl) rpeEl.value = 7;
-    updateRpe(7);
-    const rpeLabel = document.getElementById('rpe-cible-label');
-    if (rpeLabel) rpeLabel.textContent = 'Cible : —';
-    window._strExos = [];
-    if (typeof renderStrExercises === 'function') renderStrExercises();
-    ['t-run-fields','t-str-fields','t-sp-fields'].forEach(function(id){
-      const el = document.getElementById(id);
-      if (el) el.style.display = 'none';
-    });
-    clearCurrentDraft();
-    saveUiState({logType:'training'});
-  } catch(e) {
-    console.warn('resetTrainingFormAfterSave fail', e);
-  }
-}
-
 // Set today's date on load
 window.addEventListener('load', () => {
   const t = today();
@@ -1278,6 +1258,89 @@ document.getElementById('t-type').addEventListener('change', function(){
     renderStrExercises();
   }
 });
+
+function showSupabaseSaveStatus(ok, table){
+  var fb = document.getElementById('save-feedback');
+  if (!fb) return;
+  fb.style.display = 'block';
+  fb.style.fontWeight = '700';
+  fb.style.color = ok ? 'var(--gr)' : 'var(--am)';
+  fb.textContent = ok
+    ? '✅ Séance enregistrée · Supabase OK'
+    : '⚠️ Séance enregistrée sur le téléphone · Supabase à vérifier (' + (table || 'sync') + ')';
+  clearTimeout(window.__saveFeedbackTimer);
+  window.__saveFeedbackTimer = setTimeout(function(){
+    if (fb) fb.style.display = 'none';
+  }, 4500);
+}
+
+function resetTrainingFormAfterSave(){
+  var keepDate = today();
+  var idsToClear = [
+    't-duree','t-dist','t-allure','t-intervals','t-fc-avg','t-fc-max','t-fc',
+    't-sp-allure','t-sp-total','t-sp-rounds','t-sp-bbj','t-sp-wb','t-sp-fc-avg','t-sp-fc-max',
+    't-qualite','t-comment'
+  ];
+  idsToClear.forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  var dateEl=document.getElementById('t-date'); if(dateEl) dateEl.value=keepDate;
+  var typeEl=document.getElementById('t-type'); if(typeEl) typeEl.value='';
+  var rpe=document.getElementById('t-rpe'); if(rpe) rpe.value=7;
+  updateRpe(7);
+  var rpeLabel=document.getElementById('rpe-cible-label'); if(rpeLabel) rpeLabel.textContent='Cible : —';
+  ['t-run-fields','t-str-fields','t-sp-fields'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
+  window._strExos=[];
+  if (typeof renderStrExercises === 'function') renderStrExercises();
+  clearCurrentDraft();
+  showLogType('training');
+}
+
+function historyDetailHtml(item){
+  var rows = [];
+  function row(label, value){ if(value!==undefined && value!==null && value!=='') rows.push('<div class="history-detail-row"><span>'+escapeHtml(label)+'</span><b>'+escapeHtml(value)+'</b></div>'); }
+  if(item._cat==='training'){
+    row('Date', fmtDate(item.date));
+    row('Durée', item.duree ? item.duree+' min' : '');
+    row('RPE', item.rpe);
+    row('Qualité', item.qualite);
+    row('Distance', item.dist ? item.dist+' km' : '');
+    row('Allure', item.allure ? item.allure+'/km' : '');
+    row('Intervalles', item.intervals);
+    row('FC moyenne', getFcAvg(item) ? getFcAvg(item)+' bpm' : '');
+    row('FC max', getFcMax(item) ? getFcMax(item)+' bpm' : '');
+    row('Temps total SP', item.sp_total ? item.sp_total+' min' : '');
+    row('Rounds', item.sp_rounds);
+    row('BBJ', item.sp_bbj ? item.sp_bbj+' m' : '');
+    row('WB 100', item.sp_wb);
+    if(item.comment) row('Commentaire', item.comment);
+    if(item.exercises && item.exercises.length){
+      rows.push('<div class="history-detail-title">Exercices</div>');
+      item.exercises.forEach(function(exo){
+        rows.push('<div class="history-detail-row"><span colspan="2"><b>'+escapeHtml(exo.label||exo.key)+'</b></span></div>');
+        (exo.series||[]).forEach(function(ser,i){
+          var txt=(ser.kg||'—')+' kg × '+(ser.reps||'—')+(ser.rm?' · ~'+ser.rm+' kg 1RM':'');
+          rows.push('<div class="history-series">Série '+(i+1)+' : '+escapeHtml(txt)+'</div>');
+        });
+      });
+    }
+  } else if(item._cat==='test'){
+    row('Date', fmtDate(item.date)); row('Type', item.type); row('Résultat', item.result); row('Cible', item.cible); row('Commentaire', item.comment);
+  } else if(item._cat==='poids'){
+    row('Date', fmtDate(item.date)); row('Poids', item.val ? item.val+' kg' : ''); row('Moment', item.moment);
+  }
+  return '<div class="history-detail">'+(rows.join('') || '<span>Aucun détail disponible.</span>')+'</div>';
+}
+
+function setupHistoryDetails(){
+  if(window.__hyroxHistoryDetailReady) return;
+  window.__hyroxHistoryDetailReady = true;
+  document.addEventListener('click', function(e){
+    if(e.target.closest('.js-delete-entry')) return;
+    var card = e.target.closest('.js-history-entry');
+    if(!card) return;
+    card.classList.toggle('open');
+  }, false);
+}
+
 // ═══════════════════════════════════════
 async function saveTraining() {
   const db = loadDB();
@@ -1352,19 +1415,11 @@ async function saveTraining() {
     chargeResults = await Promise.all(window._pendingChargeSaves);
   }
   saveDB(db);
-  resetTrainingFormAfterSave();
+  clearCurrentDraft();
   const chargesOk = !chargeResults.length || chargeResults.every(Boolean);
   showSupabaseSaveStatus(!!savedTraining && chargesOk, chargesOk ? 'trainings' : 'trainings/charges');
-
-  // Feedback visuel
-  var fb = document.getElementById('save-feedback');
-  if (fb) {
-    fb.textContent = 'Seance enregistree';
-    fb.style.display = 'block';
-    setTimeout(function() { fb.style.display = 'none'; }, 2500);
-  }
-  // Garder le formulaire entraînement ouvert pour enchaîner une nouvelle séance.
-  showLogType('training');
+  resetTrainingFormAfterSave();
+  try { renderHistory(getCurrentHistoryFilter()); renderDashboard(); renderChargesHistory(); } catch(e) { console.warn('post-save render fail', e); }
 }
 
 async function savePoids() {
@@ -1754,13 +1809,13 @@ function renderHistory(filter) {
                ...(db.poids||[]).map(t=>({...t,_cat:'poids'}))];
 
   if (filter !== 'all') {
-    const map = {run:['vma','tempo','z2','long'], str:['str_bas','str_haut','str_full'],
+    const map = {run:['vma','tempo','z2','long','bike','ergo'], str:['str_bas','str_haut','str_full'],
       sp:['compromised','simulation'], test:['_cat=test']};
     if (filter === 'test') items = items.filter(t=>t._cat==='test');
     else items = items.filter(t => (map[filter]||[]).includes(t.type));
   }
 
-  items.sort((a,b) => b.date.localeCompare(a.date));
+  items.sort((a,b) => String(b.date||'').localeCompare(String(a.date||'')));
 
   if (!items.length) {
     el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>Aucune entrée pour ce filtre.</p></div>';
@@ -1773,10 +1828,10 @@ function renderHistory(filter) {
 
     if (item._cat === 'poids') {
       title = item.val + ' kg';
-      meta = fmtDate(item.date) + ' · ' + item.moment;
+      meta = fmtDate(item.date) + ' · ' + (item.moment||'');
     } else if (item._cat === 'test') {
       const c = CIBLES[item.type];
-      title = (c?.label||item.type) + ' — ' + item.result;
+      title = (c?.label||item.type||'Test') + ' — ' + (item.result||'');
       meta = fmtDate(item.date) + (item.comment ? ' · ' + item.comment : '');
       if (c && item.result) {
         const s = timeToSec(item.result), t2 = timeToSec(c.target);
@@ -1786,9 +1841,9 @@ function renderHistory(filter) {
         }
       }
     } else {
-      const typeLabels = {vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',compromised:'Compromised',
-        simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',ergo:'Ergo',bike:'Vélo',mob:'Mobilité'};
-      title = (item.type && typeLabels[item.type]) ? typeLabels[item.type] : (item.type || 'Seance');
+      const typeLabels = {vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',bike:'Vélo',compromised:'Compromised',
+        simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',ergo:'Ergo',mob:'Mobilité'};
+      title = (item.type && typeLabels[item.type]) ? typeLabels[item.type] : (item.type || 'Séance');
       if (item.duree) title += ` — ${item.duree} min`;
       meta = fmtDate(item.date);
       if (item.rpe) {
@@ -1805,7 +1860,11 @@ function renderHistory(filter) {
       if (getFcAvg(item)) tags.push({txt:'FC moy '+getFcAvg(item)+' bpm', cls:'etag'});
       if (getFcMax(item)) tags.push({txt:'FC max '+getFcMax(item)+' bpm', cls:'etag'});
       if (item.exercises && item.exercises.length) {
-        item.exercises.slice(0,3).forEach(function(exo){if(!exo.series||!exo.series.length)return;var best=exo.series.reduce(function(a,b){return(a.rm||0)>(b.rm||0)?a:b;},{rm:0,kg:0,reps:0});if(best.kg)tags.push({txt:(exo.label||exo.key)+' '+best.kg+'kg x'+best.reps+' ~'+best.rm+'kg',cls:'etag-ok'});});
+        item.exercises.slice(0,3).forEach(function(exo){
+          if(!exo.series||!exo.series.length)return;
+          var best=exo.series.reduce(function(a,b){return(a.rm||0)>(b.rm||0)?a:b;},{rm:0,kg:0,reps:0});
+          if(best.kg)tags.push({txt:(exo.label||exo.key)+' '+best.kg+'kg×'+best.reps+' ~'+best.rm+'kg 1RM',cls:'etag-ok'});
+        });
       } else {
         if(item.squat)tags.push({txt:'Squat '+item.squat+'kg',cls:'etag'});
         if(item.bench)tags.push({txt:'Bench '+item.bench+'kg',cls:'etag'});
@@ -1813,17 +1872,20 @@ function renderHistory(filter) {
       if(item.sp_wb)tags.push({txt:'WB '+item.sp_wb,cls:'etag'});
     }
 
-    const tagsHtml = tags.map(t=>`<span class="etag ${t.cls}">${t.txt}</span>`).join('');
-    return `<div class="entry">
+    const tagsHtml = tags.map(t=>`<span class="etag ${t.cls}">${escapeHtml(t.txt)}</span>`).join('');
+    const detail = historyDetailHtml(item);
+    return `<div class="entry js-history-entry" data-cat="${escapeHtml(item._cat)}" data-id="${escapeHtml(entryDeleteKey(item))}" title="Cliquer pour afficher le détail">
       <div class="entry-icon">${icon}</div>
       <div class="entry-content">
-        <div class="entry-title">${title}</div>
-        <div class="entry-meta">${meta}${item.comment ? ' · ' + item.comment : ''}</div>
+        <div class="entry-title">${escapeHtml(title)}</div>
+        <div class="entry-meta">${escapeHtml(meta)}${item.comment ? ' · ' + escapeHtml(item.comment) : ''}</div>
         ${tags.length ? `<div class="entry-tags">${tagsHtml}</div>` : ''}
+        ${detail}
       </div>
       <button type="button" class="del-btn js-delete-entry" data-cat="${escapeHtml(item._cat)}" data-id="${escapeHtml(entryDeleteKey(item))}">✕</button>
     </div>`;
   }).join('');
+  setupHistoryDetails();
 }
 
 
