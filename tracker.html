@@ -754,65 +754,81 @@ const DEVICE_ID=getDeviceId();
 const SB={'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','x-device-id':DEVICE_ID,'Prefer':'return=representation'};
 async function sbEnsureDevice(){const r=await fetch(SUPA_URL+'/rest/v1/device_users?device_id=eq.'+DEVICE_ID,{headers:SB});const d=await r.json();if(!d.length)await fetch(SUPA_URL+'/rest/v1/device_users',{method:'POST',headers:SB,body:JSON.stringify({device_id:DEVICE_ID})});}
 window.__lastSupabaseError = null;
+function normalizeSupabaseRow(row){
+  if(!row || typeof row !== 'object') return row;
+  if(row.data && typeof row.data === 'object' && !Array.isArray(row.data)){
+    return {...row.data, supabase_id: row.id, _supabase_row: row};
+  }
+  return {...row, supabase_id: row.id};
+}
+
+function normalizeSupabaseRows(rows){
+  return Array.isArray(rows) ? rows.map(normalizeSupabaseRow) : [];
+}
+
+function buildSupabasePayload(table, entry, mode){
+  const localId = entry.local_id || entry.id || (Date.now()+'_'+Math.random().toString(36).slice(2));
+  const data = {...entry, local_id:String(localId)};
+  const p = {...entry, device_id:DEVICE_ID, local_id:String(localId), data};
+
+  // Colonnes locales uniquement / incompatibles avec certaines tables Supabase
+  delete p.id;
+  delete p.supabase_id;
+  delete p._supabase_row;
+  if(table==='trainings') delete p.fc; // legacy local uniquement
+
+  if(mode === 'safe_local_id'){
+    return {device_id:DEVICE_ID, local_id:String(localId), data};
+  }
+  if(mode === 'safe_no_local_id'){
+    return {device_id:DEVICE_ID, data};
+  }
+  return p;
+}
+
+function isSchemaColumnError(txt){
+  txt = String(txt || '');
+  return txt.includes('schema cache') ||
+         txt.includes('Could not find') ||
+         txt.includes('column') ||
+         txt.includes('relation') ||
+         txt.includes('violates not-null constraint');
+}
+
 async function sbSave(table,entry){
   window.__lastSupabaseError = null;
-  try{
-    const localId = entry.local_id || entry.id || (Date.now()+'_'+Math.random().toString(36).slice(2));
-    const p={...entry,device_id:DEVICE_ID,local_id:String(localId)};
-    if(table==='trainings'){ delete p.fc; } // évite l'échec si la colonne legacy fc n'existe pas
-    delete p.id;          // id reste géré par Supabase
-    delete p.supabase_id; // colonne locale uniquement
+  const attempts = [
+    {label:'full+data', payload:buildSupabasePayload(table, entry, 'full')},
+    {label:'safe local_id+data', payload:buildSupabasePayload(table, entry, 'safe_local_id')},
+    {label:'safe data only', payload:buildSupabasePayload(table, entry, 'safe_no_local_id')}
+  ];
 
-    // Tentative 1 : sauvegarde complète avec local_id, utile pour supprimer ensuite par local_id.
-    let r=await fetch(SUPA_URL+'/rest/v1/'+table,{method:'POST',headers:SB,body:JSON.stringify(p)});
-    if(!r.ok){
-      const txt=await r.text();
-      const localIdColumnMissing = txt.includes('local_id') && (txt.includes('schema cache') || txt.includes('column') || txt.includes('Could not find'));
-
-      // Tentative 2 : compatibilité immédiate si la colonne local_id n'a pas encore été ajoutée dans Supabase.
-      // Dans ce cas, on sauvegarde quand même et on conserve l'id Supabase retourné en local pour pouvoir supprimer par id.
-      if(localIdColumnMissing){
-        const p2={...p};
-        delete p2.local_id;
-        r=await fetch(SUPA_URL+'/rest/v1/'+table,{method:'POST',headers:SB,body:JSON.stringify(p2)});
-        if(r.ok){
-          const data=await r.json().catch(()=>[]);
-          window.__lastSupabaseError = null;
-          return Array.isArray(data)?(data[0]||null):data;
-        }
-        const txt2=await r.text();
-        window.__lastSupabaseError = {table,status:r.status,message:txt2,payload:p2};
-        console.warn('sb save fail fallback',table,r.status,txt2,p2);
-        return null;
+  for(const attempt of attempts){
+    try{
+      const r = await fetch(SUPA_URL+'/rest/v1/'+table,{method:'POST',headers:SB,body:JSON.stringify(attempt.payload)});
+      if(r.ok){
+        const raw = await r.json().catch(()=>[]);
+        const row = Array.isArray(raw) ? (raw[0]||null) : raw;
+        window.__lastSupabaseError = null;
+        return normalizeSupabaseRow(row);
       }
-
-      window.__lastSupabaseError = {table,status:r.status,message:txt,payload:p};
-      console.warn('sb save fail',table,r.status,txt,p);
+      const txt = await r.text();
+      window.__lastSupabaseError = {table,status:r.status,message:txt,payload:attempt.payload,attempt:attempt.label};
+      console.warn('sb save fail',table,attempt.label,r.status,txt,attempt.payload);
+      // On retente toujours les payloads sûrs pour les erreurs 400/409 :
+      // c'est crucial pour les séances muscu, car exercises/charges peuvent varier selon le schéma Supabase.
+      // On arrête seulement pour les erreurs de droits/auth, qui ne peuvent pas être corrigées par un payload minimal.
+      if(r.status === 401 || r.status === 403) return null;
+    }catch(e){
+      window.__lastSupabaseError = {table,status:'network',message:String(e),payload:attempt.payload,attempt:attempt.label};
+      console.warn('sb save exception',table,attempt.label,e,attempt.payload);
       return null;
     }
-    const data=await r.json().catch(()=>[]);
-    return Array.isArray(data)?(data[0]||null):data;
-  }catch(e){
-    window.__lastSupabaseError = {table,status:'offline/fetch',message:String(e),payload:entry};
-    console.warn('sb save offline/fail',table,e);
-    return null;
   }
+  return null;
 }
-function showSupabaseSaveStatus(ok, table){
-  const fb=document.getElementById('save-feedback');
-  if(!fb)return;
-  fb.style.display='block';
-  fb.style.color = ok ? 'var(--gr)' : 'var(--am)';
-  if(ok){
-    fb.innerHTML='✅ Séance enregistrée localement + Supabase OK';
-  }else{
-    const err=window.__lastSupabaseError;
-    const msg=err ? (err.status+' · '+String(err.message).slice(0,220)) : 'erreur inconnue';
-    fb.innerHTML='⚠️ Séance enregistrée sur le téléphone, mais Supabase a refusé l’enregistrement.<br><span style="color:var(--tx3)">'+msg+'</span>';
-  }
-  setTimeout(()=>{fb.style.display='none';}, ok ? 2500 : 9000);
-}
-async function sbLoad(table){const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?device_id=eq.'+DEVICE_ID+'&order=created_at.desc',{headers:SB});return r.ok?await r.json():[];}
+
+async function sbLoad(table){const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?device_id=eq.'+DEVICE_ID+'&order=created_at.desc',{headers:SB});if(!r.ok)return [];const rows=await r.json().catch(()=>[]);return normalizeSupabaseRows(rows);}
 async function sbDel(table,entryOrId){
   const entry = (entryOrId && typeof entryOrId === 'object') ? entryOrId : {id:entryOrId};
   const idsTried = [];
@@ -1273,6 +1289,7 @@ async function saveTraining() {
   }
   entry.local_id = String(entry.id);
   const savedTraining=await sbSave('trainings',entry); if(savedTraining&&savedTraining.id)entry.supabase_id=savedTraining.id; db.trainings.push(entry);
+  window._pendingChargeSaves = [];
   
   // Auto-extract charges for 1RM calculation
   if (['str_bas','str_haut','str_full'].includes(type)) {
@@ -1285,14 +1302,20 @@ async function saveTraining() {
           const chargeId=Date.now()+Math.random();
           const ch={id:chargeId,local_id:String(chargeId),date:entry.date,exo:exo.key,kg:s.kg,reps:s.reps,sets:1,rpe:entry.rpe||7,rm_estimated:s.rm,auto:true,training_id:entry.id};
           db.charges.push(ch);
-          sbSave('charges',ch).then(saved=>{ if(saved&&saved.id){ ch.supabase_id=saved.id; saveDB(db); } });
+          if(!window._pendingChargeSaves) window._pendingChargeSaves = [];
+          window._pendingChargeSaves.push(sbSave('charges',ch).then(saved=>{ if(saved&&saved.id){ ch.supabase_id=saved.id; saveDB(db); return true; } return false; }).catch(()=>false));
         });
       });
     }  }
   
+  let chargeResults = [];
+  if(window._pendingChargeSaves && window._pendingChargeSaves.length){
+    chargeResults = await Promise.all(window._pendingChargeSaves);
+  }
   saveDB(db);
   clearCurrentDraft();
-  showSupabaseSaveStatus(!!savedTraining, 'trainings');
+  const chargesOk = !chargeResults.length || chargeResults.every(Boolean);
+  showSupabaseSaveStatus(!!savedTraining && chargesOk, chargesOk ? 'trainings' : 'trainings/charges');
 }
 
 async function savePoids() {
