@@ -1126,6 +1126,38 @@ function updateRpe(v) {
   document.getElementById('rpe-display').style.color = `hsl(${hue},80%,55%)`;
 }
 
+function resetTrainingFormAfterSave() {
+  try {
+    const keepDate = today();
+    const fieldsToClear = [
+      't-type','t-duree','t-dist','t-allure','t-intervals','t-fc-avg','t-fc-max',
+      't-sp-allure','t-sp-total','t-sp-rounds','t-sp-bbj','t-sp-wb','t-sp-fc-avg','t-sp-fc-max',
+      't-qualite','t-comment'
+    ];
+    fieldsToClear.forEach(function(id){
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    const dateEl = document.getElementById('t-date');
+    if (dateEl) dateEl.value = keepDate;
+    const rpeEl = document.getElementById('t-rpe');
+    if (rpeEl) rpeEl.value = 7;
+    updateRpe(7);
+    const rpeLabel = document.getElementById('rpe-cible-label');
+    if (rpeLabel) rpeLabel.textContent = 'Cible : —';
+    window._strExos = [];
+    if (typeof renderStrExercises === 'function') renderStrExercises();
+    ['t-run-fields','t-str-fields','t-sp-fields'].forEach(function(id){
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    clearCurrentDraft();
+    saveUiState({logType:'training'});
+  } catch(e) {
+    console.warn('resetTrainingFormAfterSave fail', e);
+  }
+}
+
 // Set today's date on load
 window.addEventListener('load', () => {
   const t = today();
@@ -1320,7 +1352,7 @@ async function saveTraining() {
     chargeResults = await Promise.all(window._pendingChargeSaves);
   }
   saveDB(db);
-  clearCurrentDraft();
+  resetTrainingFormAfterSave();
   const chargesOk = !chargeResults.length || chargeResults.every(Boolean);
   showSupabaseSaveStatus(!!savedTraining && chargesOk, chargesOk ? 'trainings' : 'trainings/charges');
 
@@ -1331,8 +1363,8 @@ async function saveTraining() {
     fb.style.display = 'block';
     setTimeout(function() { fb.style.display = 'none'; }, 2500);
   }
-  // Revenir a l accueil du log
-  showLogType('home');
+  // Garder le formulaire entraînement ouvert pour enchaîner une nouvelle séance.
+  showLogType('training');
 }
 
 async function savePoids() {
@@ -1755,7 +1787,7 @@ function renderHistory(filter) {
       }
     } else {
       const typeLabels = {vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',compromised:'Compromised',
-        simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',ergo:'Ergo',mob:'Mobilité'};
+        simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',ergo:'Ergo',bike:'Vélo',mob:'Mobilité'};
       title = (item.type && typeLabels[item.type]) ? typeLabels[item.type] : (item.type || 'Seance');
       if (item.duree) title += ` — ${item.duree} min`;
       meta = fmtDate(item.date);
