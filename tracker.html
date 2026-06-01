@@ -670,15 +670,16 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
     </div>
   </div>
 
-  <!-- Sélecteur exercice pour historique -->
+  <!-- Synthèse 1RM par exercice -->
   <div class="card">
-    <div class="card-title">Historique 1RM par exercice</div>
-    <div class="subtabs" id="exo-subtabs" style="flex-wrap:wrap"></div>
-    <div id="rm-history"></div>
-    <div id="rm-chart-wrap" class="chart-wrap" style="display:none">
-      <div class="chart-title">Évolution 1RM estimé</div>
-      <canvas id="rm-chart" height="90"></canvas>
+    <div class="card-title">Historique 1RM par exercice <span>synthèse</span></div>
+    <div class="field">
+      <label>Exercice</label>
+      <select id="rm-exo-select" onchange="renderChargesHistory(this.value)">
+        <option value="">— Choisir —</option>
+      </select>
     </div>
+    <div id="rm-history"></div>
   </div>
 
 </div>
@@ -869,6 +870,45 @@ async function sbLoad(table){
   const rows=await r.json().catch(()=>[]);
   return normalizeSupabaseRows(rows);
 }
+
+async function sbDeleteRows(table, queryLabel, query){
+  if(!query) return false;
+  const url = SUPA_URL + '/rest/v1/' + table + '?' + query;
+  try{
+    const r = await fetch(url,{method:'DELETE',headers:SB});
+    const txt = await r.text().catch(()=> '');
+    if(!r.ok){
+      console.warn('sb cascade delete fail', table, queryLabel, r.status, txt);
+      return false;
+    }
+    return true;
+  }catch(e){
+    console.warn('sb cascade delete exception', table, queryLabel, e);
+    return false;
+  }
+}
+function getTrainingCascadeIds(training){
+  const vals = [];
+  if(training){
+    vals.push(training.id, training.local_id, training.supabase_id, training.training_id);
+    if(training.data && typeof training.data === 'object') vals.push(training.data.id, training.data.local_id);
+    if(training._supabase_row && training._supabase_row.data) vals.push(training._supabase_row.data.id, training._supabase_row.data.local_id);
+  }
+  return [...new Set(vals.filter(v => v !== undefined && v !== null && String(v) !== '').map(v => String(v)))];
+}
+async function sbDelChargesLinkedToTraining(training){
+  const ids = getTrainingCascadeIds(training);
+  let okAny = false;
+  for(const id of ids){
+    const q = encodeURIComponent(String(id));
+    // Charges auto créées depuis une séance : colonne training_id quand disponible.
+    okAny = await sbDeleteRows('charges','training_id '+id,'training_id=eq.'+q) || okAny;
+    // Fallback pour les anciennes lignes sauvegardées uniquement dans data.
+    okAny = await sbDeleteRows('charges','data.training_id '+id,'data->>training_id=eq.'+q) || okAny;
+  }
+  return okAny;
+}
+
 async function sbDel(table,entryOrId){
   const entry = (entryOrId && typeof entryOrId === 'object') ? entryOrId : {id:entryOrId};
   const idsTried = [];
@@ -2033,12 +2073,30 @@ async function hardDeleteEntry(cat, id){
   const db = loadDB();
   const list = db[key] || [];
   const entry = list.find(x => sameEntryKey(x, id)) || {id:id, local_id:id};
+
+  // Si on supprime une séance, supprimer aussi les charges auto liées à cette séance.
+  // Sinon la table charges garde des lignes orphelines et les 1RM peuvent rester faussés.
+  if (cat === 'training') {
+    const cascadeIds = getTrainingCascadeIds(entry);
+    db.charges = (db.charges || []).filter(c => {
+      const tid = c && (c.training_id !== undefined ? c.training_id : (c.data && c.data.training_id));
+      return !cascadeIds.includes(String(tid));
+    });
+  }
+
   db[key] = list.filter(x => !sameEntryKey(x, id));
   saveDB(db);
   rerenderAfterDelete(cat);
   try {
+    if (cat === 'training') {
+      await sbDelChargesLinkedToTraining(entry);
+    }
     const ok = await sbDel(tableMap[cat], entry);
     if (!ok) console.warn('Suppression Supabase non confirmée', {cat,id,entry});
+    if (cat === 'training') {
+      // Recharger après cascade pour confirmer la base Supabase comme source principale.
+      syncAll().then(() => rerenderAfterDelete(cat)).catch(()=>{});
+    }
   } catch(e) {
     console.warn('Suppression Supabase impossible', {cat,id,e});
   }
@@ -2517,80 +2575,112 @@ function getPlanTargets(exo) {
 function renderChargesHistory(selectedExo) {
   const db = loadDB();
   const charges = db.charges || [];
-  
-  // Build list of exercices that have data
-  const exosWithData = [...new Set(charges.map(c => c.exo))];
-  
-  const tabsEl = document.getElementById('exo-subtabs');
-  if (!tabsEl) return;
   renderChargeCalculatorOptions();
-  
+
+  const historyEl = document.getElementById('rm-history');
+  const selectEl = document.getElementById('rm-exo-select');
+  const chartWrap = document.getElementById('rm-chart-wrap');
+  if (chartWrap) chartWrap.style.display = 'none';
+  if (!historyEl) return;
+
+  const exosWithData = [...new Set(charges.map(c => c.exo).filter(Boolean))]
+    .sort((a,b) => String(EXO_LABELS[a] || a).localeCompare(String(EXO_LABELS[b] || b), 'fr'));
+
+  if (selectEl) {
+    const previous = selectedExo || selectEl.value || loadUiState().rmExo || '';
+    selectEl.innerHTML = '<option value="">— Choisir —</option>' + exosWithData.map(e => {
+      const label = escapeHtml(EXO_LABELS[e] || e);
+      return `<option value="${escapeHtml(e)}">${label}</option>`;
+    }).join('');
+    const nextValue = exosWithData.includes(previous) ? previous : (exosWithData[0] || '');
+    selectEl.value = nextValue;
+    selectedExo = nextValue;
+  } else if (!selectedExo) {
+    selectedExo = exosWithData[0] || '';
+  }
+
   if (!exosWithData.length) {
-    document.getElementById('rm-history').innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Enregistre des séries pour voir l&#39;historique 1RM.</p></div>';
-    tabsEl.innerHTML = '';
+    historyEl.innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Enregistre des séries pour voir la synthèse 1RM.</p></div>';
     return;
   }
-  
-  const current = selectedExo || exosWithData[0];
-  
-  // Count auto vs manual
-  const autoCount = (db.charges||[]).filter(c => c.auto).length;
-  const manualCount = (db.charges||[]).filter(c => !c.auto).length;
-  
-  tabsEl.innerHTML = exosWithData.map(e => 
-    `<button class="stab ${e===current?'on':''}" onclick="renderChargesHistory('${e}')">${EXO_LABELS[e]||e}</button>`
-  ).join('') + (autoCount > 0 ? `<div style="font-family:monospace;font-size:9px;color:var(--tx4);margin-top:.3rem;width:100%">⚡ ${autoCount} entrées auto depuis les logs · ${manualCount} manuelles</div>` : '');
-  
-  const exoCharges = charges.filter(c => c.exo === current).sort((a,b) => a.date.localeCompare(b.date));
-  
+
+  if (!selectedExo) {
+    historyEl.innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Choisis un exercice pour voir sa synthèse.</p></div>';
+    return;
+  }
+
+  saveUiState({rmExo:selectedExo});
+
+  const exoCharges = charges
+    .filter(c => c.exo === selectedExo)
+    .filter(c => Number(c.kg) > 0 || Number(c.reps) > 0 || Number(c.rm_estimated) > 0)
+    .sort((a,b) => String(a.date || '').localeCompare(String(b.date || '')));
+
   if (!exoCharges.length) {
-    document.getElementById('rm-history').innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Aucune donnée pour cet exercice.</div>';
+    historyEl.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Aucune donnée exploitable pour cet exercice.</div>';
     return;
   }
-  
-  // Latest 1RM
-  const latest = exoCharges[exoCharges.length-1];
-  const best = exoCharges.reduce((a,b) => Number(a.rm_estimated||0) > Number(b.rm_estimated||0) ? a : b);
-  
-  document.getElementById('rm-history').innerHTML = `
-    <div class="stat-grid" style="margin-bottom:.4rem">
+
+  const theoreticalRows = exoCharges.filter(c => Number(c.rm_estimated) > 0);
+  const bestTheo = theoreticalRows.length
+    ? theoreticalRows.reduce((a,b) => Number(a.rm_estimated || 0) >= Number(b.rm_estimated || 0) ? a : b)
+    : null;
+
+  const realizedRows = exoCharges.filter(c => Number(c.reps) === 1 && Number(c.kg) > 0);
+  const bestReal = realizedRows.length
+    ? realizedRows.reduce((a,b) => Number(a.kg || 0) >= Number(b.kg || 0) ? a : b)
+    : null;
+
+  const latest = exoCharges[exoCharges.length - 1];
+  const label = EXO_LABELS[selectedExo] || selectedExo;
+
+  function fmtKg(v) {
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0 ? (Math.round(n * 10) / 10) + ' kg' : '—';
+  }
+
+  const theoValue = bestTheo ? fmtKg(bestTheo.rm_estimated) : '—';
+  const realValue = bestReal ? fmtKg(bestReal.kg) : '—';
+  const theoMeta = bestTheo
+    ? `${fmtDate(bestTheo.date)} · ${fmtKg(bestTheo.kg)} × ${bestTheo.reps || '—'} reps${bestTheo.auto ? ' · auto séance' : ' · saisie charge'}`
+    : 'Aucune série exploitable pour estimation Epley';
+  const realMeta = bestReal
+    ? `${fmtDate(bestReal.date)} · 1 rep validée${bestReal.rpe ? ' · RPE ' + bestReal.rpe : ''}`
+    : 'Aucun 1RM réalisé enregistré';
+
+  const gapHtml = (bestTheo && bestReal)
+    ? `<div class="alert alert-info" style="margin-top:.45rem"><span class="alert-icon">↔</span><div>Écart théorie / réalisé : <b>${fmtKg(Number(bestTheo.rm_estimated) - Number(bestReal.kg))}</b><br><span style="font-family:monospace;font-size:10px;color:var(--tx3)">Le 1RM théorique vient des séries sous-maximales ; le 1RM réalisé correspond à une vraie rep à charge maximale.</span></div></div>`
+    : '';
+
+  const recHtml = bestTheo ? `
+    <div class="card-title" style="margin-top:.65rem">Charges utiles depuis le 1RM théorique</div>
+    <div class="entry-tags" style="margin-top:.35rem">
+      ${PLAN_INTENSITIES.map(i => {
+        const rec = round25(Number(bestTheo.rm_estimated) * i.pct);
+        return `<span class="etag">${escapeHtml(i.label)} : <b>${rec} kg</b></span>`;
+      }).join('')}
+    </div>` : '';
+
+  historyEl.innerHTML = `
+    <div class="entry" style="display:block">
+      <div class="entry-title" style="font-size:13px;margin-bottom:.35rem">${escapeHtml(label)}</div>
+      <div class="entry-meta">${exoCharges.length} série(s) enregistrée(s) · dernière donnée : ${fmtDate(latest.date)}</div>
+    </div>
+    <div class="stat-grid" style="margin-bottom:.45rem">
       <div class="stat-box">
-        <div class="val" style="color:var(--gr)">${latest.rm_estimated} kg</div>
-        <div class="lbl">1RM actuel</div>
-        <div class="delta" style="font-family:monospace;font-size:10px;color:var(--tx4)">${fmtDate(latest.date)}</div>
+        <div class="val" style="color:var(--gr)">${theoValue}</div>
+        <div class="lbl">1RM théorique</div>
+        <div class="delta" style="font-family:monospace;font-size:10px;color:var(--tx4)">${escapeHtml(theoMeta)}</div>
       </div>
       <div class="stat-box">
-        <div class="val" style="color:var(--am)">${best.rm_estimated} kg</div>
-        <div class="lbl">1RM record</div>
-        <div class="delta" style="font-family:monospace;font-size:10px;color:var(--tx4)">${fmtDate(best.date)}</div>
+        <div class="val" style="color:var(--am)">${realValue}</div>
+        <div class="lbl">1RM réalisé</div>
+        <div class="delta" style="font-family:monospace;font-size:10px;color:var(--tx4)">${escapeHtml(realMeta)}</div>
       </div>
     </div>
-    ${exoCharges.slice().reverse().map(c => {
-      const isNew = c.rm_estimated >= best.rm_estimated;
-      return `<div class="entry">
-        <div class="entry-icon">${isNew ? '🏆' : '💪'}</div>
-        <div class="entry-content">
-          <div class="entry-title">${c.kg} kg × ${c.reps} reps = <b style="color:var(--gr)">${c.rm_estimated} kg 1RM</b></div>
-          <div class="entry-meta">${fmtDate(c.date)} · RPE ${c.rpe} · ${c.sets} série(s)</div>
-          <div class="entry-tags">
-            ${PLAN_INTENSITIES.map(i => {
-              const rec = round25(c.rm_estimated * i.pct);
-              return `<span class="etag">${i.label.split(' ')[0]}: <b>${rec}</b></span>`;
-            }).slice(0,4).join('')}
-          </div>
-        </div>
-        <button type="button" class="del-btn js-delete-entry" data-cat="charge" data-id="${escapeHtml(entryDeleteKey(c))}" style="font-family:monospace;font-size:10px;color:var(--rd);border:1px solid var(--rd2);border-radius:4px;padding:.15rem .25rem">Suppr.</button>
-      </div>`;
-    }).join('')}`;
-  
-  setupDeleteButtons();
-
-  // Draw chart
-  const chartWrap = document.getElementById('rm-chart-wrap');
-  chartWrap.style.display = 'block';
-  const canvas = document.getElementById('rm-chart');
-  const data = exoCharges.map(c => ({x: fmtDate(c.date), y: c.rm_estimated}));
-  drawLineChart(canvas, data, {color:'var(--gr)', min: Math.min(...data.map(d=>d.y))-5, max: Math.max(...data.map(d=>d.y))+5});
+    ${gapHtml}
+    ${recHtml}
+  `;
 }
 
 async function deleteCharge(id) { return hardDeleteEntry('charge', id); }
