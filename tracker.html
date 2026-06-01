@@ -1229,23 +1229,6 @@ function strUpdate(key,idx,field,val) {
   if(el&&kg&&reps){el.textContent='~'+(Math.round(kg*(1+reps/30)*4)/4)+' kg 1RM';el.style.color='var(--gr)';}
 }
 
-function syncStrExercisesFromDom(){
-  // Sécurise l'enregistrement sur mobile : la dernière valeur saisie peut ne pas
-  // avoir déclenché oninput avant le clic sur « Enregistrer ». On relit donc le DOM.
-  try{
-    document.querySelectorAll('[data-str-key][data-str-idx][data-str-field]').forEach(function(input){
-      var key = input.getAttribute('data-str-key');
-      var idx = parseInt(input.getAttribute('data-str-idx'),10);
-      var field = input.getAttribute('data-str-field');
-      var e = (window._strExos||[]).find(function(x){return x.key===key;});
-      if(!e) return;
-      if(!e.series[idx]) e.series[idx] = {kg:'',reps:''};
-      e.series[idx][field] = input.value;
-    });
-    saveCurrentDraft();
-  }catch(e){console.warn('syncStrExercisesFromDom fail', e);}
-}
-
 function renderStrExercises() {
   const box = document.getElementById('str-exercises-list');
   if(!box)return;
@@ -1276,6 +1259,59 @@ function renderStrExercises() {
       <button onclick="strAddSerie('${exo.key}')" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;color:var(--tx3);font-family:monospace;font-size:10px;padding:.25rem .6rem;cursor:pointer;margin-top:.3rem">+ Série</button>
     </div>`;
   }).join('');
+}
+
+function syncStrExercisesFromDom() {
+  try {
+    document.querySelectorAll('[data-str-key][data-str-idx][data-str-field]').forEach(function(input){
+      var key = input.getAttribute('data-str-key');
+      var idx = parseInt(input.getAttribute('data-str-idx'), 10);
+      var field = input.getAttribute('data-str-field');
+      if (!key || Number.isNaN(idx) || !field) return;
+      var exo = (window._strExos || []).find(function(e){ return e.key === key; });
+      if (!exo) {
+        exo = { key: key, series: [] };
+        window._strExos.push(exo);
+      }
+      if (!exo.series) exo.series = [];
+      while (exo.series.length <= idx) exo.series.push({kg:'', reps:''});
+      exo.series[idx][field] = input.value;
+    });
+  } catch(e) {
+    console.warn('syncStrExercisesFromDom fail', e);
+  }
+}
+
+function normalizeExerciseSeriesForSave(series) {
+  var src = Array.isArray(series) && series.length ? series : [{kg:'', reps:''}];
+  return src.map(function(s){
+    var kgRaw = (s && s.kg !== undefined && s.kg !== null) ? String(s.kg).trim() : '';
+    var repsRaw = (s && s.reps !== undefined && s.reps !== null) ? String(s.reps).trim() : '';
+    var kg = kgRaw === '' ? null : parseFloat(kgRaw);
+    var reps = repsRaw === '' ? null : parseInt(repsRaw, 10);
+    var hasKg = Number.isFinite(kg);
+    var hasReps = Number.isFinite(reps);
+    var out = {
+      kg: hasKg ? kg : null,
+      reps: hasReps ? reps : null
+    };
+    if (hasKg && hasReps) out.rm = Math.round(kg * (1 + reps / 30) * 4) / 4;
+    return out;
+  });
+}
+
+function exerciseSummaryTag(exo){
+  if(!exo) return '';
+  var label = exo.label || exo.key || 'Exercice';
+  var series = Array.isArray(exo.series) ? exo.series : [];
+  var valid = series.filter(function(s){ return (s.kg!==undefined && s.kg!==null && s.kg!=='') || (s.reps!==undefined && s.reps!==null && s.reps!==''); });
+  if(!valid.length) return label;
+  var best = valid.reduce(function(a,b){ return (Number(a.rm)||0) > (Number(b.rm)||0) ? a : b; }, valid[0]);
+  var parts = [label];
+  if(best.kg!==undefined && best.kg!==null && best.kg!=='') parts.push(best.kg+'kg');
+  if(best.reps!==undefined && best.reps!==null && best.reps!=='') parts.push('×'+best.reps);
+  if(best.rm) parts.push('~'+best.rm+'kg 1RM');
+  return parts.join(' ');
 }
 
 // Reset on type change — no presets
@@ -1344,7 +1380,9 @@ function historyDetailHtml(item){
       item.exercises.forEach(function(exo){
         rows.push('<div class="history-detail-row"><span colspan="2"><b>'+escapeHtml(exo.label||exo.key)+'</b></span></div>');
         (exo.series||[]).forEach(function(ser,i){
-          var txt=(ser.kg||'—')+' kg × '+(ser.reps||'—')+(ser.rm?' · ~'+ser.rm+' kg 1RM':'');
+          var kgTxt=(ser.kg!==undefined && ser.kg!==null && ser.kg!=='') ? ser.kg : '—';
+          var repsTxt=(ser.reps!==undefined && ser.reps!==null && ser.reps!=='') ? ser.reps : '—';
+          var txt=kgTxt+' kg × '+repsTxt+(ser.rm?' · ~'+ser.rm+' kg 1RM':'');
           rows.push('<div class="history-series">Série '+(i+1)+' : '+escapeHtml(txt)+'</div>');
         });
       });
@@ -1392,19 +1430,19 @@ async function saveTraining() {
   }
   if (['str_bas','str_haut','str_full'].includes(type)) {
     if (typeof syncStrExercisesFromDom === 'function') syncStrExercisesFromDom();
-    entry.exercises = (window._strExos||[]).map(exo=>({
-      key: exo.key,
-      label: EXO_NAMES[exo.key]||exo.key,
-      series: exo.series.filter(s=>s.kg&&s.reps).map(s=>({
-        kg: parseFloat(s.kg), reps: parseInt(s.reps),
-        rm: Math.round(parseFloat(s.kg)*(1+parseInt(s.reps)/30)*4)/4
-      }))
-    })).filter(e=>e.series.length>0);
+    entry.exercises = (window._strExos||[])
+      .filter(exo=>exo && exo.key)
+      .map(exo=>({
+        key: exo.key,
+        label: EXO_NAMES[exo.key]||exo.key,
+        series: normalizeExerciseSeriesForSave(exo.series)
+      }));
     // Legacy best-set fields for backward compat
     entry.exercises.forEach(exo=>{
-      const best=exo.series.reduce((a,b)=>a.rm>b.rm?a:b,{rm:0,kg:0,reps:0});
+      const validSeries=(exo.series||[]).filter(s=>s && s.kg!==null && s.reps!==null && s.rm);
+      const best=validSeries.reduce((a,b)=>(a.rm||0)>(b.rm||0)?a:b,{rm:0,kg:null,reps:null});
       const map={squat:'squat',bench:'bench',rdl:'rdl',hip_thrust:'hip',pullup:'pullup',farmer:'farmer'};
-      if(map[exo.key]){entry[map[exo.key]]=best.kg;entry[map[exo.key]+'_reps']=best.reps;}
+      if(map[exo.key] && best.kg!==null){entry[map[exo.key]]=best.kg;entry[map[exo.key]+'_reps']=best.reps;}
     });
   }
   if (['compromised','simulation'].includes(type)) {
@@ -1428,7 +1466,7 @@ async function saveTraining() {
     if(entry.exercises&&entry.exercises.length){
       entry.exercises.forEach(exo=>{
         exo.series.forEach(s=>{
-          if(!s.kg||!s.reps)return;
+          if(s.kg===null||s.kg===undefined||s.reps===null||s.reps===undefined)return;
           const chargeId=Date.now()+Math.random();
           const ch={id:chargeId,local_id:String(chargeId),date:entry.date,exo:exo.key,kg:s.kg,reps:s.reps,sets:1,rpe:entry.rpe||7,rm_estimated:s.rm,auto:true,training_id:entry.id};
           db.charges.push(ch);
@@ -1889,9 +1927,8 @@ function renderHistory(filter) {
       if (getFcMax(item)) tags.push({txt:'FC max '+getFcMax(item)+' bpm', cls:'etag'});
       if (item.exercises && item.exercises.length) {
         item.exercises.slice(0,3).forEach(function(exo){
-          if(!exo.series||!exo.series.length)return;
-          var best=exo.series.reduce(function(a,b){return(a.rm||0)>(b.rm||0)?a:b;},{rm:0,kg:0,reps:0});
-          if(best.kg)tags.push({txt:(exo.label||exo.key)+' '+best.kg+'kg×'+best.reps+' ~'+best.rm+'kg 1RM',cls:'etag-ok'});
+          var txt = exerciseSummaryTag(exo);
+          if(txt) tags.push({txt:txt, cls:(txt.includes('1RM')?'etag-ok':'etag')});
         });
       } else {
         if(item.squat)tags.push({txt:'Squat '+item.squat+'kg',cls:'etag'});
