@@ -556,6 +556,21 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 ═══════════════════════════════ -->
 <div id="tab-charges" class="sec">
 
+  <!-- Calculateur charge %1RM -->
+  <div class="card">
+    <div class="card-title">Calculateur %1RM <span>charge cible</span></div>
+    <div class="field">
+      <label>Exercice</label>
+      <select id="calc-exo"><option value="">— Choisir —</option></select>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>1RM de référence (kg)</label><input type="number" step="0.5" id="calc-rm" placeholder="auto ou ex : 120"></div>
+      <div class="field"><label>% du 1RM</label><input type="number" step="0.5" id="calc-pct" placeholder="ex : 75" value="75"></div>
+    </div>
+    <div id="calc-result" class="alert alert-info" style="display:none"></div>
+    <button type="button" class="btn btn-sec" onclick="applyCalcToCharge()">↳ Utiliser cette charge dans la série</button>
+  </div>
+
   <!-- Formulaire saisie -->
   <div class="card">
     <div class="card-title">Enregistrer une série</div>
@@ -2280,7 +2295,6 @@ function epley(kg, reps) {
 function round25(kg) { return Math.round(kg / 2.5) * 2.5; }
 
 async function saveCharge() {
-  const db = loadDB();
   const exo = document.getElementById('ch-exo').value;
   const kg = parseFloat(document.getElementById('ch-kg').value);
   const reps = parseInt(document.getElementById('ch-reps').value);
@@ -2289,16 +2303,110 @@ async function saveCharge() {
   const rpe = parseFloat(document.getElementById('ch-rpe').value);
   if (!exo || !kg || !reps) { alert('Exercice, charge et reps obligatoires.'); return; }
   const rm = epley(kg, reps);
-  if (!db.charges) db.charges = [];
-  const entry={ id: Date.now(), date, exo, kg, reps, sets, rpe, rm_estimated: rm };
-  entry.local_id = String(entry.id);
-  const saved=await sbSave('charges',entry); if(saved&&saved.supabase_id)entry.supabase_id=saved.supabase_id;
-  db.charges.push(entry); saveDB(db); clearCurrentDraft();
+  const entry={ id: Date.now(), local_id: String(Date.now()), date, exo, kg, reps, sets, rpe, rm_estimated: rm };
+
+  const saved = await sbSave('charges', entry);
+  if (!saved) {
+    showChargeSaveStatus(false);
+    return;
+  }
+  if(saved && saved.supabase_id) entry.supabase_id = saved.supabase_id;
+
+  showChargeSaveStatus(true);
   displayRMResult(exo, kg, reps, rm);
-  renderChargesHistory();
+  resetChargeFormAfterSave();
+
+  // Supabase est la source principale : recharge les charges depuis la base.
+  try {
+    await syncAll();
+  } catch(e) {
+    // Si le réseau tombe après une sauvegarde OK, on garde une copie locale immédiate.
+    const db = loadDB();
+    if (!db.charges) db.charges = [];
+    db.charges.push(entry);
+    saveDB(db);
+  }
+  renderChargesHistory(exo);
+  renderDashboard();
+}
+
+function showChargeSaveStatus(ok) {
   const fb = document.getElementById('ch-feedback');
+  if (!fb) return;
   fb.style.display = 'block';
-  setTimeout(() => fb.style.display = 'none', 2000);
+  fb.style.color = ok ? 'var(--gr)' : 'var(--rd)';
+  fb.textContent = ok ? '✅ Série enregistrée · Supabase OK' : '⚠️ Supabase a refusé l’enregistrement de la série';
+  if (!ok && window.__lastSupabaseError) {
+    fb.textContent += ' · ' + (window.__lastSupabaseError.status || '') + ' ' + (window.__lastSupabaseError.message || '');
+  }
+  setTimeout(() => { fb.style.display = 'none'; }, 3500);
+}
+
+function resetChargeFormAfterSave() {
+  const todayVal = today();
+  ['ch-exo','ch-kg','ch-reps'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  const sets=document.getElementById('ch-sets'); if(sets) sets.value='1';
+  const date=document.getElementById('ch-date'); if(date) date.value=todayVal;
+  const rpe=document.getElementById('ch-rpe'); if(rpe) rpe.value='7';
+  const rpeVal=document.getElementById('ch-rpe-val'); if(rpeVal) rpeVal.textContent='7';
+  clearCurrentDraft();
+}
+
+function getLatestRMForExo(exo) {
+  const db = loadDB();
+  const rows = (db.charges || []).filter(c => c.exo === exo && Number(c.rm_estimated) > 0)
+    .sort((a,b) => String(a.date||'').localeCompare(String(b.date||'')));
+  return rows.length ? Number(rows[rows.length-1].rm_estimated) : null;
+}
+
+function getBestRMForExo(exo) {
+  const db = loadDB();
+  const rows = (db.charges || []).filter(c => c.exo === exo && Number(c.rm_estimated) > 0);
+  return rows.length ? Math.max(...rows.map(r => Number(r.rm_estimated))) : null;
+}
+
+function updateChargeCalculator() {
+  const exo = document.getElementById('calc-exo')?.value || '';
+  const rmInput = document.getElementById('calc-rm');
+  const pctInput = document.getElementById('calc-pct');
+  const result = document.getElementById('calc-result');
+  if (!result || !pctInput) return;
+  let rm = parseFloat(rmInput?.value || '');
+  const autoRM = exo ? (getLatestRMForExo(exo) || getBestRMForExo(exo)) : null;
+  if (!Number.isFinite(rm) && autoRM) {
+    rm = autoRM;
+    if (rmInput) rmInput.placeholder = 'auto : ' + autoRM + ' kg';
+  }
+  const pct = parseFloat(pctInput.value);
+  if (!Number.isFinite(rm) || !Number.isFinite(pct)) {
+    result.style.display = 'none';
+    return;
+  }
+  const raw = rm * pct / 100;
+  const rounded = round25(raw);
+  result.style.display = 'flex';
+  result.innerHTML = `<span class="alert-icon">🧮</span><div><b>${rounded} kg</b> à ${pct}% de ${rm} kg 1RM <br><span style="font-family:monospace;font-size:10px;color:var(--tx3)">calcul brut : ${raw.toFixed(1)} kg · arrondi au 2,5 kg</span></div>`;
+}
+
+function applyCalcToCharge() {
+  const exo = document.getElementById('calc-exo')?.value || '';
+  const rm = parseFloat(document.getElementById('calc-rm')?.value || '') || (exo ? (getLatestRMForExo(exo) || getBestRMForExo(exo)) : null);
+  const pct = parseFloat(document.getElementById('calc-pct')?.value || '');
+  if (!Number.isFinite(rm) || !Number.isFinite(pct)) { alert('Choisis un exercice avec un 1RM connu ou saisis un 1RM et un %.'); return; }
+  const charge = round25(rm * pct / 100);
+  const chKg = document.getElementById('ch-kg'); if (chKg) chKg.value = charge;
+  const chExo = document.getElementById('ch-exo'); if (chExo && exo) chExo.value = exo;
+  saveCurrentDraft();
+}
+
+function renderChargeCalculatorOptions() {
+  const calc = document.getElementById('calc-exo');
+  if (!calc || calc.dataset.ready === '1') return;
+  calc.innerHTML = '<option value="">— Choisir —</option>' + Object.entries(EXO_LABELS).map(([key,label]) => `<option value="${escapeHtml(key)}">${escapeHtml(label)}</option>`).join('');
+  calc.dataset.ready = '1';
+  calc.addEventListener('change', updateChargeCalculator);
+  const rm = document.getElementById('calc-rm'); if (rm) rm.addEventListener('input', updateChargeCalculator);
+  const pct = document.getElementById('calc-pct'); if (pct) pct.addEventListener('input', updateChargeCalculator);
 }
 
 function displayRMResult(exo, kg, reps, rm) {
@@ -2400,6 +2508,7 @@ function renderChargesHistory(selectedExo) {
   
   const tabsEl = document.getElementById('exo-subtabs');
   if (!tabsEl) return;
+  renderChargeCalculatorOptions();
   
   if (!exosWithData.length) {
     document.getElementById('rm-history').innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Enregistre des séries pour voir l&#39;historique 1RM.</p></div>';
@@ -2426,7 +2535,7 @@ function renderChargesHistory(selectedExo) {
   
   // Latest 1RM
   const latest = exoCharges[exoCharges.length-1];
-  const best = exoCharges.reduce((a,b) => a.rm_estimated > b.rm_estimated ? a : b);
+  const best = exoCharges.reduce((a,b) => Number(a.rm_estimated||0) > Number(b.rm_estimated||0) ? a : b);
   
   document.getElementById('rm-history').innerHTML = `
     <div class="stat-grid" style="margin-bottom:.4rem">
@@ -2441,7 +2550,7 @@ function renderChargesHistory(selectedExo) {
         <div class="delta" style="font-family:monospace;font-size:10px;color:var(--tx4)">${fmtDate(best.date)}</div>
       </div>
     </div>
-    ${exoCharges.slice(-5).reverse().map(c => {
+    ${exoCharges.slice().reverse().map(c => {
       const isNew = c.rm_estimated >= best.rm_estimated;
       return `<div class="entry">
         <div class="entry-icon">${isNew ? '🏆' : '💪'}</div>
@@ -2455,10 +2564,12 @@ function renderChargesHistory(selectedExo) {
             }).slice(0,4).join('')}
           </div>
         </div>
-        <button type="button" class="del-btn js-delete-entry" data-cat="charge" data-id="${escapeHtml(entryDeleteKey(c))}">✕</button>
+        <button type="button" class="del-btn js-delete-entry" data-cat="charge" data-id="${escapeHtml(entryDeleteKey(c))}" style="font-family:monospace;font-size:10px;color:var(--rd);border:1px solid var(--rd2);border-radius:4px;padding:.15rem .25rem">Suppr.</button>
       </div>`;
     }).join('')}`;
   
+  setupDeleteButtons();
+
   // Draw chart
   const chartWrap = document.getElementById('rm-chart-wrap');
   chartWrap.style.display = 'block';
@@ -2631,17 +2742,17 @@ function renderMensur() {
   // Historique complet + suppression unitaire depuis l'onglet Corps
   if (tableEl) {
     tableEl.innerHTML = `
-      <div style="display:grid;grid-template-columns:70px repeat(4,1fr) 28px;gap:.2rem;font-family:monospace;font-size:9.5px;color:var(--tx4);padding:.2rem 0;border-bottom:1px solid var(--bo2)">
+      <div style="display:grid;grid-template-columns:70px repeat(4,1fr) 54px;gap:.2rem;font-family:monospace;font-size:9.5px;color:var(--tx4);padding:.2rem 0;border-bottom:1px solid var(--bo2)">
         <span>Date</span>
         ${MENSUR_FIELDS.map(f => `<span style="color:${f.color}">${escapeHtml(f.label)}</span>`).join('')}
         <span></span>
       </div>` +
       [...entries].reverse().map(e => {
         const delKey = entryDeleteKey(e);
-        return `<div class="entry" style="display:grid;grid-template-columns:70px repeat(4,1fr) 28px;gap:.2rem;align-items:center;font-family:monospace;font-size:10.5px;padding:.35rem 0;border-bottom:1px solid var(--bo);background:transparent;border-left:0;border-right:0;border-top:0;border-radius:0;margin:0">
+        return `<div class="entry" style="display:grid;grid-template-columns:70px repeat(4,1fr) 54px;gap:.2rem;align-items:center;font-family:monospace;font-size:10.5px;padding:.35rem 0;border-bottom:1px solid var(--bo);background:transparent;border-left:0;border-right:0;border-top:0;border-radius:0;margin:0">
           <span style="color:var(--tx4)">${escapeHtml(fmtDate(e.date))}</span>
           ${MENSUR_FIELDS.map(f => `<span style="color:${e[f.key] !== undefined && e[f.key] !== null && e[f.key] !== '' ? 'var(--tx2)' : 'var(--tx4)'}">${e[f.key] !== undefined && e[f.key] !== null && e[f.key] !== '' ? escapeHtml(e[f.key]) + ' cm' : '—'}</span>`).join('')}
-          <button type="button" class="del-btn js-delete-entry" data-cat="mensur" data-id="${escapeHtml(delKey)}" title="Supprimer cette mesure">✕</button>
+          <button type="button" class="del-btn js-delete-entry" data-cat="mensur" data-id="${escapeHtml(delKey)}" title="Supprimer cette mesure" style="font-family:monospace;font-size:10px;color:var(--rd);border:1px solid var(--rd2);border-radius:4px;padding:.15rem .25rem">Suppr.</button>
           ${e.note ? `<div style="grid-column:1/-1;color:var(--tx4);font-size:9.5px;padding-top:.1rem">Note : ${escapeHtml(e.note)}</div>` : ''}
         </div>`;
       }).join('');
