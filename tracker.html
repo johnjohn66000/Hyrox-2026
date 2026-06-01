@@ -746,9 +746,30 @@ async function sbSave(table,entry){
     if(table==='trainings'){ delete p.fc; } // évite l'échec si la colonne legacy fc n'existe pas
     delete p.id;          // id reste géré par Supabase
     delete p.supabase_id; // colonne locale uniquement
-    const r=await fetch(SUPA_URL+'/rest/v1/'+table,{method:'POST',headers:SB,body:JSON.stringify(p)});
+
+    // Tentative 1 : sauvegarde complète avec local_id, utile pour supprimer ensuite par local_id.
+    let r=await fetch(SUPA_URL+'/rest/v1/'+table,{method:'POST',headers:SB,body:JSON.stringify(p)});
     if(!r.ok){
       const txt=await r.text();
+      const localIdColumnMissing = txt.includes('local_id') && (txt.includes('schema cache') || txt.includes('column') || txt.includes('Could not find'));
+
+      // Tentative 2 : compatibilité immédiate si la colonne local_id n'a pas encore été ajoutée dans Supabase.
+      // Dans ce cas, on sauvegarde quand même et on conserve l'id Supabase retourné en local pour pouvoir supprimer par id.
+      if(localIdColumnMissing){
+        const p2={...p};
+        delete p2.local_id;
+        r=await fetch(SUPA_URL+'/rest/v1/'+table,{method:'POST',headers:SB,body:JSON.stringify(p2)});
+        if(r.ok){
+          const data=await r.json().catch(()=>[]);
+          window.__lastSupabaseError = null;
+          return Array.isArray(data)?(data[0]||null):data;
+        }
+        const txt2=await r.text();
+        window.__lastSupabaseError = {table,status:r.status,message:txt2,payload:p2};
+        console.warn('sb save fail fallback',table,r.status,txt2,p2);
+        return null;
+      }
+
       window.__lastSupabaseError = {table,status:r.status,message:txt,payload:p};
       console.warn('sb save fail',table,r.status,txt,p);
       return null;
@@ -1555,7 +1576,7 @@ function renderHistory(filter) {
         <div class="entry-meta">${meta}${item.comment ? ' · ' + item.comment : ''}</div>
         ${tags.length ? `<div class="entry-tags">${tagsHtml}</div>` : ''}
       </div>
-      <button class="del-btn" onclick="deleteEntry(${item.id}, '${item._cat}')">✕</button>
+      <button class="del-btn" onclick="deleteEntry(${JSON.stringify(String(item.id))}, '${item._cat}')">✕</button>
     </div>`;
   }).join('');
 }
@@ -1613,7 +1634,7 @@ function renderRaces() {
         </div>
         ${r.comment ? `<div class="entry-meta" style="margin-top:2px;font-style:italic">${r.comment}</div>` : ''}
       </div>
-      <button class="del-btn" onclick="deleteRace(${r.id})">✕</button>
+      <button class="del-btn" onclick="deleteRace(${JSON.stringify(String(r.id))})">✕</button>
     </div>`
   ).join('');
 
@@ -1815,7 +1836,7 @@ function epley(kg, reps) {
 // Round to nearest 2.5kg for practical use
 function round25(kg) { return Math.round(kg / 2.5) * 2.5; }
 
-async async function saveCharge() {
+async function saveCharge() {
   const db = loadDB();
   const exo = document.getElementById('ch-exo').value;
   const kg = parseFloat(document.getElementById('ch-kg').value);
@@ -1991,7 +2012,7 @@ function renderChargesHistory(selectedExo) {
             }).slice(0,4).join('')}
           </div>
         </div>
-        <button class="del-btn" onclick="deleteCharge(${c.id})">✕</button>
+        <button class="del-btn" onclick="deleteCharge(${JSON.stringify(String(c.id))})">✕</button>
       </div>`;
     }).join('')}`;
   
