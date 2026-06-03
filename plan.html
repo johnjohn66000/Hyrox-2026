@@ -88,6 +88,12 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 .bstat{background:var(--bg3);border-radius:6px;padding:.35rem .45rem;text-align:center}
 .bstat .v{font-family:monospace;font-size:.95rem;font-weight:900;line-height:1.1}
 .bstat .l{font-family:monospace;font-size:8.5px;color:var(--tx4);text-transform:uppercase}
+
+.sync-plan-row{display:flex;align-items:center;gap:.4rem;margin-top:.35rem;flex-wrap:wrap}
+.sync-plan-btn{display:inline-flex;align-items:center;gap:.35rem;background:var(--gr3);border:1px solid var(--gr2);border-radius:6px;padding:.3rem .7rem;font-family:monospace;font-size:10px;font-weight:700;color:var(--gr);text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.sync-plan-btn:active{opacity:.75}
+.sync-plan-status{font-family:monospace;font-size:9.5px;color:var(--tx4)}
+
 </style>
 </head>
 <body>
@@ -95,7 +101,11 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="hdr-badge">HYROX OFF-SEASON + PRÉ-COMP · 2026</div>
 <h1>Plan 24 semaines — Objectif 1h10</h1>
 <div class="hdr-sub">1er juin → 15 novembre · Semaines impaires/paires alternées</div>
+<div class="sync-plan-row">
 <a class="tracker-link" href="tracker.html">📊 Tracker performances →</a>
+<button class="sync-plan-btn" type="button" onclick="forceTrackerSyncFromPlan()">↻ Sync Supabase</button>
+<span class="sync-plan-status" id="plan-sync-status">non synchronisé</span>
+</div>
 </header>
 <div class="legend">
 <div class="leg-item"><span class="t t-run">RUN</span>Run</div>
@@ -2321,6 +2331,71 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 </div> </div>
 </div></div>
+
+<script id="plan-supabase-sync">
+// ════════════════════════════════════
+// SYNC FORCÉE SUPABASE → CACHE TRACKER
+// Source principale : Supabase. Le localStorage ne sert ici que de cache commun
+// pour que plan.html puisse lire les mêmes 1RM/VMA que tracker.html.
+// ════════════════════════════════════
+const PLAN_SUPA_URL='https://bafypharhwkaqymjvqge.supabase.co';
+const PLAN_SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6ImJhZnlwaGFyaHdrYXF5bWp2cWdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyODM0MTYsImV4cCI6MjA5NTg1OTQxNn0.NT7eGzDqUdTBOJMj6spixsb0QhnITjYWSXOkRtc1Uw4'.replace('eyJpc3MiOiJIUzI1NiIs','eyJpc3MiOiJzdXBhYmFzZSIs');
+const PLAN_DB_KEY='hyrox_tracker_v1';
+const PLAN_TABLES=['trainings','poids','tests','races','charges','mensur'];
+function planSyncStatus(msg, ok){
+  const el=document.getElementById('plan-sync-status');
+  if(!el) return;
+  el.textContent=msg;
+  el.style.color=ok===true?'var(--gr)':ok===false?'var(--rd)':'var(--tx4)';
+}
+function planNormalizeSupabaseRow(row){
+  if(!row || typeof row!=='object') return row;
+  if(row.data && typeof row.data==='object' && !Array.isArray(row.data)){
+    return {...row.data, supabase_id: row.id, _supabase_row: row};
+  }
+  return {...row, supabase_id: row.id};
+}
+async function planLoadTable(table){
+  const headers={apikey:PLAN_SUPA_KEY,Authorization:'Bearer '+PLAN_SUPA_KEY,'Content-Type':'application/json'};
+  const url=PLAN_SUPA_URL+'/rest/v1/'+table+'?select=*&order=created_at.desc';
+  const r=await fetch(url,{headers});
+  if(!r.ok){
+    const txt=await r.text().catch(()=>r.statusText);
+    throw new Error(table+' · '+r.status+' · '+txt);
+  }
+  const rows=await r.json().catch(()=>[]);
+  return Array.isArray(rows)?rows.map(planNormalizeSupabaseRow):[];
+}
+async function forceTrackerSyncFromPlan(){
+  planSyncStatus('sync Supabase...', null);
+  try{
+    const [trainings,poids,tests,races,charges,mensur]=await Promise.all(PLAN_TABLES.map(planLoadTable));
+    const db={trainings,poids,tests,races,charges,mensur};
+    localStorage.setItem(PLAN_DB_KEY, JSON.stringify(db));
+    localStorage.setItem('hyrox_plan_last_sync_v1', new Date().toISOString());
+    planSyncStatus('✅ sync OK · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}), true);
+    // Si une future version du plan contient des calculateurs dynamiques, on les relance sans casser l'existant.
+    ['updateDynamicPlanValues','applyDynamicCalculations','renderPlanCalculations','updateRmAndVma'].forEach(fn=>{
+      if(typeof window[fn]==='function') { try{ window[fn](); }catch(e){ console.warn(fn,e); } }
+    });
+    return db;
+  }catch(e){
+    console.warn('Plan sync Supabase impossible', e);
+    planSyncStatus('❌ sync impossible · '+String(e.message||e).slice(0,90), false);
+    return null;
+  }
+}
+window.addEventListener('load',()=>{
+  const last=localStorage.getItem('hyrox_plan_last_sync_v1');
+  if(last){
+    const d=new Date(last);
+    if(!Number.isNaN(d.getTime())) planSyncStatus('dernier sync '+d.toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}), true);
+  }
+  // Auto-sync léger au chargement pour éviter un plan basé sur un cache vide après effacement téléphone.
+  forceTrackerSyncFromPlan();
+});
+</script>
+
 <script>
 function showPhase(ph) {
   document.querySelectorAll('.phase-section').forEach(s => s.classList.remove('on'));
