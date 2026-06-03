@@ -103,7 +103,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="hdr-sub">1er juin → 15 novembre · Semaines impaires/paires alternées</div>
 <div class="sync-plan-row">
 <a class="tracker-link" href="tracker.html">📊 Tracker performances →</a>
-<button class="sync-plan-btn" type="button" onclick="forceTrackerSyncFromPlan()">↻ Sync Supabase</button>
+<button class="sync-plan-btn" onclick="forceTrackerSyncFromPlan()" type="button">↻ Sync Supabase</button>
 <span class="sync-plan-status" id="plan-sync-status">non synchronisé</span>
 </div>
 </header>
@@ -113,7 +113,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="leg-item"><span class="t t-sp">SP</span>Compromised</div>
 <div class="leg-item"><span class="t t-ergo">ERGO</span>Ergo</div>
 <div class="leg-item"><span class="t t-mob">MOB</span>Mobilité</div>
-</div><div class="prog-summary" style="border-color:var(--am2);background:linear-gradient(135deg,rgba(255,184,0,.08),rgba(0,0,0,0));"><div class="prog-title">SPÉCIFIQUE WALL BALL — POINT FAIBLE</div><div class="prog-row"><span>Règle placement : pas de wall ball après muscu. Les blocs WB se placent après run, après mobilité ou dans WOD/simulation.</span></div><div class="prog-row"><span>Substitut créneau sans ballon : thrusters barre/DB, volume contrôlé, objectif transfert squat → poussée verticale sans casser les jambes.</span></div><div class="prog-row"><span>Progression cible : A 40–80 reps/sem · B 70–110 · C 100–140 · D 130–180 · E 180–240 · taper 20–80 reps qualité.</span></div><div class="prog-row"><span>À logger : volume total, plus grosse série unbroken, stratégie de breaks, RPE épaules/quads, qualité de profondeur.</span></div></div>
+</div><div class="prog-summary" style="border-color:var(--rd);background:linear-gradient(135deg,rgba(255,68,68,.10),rgba(0,0,0,0))"><div class="prog-title" style="color:var(--rd)">Règle coach pro ischios/mollets</div><div class="prog-row"><span>Si raideur ischios/mollets &gt; 3/10</span><span class="vals">supprimer RDL · nordic libre · good morning · broad jumps · remplacer par vélo Z2 + isométrie + mobilité.</span></div><div class="prog-row"><span>Sled</span><span class="vals">force → transfert → compromised → simulation → taper. Toutes les séances clés doivent être loggées dans le tracker.</span></div></div><div class="prog-summary" style="border-color:var(--am2);background:linear-gradient(135deg,rgba(255,184,0,.08),rgba(0,0,0,0));"><div class="prog-title">SPÉCIFIQUE WALL BALL — POINT FAIBLE</div><div class="prog-row"><span>Règle placement : pas de wall ball après muscu. Les blocs WB se placent après run, après mobilité ou dans WOD/simulation.</span></div><div class="prog-row"><span>Substitut créneau sans ballon : thrusters barre/DB, volume contrôlé, objectif transfert squat → poussée verticale sans casser les jambes.</span></div><div class="prog-row"><span>Progression cible : A 40–80 reps/sem · B 70–110 · C 100–140 · D 130–180 · E 180–240 · taper 20–80 reps qualité.</span></div><div class="prog-row"><span>À logger : volume total, plus grosse série unbroken, stratégie de breaks, RPE épaules/quads, qualité de profondeur.</span></div></div>
 <div class="prog-summary">
 <div class="prog-title">Progression charges — vue globale</div>
 <div class="prog-row"><span>Back squat</span><span class="vals">80 kg → 92.5 kg → 5-3-1 → 90 kg maint.</span></div>
@@ -128,11 +128,11 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="phase-btn">
 <div class="pbtn on-off" id="pbtn-off" onclick="showPhase('off')">OFF-SEASON<span>1 juin → 6 sept</span></div>
 <div class="pbtn" id="pbtn-pre" onclick="showPhase('pre')">PRÉ-COMP<span>7 sept → 15 nov</span></div>
-</div><div class="prog-summary"><div class="prog-title">GARDE-FOUS HYROX PRO — version finale basée sur spécialisation Wall Ball</div>
-<div class="prog-row"><span><b>Course cible</b></span><span class="vals">Vendredi 13 novembre — HYROX Race Day</span></div>
-<div class="prog-row"><span><b>Sled Push/Pull</b></span><span class="vals">distance + récup + chrono + dérive &gt;15% à logger</span></div>
-<div class="prog-row"><span><b>Wall Ball point faible</b></span><span class="vals">spécifique après run/mobilité uniquement · thrusters si créneau sans ballon</span></div>
-<div class="prog-row"><span><b>Taper</b></span><span class="vals">aucun RDL/nordic/good morning/BBJ volume après S21</span></div></div>
+</div><div class="prog-summary"><div><b>GARDE-FOUS HYROX PRO — version finale</b></div>
+<div>Course cible <b>Vendredi 13 novembre — HYROX Race Day</b></div>
+<div><b>Sled Push/Pull</b> : technique 40–60 m · lourd 80–100 m · race pace 75–100 m · compromised 75–100 m · taper 20–30 m. Chrono par 10/12,5 m, dérive &gt;15% à logger.</div>
+<div><b>Wall Ball point faible</b> : spécifique après run/mobilité uniquement · thrusters si créneau sans ballon.</div>
+<div><b>Taper</b> : aucun RDL/nordic/good morning/BBJ volume après S21.</div></div>
 <div class="prog-summary" style="border-color:var(--bl);background:linear-gradient(135deg,rgba(68,136,255,.10),rgba(0,0,0,0))"><div class="prog-title" style="color:var(--bl)">Règle volume aérobie sans impact</div><div style="font-size:11.5px;color:var(--tx2);line-height:1.55">Les sorties de récupération et les volumes Z2 additionnels restent en <b>vélo Z1/Z2</b> pour limiter les traumatismes course, préserver les ischios/mollets et garder de la fraîcheur pour les séances clés HYROX. Les runs conservés sont les runs utiles : qualité, long run, compromised, simulations et rappels course.</div></div><div class="phase-section on" id="phase-off"><div class="bloc-wrap">
 <div class="bloc-hd" style="border-left:3px solid #00c4a7">
 <div class="bloc-num" style="color:#00c4a7">A</div>
@@ -624,10 +624,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>semi-libre 4×5</b> descente contrôlée (récup 2 min). KB swing 4×10 @ <b>28 kg</b> explosif (récup 90 sec). Bulgarian split squat 3×6/jambe @ <b>22.5 kg</b>. Good morning 3×8 @ <b>47.5 kg</b> tempo 3-1-1. Mollets unijambiste excentrique 3×12/jambe descente 3 sec.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>semi-libre 4×5</b></span><span class="ki">KB <b><b>28 kg</b></b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Sled force horizontale — microdose Pro</div>
+<div class="ss-body"><b>Sled force horizontale — microdose Pro</b><br/>Sled Push lourd ou tapis éteint : <b>6×10 m = 60 m</b>, récup 2’30, RPE 7–8, pas courts puissants.<br/>Sled Pull lourd ou tirage corde/poulie basse : <b>6×10 m = 60 m</b>, récup 2’30, RPE 7–8, corde tendue, bassin bas.<br/>Préhab courte : Copenhagen 2×20 sec/côté + mollets iso 2×30 sec.<br/><b>Aucun good morning, aucun broad jump, pas de nordic libre ici.</b><div class="recup">↩ Log tracker : temps moyen push/pull 10 m, charge/substitut, RPE jambes. Objectif : construire le pattern sans dette excessive.</div></div>
+<div class="ss-kp"><span class="ki">Sled push <b>60 m</b></span><span class="ki">Sled pull <b>60 m</b></span><span class="ki">RPE <b>7–8</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
@@ -734,10 +734,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>semi-libre 4×5</b> descente contrôlée (récup 2 min). KB swing 4×10 @ <b>28 kg</b> explosif (récup 90 sec). Bulgarian split squat 3×6/jambe @ <b>22.5 kg</b>. Good morning 3×8 @ <b>47.5 kg</b> tempo 3-1-1. Mollets unijambiste excentrique 3×12/jambe descente 3 sec.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>semi-libre 4×5</b></span><span class="ki">KB <b><b>28 kg</b></b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Sled force horizontale — microdose Pro</div>
+<div class="ss-body"><b>Sled force horizontale — microdose Pro</b><br/>Sled Push lourd ou tapis éteint : <b>6×10 m = 60 m</b>, récup 2’30, RPE 7–8, pas courts puissants.<br/>Sled Pull lourd ou tirage corde/poulie basse : <b>6×10 m = 60 m</b>, récup 2’30, RPE 7–8, corde tendue, bassin bas.<br/>Préhab courte : Copenhagen 2×20 sec/côté + mollets iso 2×30 sec.<br/><b>Aucun good morning, aucun broad jump, pas de nordic libre ici.</b><div class="recup">↩ Log tracker : temps moyen push/pull 10 m, charge/substitut, RPE jambes. Objectif : construire le pattern sans dette excessive.</div></div>
+<div class="ss-kp"><span class="ki">Sled push <b>60 m</b></span><span class="ki">Sled pull <b>60 m</b></span><span class="ki">RPE <b>7–8</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
@@ -820,10 +820,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>semi-libre 4×5</b> descente contrôlée (récup 2 min). KB swing 4×10 @ <b>28 kg</b> explosif (récup 90 sec). Bulgarian split squat 3×6/jambe @ <b>22.5 kg</b>. Good morning 3×8 @ <b>47.5 kg</b> tempo 3-1-1. Mollets unijambiste excentrique 3×12/jambe descente 3 sec.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>semi-libre 4×5</b></span><span class="ki">KB <b><b>28 kg</b></b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Sled force horizontale — microdose Pro</div>
+<div class="ss-body"><b>Sled force horizontale — microdose Pro</b><br/>Sled Push lourd ou tapis éteint : <b>6×10 m = 60 m</b>, récup 2’30, RPE 7–8, pas courts puissants.<br/>Sled Pull lourd ou tirage corde/poulie basse : <b>6×10 m = 60 m</b>, récup 2’30, RPE 7–8, corde tendue, bassin bas.<br/>Préhab courte : Copenhagen 2×20 sec/côté + mollets iso 2×30 sec.<br/><b>Aucun good morning, aucun broad jump, pas de nordic libre ici.</b><div class="recup">↩ Log tracker : temps moyen push/pull 10 m, charge/substitut, RPE jambes. Objectif : construire le pattern sans dette excessive.</div></div>
+<div class="ss-kp"><span class="ki">Sled push <b>60 m</b></span><span class="ki">Sled pull <b>60 m</b></span><span class="ki">RPE <b>7–8</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
@@ -930,10 +930,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>semi-libre 4×5</b> descente contrôlée (récup 2 min). KB swing 4×10 @ <b>28 kg</b> explosif (récup 90 sec). Bulgarian split squat 3×6/jambe @ <b>22.5 kg</b>. Good morning 3×8 @ <b>47.5 kg</b> tempo 3-1-1. Mollets unijambiste excentrique 3×12/jambe descente 3 sec.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>semi-libre 4×5</b></span><span class="ki">KB <b><b>28 kg</b></b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Sled force horizontale — microdose Pro</div>
+<div class="ss-body"><b>Sled force horizontale — microdose Pro</b><br/>Sled Push lourd ou tapis éteint : <b>6×10 m = 60 m</b>, récup 2’30, RPE 7–8, pas courts puissants.<br/>Sled Pull lourd ou tirage corde/poulie basse : <b>6×10 m = 60 m</b>, récup 2’30, RPE 7–8, corde tendue, bassin bas.<br/>Préhab courte : Copenhagen 2×20 sec/côté + mollets iso 2×30 sec.<br/><b>Aucun good morning, aucun broad jump, pas de nordic libre ici.</b><div class="recup">↩ Log tracker : temps moyen push/pull 10 m, charge/substitut, RPE jambes. Objectif : construire le pattern sans dette excessive.</div></div>
+<div class="ss-kp"><span class="ki">Sled push <b>60 m</b></span><span class="ki">Sled pull <b>60 m</b></span><span class="ki">RPE <b>7–8</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
@@ -997,8 +997,8 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
 <div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>1×5 @ 75% · 1×5 @ 85% · 1×5+ @ 95%</b> (récup 3 min).<br/>Front squat <b>3×5 @ 72.5 kg</b> (récup 2 min 30). RDL bilatéral <b>4×5 @ 85 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>4×6 @ 107.5 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>5-3-1 kg</b></span><span class="ki">RDL <b>85 kg</b></span><span class="ki">Hip <b>107.5 kg</b></span></div>
+<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>1×5 @ 75% · 1×5 @ 85% · 1×5+ @ 95%</b> (récup 3 min).<br/>Front squat <b>3×5 @ 72.5 kg</b> (récup 2 min 30). RDL bilatéral <b>4×5 @ 85 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>4×6 @ 107.5 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>assisté 2×3</b> propre, sans courbature recherchée (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Squat <b>5-3-1</b></span><span class="ki">RDL <b>contrôlé</b></span><span class="ki">Nordic <b>assisté</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>midi</div>
@@ -1035,10 +1035,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min). KB swing 4×10 @ <b>32 kg</b> explosif (récup 90 sec). Bulgarian split squat 3×6/jambe @ <b>27.5 kg</b>. Good morning 3×8 @ <b>52.5 kg</b> tempo 3-1-1. Mollets unijambiste excentrique 3×12/jambe descente 3 sec.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>libre 4×6</b></span><span class="ki">KB <b><b>32 kg</b></b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Sled transfert — race pace contrôlé</div>
+<div class="ss-body"><b>Sled transfert force → race</b><br/>Sled Push charge course ou tapis éteint : <b>6×12,5 m = 75 m</b>, récup 90 sec, chrono chaque longueur.<br/>Sled Pull charge course ou tirage corde : <b>6×12,5 m = 75 m</b>, récup 90 sec, traction régulière sans pause longue.<br/>Finisher protecteur : pont ischio iso 3×25 sec + mollets iso 3×30 sec.<br/><b>Règle : dérive &gt;15 % sur deux longueurs = arrêt ou baisse charge.</b><div class="recup">↩ Log tracker : meilleur / pire 12,5 m, dérive, RPE, sensation relance.</div></div>
+<div class="ss-kp"><span class="ki">Push <b>75 m</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">Dérive <b>&lt;15%</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
@@ -1083,8 +1083,8 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
 <div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>1×3 @ 80% · 1×3 @ 90% · 1×3+ @ 100%</b> (récup 3 min).<br/>Front squat <b>3×5 @ 75 kg</b> (récup 2 min 30). RDL bilatéral <b>4×5 @ 87.5 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>4×6 @ 110 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>5-3-1 kg</b></span><span class="ki">RDL <b>87.5 kg</b></span><span class="ki">Hip <b>110 kg</b></span></div>
+<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>1×3 @ 80% · 1×3 @ 90% · 1×3+ @ 100%</b> (récup 3 min).<br/>Front squat <b>3×5 @ 75 kg</b> (récup 2 min 30). RDL bilatéral <b>4×5 @ 87.5 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>4×6 @ 110 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>assisté 2×3</b> propre, sans courbature recherchée (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Squat <b>5-3-1</b></span><span class="ki">RDL <b>contrôlé</b></span><span class="ki">Nordic <b>assisté</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>AM</div>
@@ -1145,10 +1145,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min). KB swing 4×10 @ <b>32 kg</b> explosif (récup 90 sec). Bulgarian split squat 3×6/jambe @ <b>27.5 kg</b>. Good morning 3×8 @ <b>52.5 kg</b> tempo 3-1-1. Mollets unijambiste excentrique 3×12/jambe descente 3 sec.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>libre 4×6</b></span><span class="ki">KB <b><b>32 kg</b></b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Sled transfert — race pace contrôlé</div>
+<div class="ss-body"><b>Sled transfert force → race</b><br/>Sled Push charge course ou tapis éteint : <b>6×12,5 m = 75 m</b>, récup 90 sec, chrono chaque longueur.<br/>Sled Pull charge course ou tirage corde : <b>6×12,5 m = 75 m</b>, récup 90 sec, traction régulière sans pause longue.<br/>Finisher protecteur : pont ischio iso 3×25 sec + mollets iso 3×30 sec.<br/><b>Règle : dérive &gt;15 % sur deux longueurs = arrêt ou baisse charge.</b><div class="recup">↩ Log tracker : meilleur / pire 12,5 m, dérive, RPE, sensation relance.</div></div>
+<div class="ss-kp"><span class="ki">Push <b>75 m</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">Dérive <b>&lt;15%</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
@@ -1193,8 +1193,8 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
 <div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>1×5 @ 75% · 1×3 @ 85% · 1×1+ @ 95% → PR</b> (récup 3 min).<br/>Front squat <b>3×5 @ 77.5 kg</b> (récup 2 min 30). RDL bilatéral <b>4×4 @ 90 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>4×5 @ 112.5 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>5-3-1 kg</b></span><span class="ki">RDL <b>90 kg</b></span><span class="ki">Hip <b>112.5 kg</b></span></div>
+<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>1×5 @ 75% · 1×3 @ 85% · 1×1+ @ 95% → PR</b> (récup 3 min).<br/>Front squat <b>3×5 @ 77.5 kg</b> (récup 2 min 30). RDL bilatéral <b>4×4 @ 90 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>4×5 @ 112.5 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>assisté 2×3</b> propre, sans courbature recherchée (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Squat <b>5-3-1</b></span><span class="ki">RDL <b>contrôlé</b></span><span class="ki">Nordic <b>assisté</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>midi</div>
@@ -1231,10 +1231,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min). KB swing 4×10 @ <b>32 kg</b> explosif (récup 90 sec). Bulgarian split squat 3×6/jambe @ <b>27.5 kg</b>. Good morning 3×8 @ <b>52.5 kg</b> tempo 3-1-1. Mollets unijambiste excentrique 3×12/jambe descente 3 sec.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>libre 4×6</b></span><span class="ki">KB <b><b>32 kg</b></b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Sled transfert — race pace contrôlé</div>
+<div class="ss-body"><b>Sled transfert force → race</b><br/>Sled Push charge course ou tapis éteint : <b>6×12,5 m = 75 m</b>, récup 90 sec, chrono chaque longueur.<br/>Sled Pull charge course ou tirage corde : <b>6×12,5 m = 75 m</b>, récup 90 sec, traction régulière sans pause longue.<br/>Finisher protecteur : pont ischio iso 3×25 sec + mollets iso 3×30 sec.<br/><b>Règle : dérive &gt;15 % sur deux longueurs = arrêt ou baisse charge.</b><div class="recup">↩ Log tracker : meilleur / pire 12,5 m, dérive, RPE, sensation relance.</div></div>
+<div class="ss-kp"><span class="ki">Push <b>75 m</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">Dérive <b>&lt;15%</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
@@ -1279,8 +1279,8 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
 <div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>3×3 @ 85 kg</b> <i>(décharge)</i> (récup 3 min).<br/>Front squat <b>3×5 @ 70 kg</b> (récup 2 min 30). RDL bilatéral <b>3×4 @ 82.5 kg</b> <i>(décharge)</i> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>3×5 @ 100 kg</b> <i>(décharge)</i> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>85 kg</b></span><span class="ki">RDL <b>82.5 kg</b></span><span class="ki">Hip <b>100 kg</b></span></div>
+<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>3×3 @ 85 kg</b> <i>(décharge)</i> (récup 3 min).<br/>Front squat <b>3×5 @ 70 kg</b> (récup 2 min 30). RDL bilatéral <b>3×4 @ 82.5 kg</b> <i>(décharge)</i> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>3×5 @ 100 kg</b> <i>(décharge)</i> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>assisté 2×3</b> propre, sans courbature recherchée (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Squat <b>5-3-1</b></span><span class="ki">RDL <b>contrôlé</b></span><span class="ki">Nordic <b>assisté</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>AM</div>
@@ -1341,10 +1341,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min). KB swing 4×10 @ <b>32 kg</b> explosif (récup 90 sec). Bulgarian split squat 3×6/jambe @ <b>27.5 kg</b>. Good morning 3×8 @ <b>52.5 kg</b> tempo 3-1-1. Mollets unijambiste excentrique 3×12/jambe descente 3 sec.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>libre 4×6</b></span><span class="ki">KB <b><b>32 kg</b></b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Sled transfert — race pace contrôlé</div>
+<div class="ss-body"><b>Sled transfert force → race</b><br/>Sled Push charge course ou tapis éteint : <b>6×12,5 m = 75 m</b>, récup 90 sec, chrono chaque longueur.<br/>Sled Pull charge course ou tirage corde : <b>6×12,5 m = 75 m</b>, récup 90 sec, traction régulière sans pause longue.<br/>Finisher protecteur : pont ischio iso 3×25 sec + mollets iso 3×30 sec.<br/><b>Règle : dérive &gt;15 % sur deux longueurs = arrêt ou baisse charge.</b><div class="recup">↩ Log tracker : meilleur / pire 12,5 m, dérive, RPE, sensation relance.</div></div>
+<div class="ss-kp"><span class="ki">Push <b>75 m</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">Dérive <b>&lt;15%</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
@@ -1427,10 +1427,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min). KB swing 4×10 @ <b>32 kg</b> explosif (récup 90 sec). Bulgarian split squat 3×6/jambe @ <b>27.5 kg</b>. Good morning 3×8 @ <b>52.5 kg</b> tempo 3-1-1. Mollets unijambiste excentrique 3×12/jambe descente 3 sec.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>libre 4×6</b></span><span class="ki">KB <b><b>32 kg</b></b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Sled transfert — race pace contrôlé</div>
+<div class="ss-body"><b>Sled transfert force → race</b><br/>Sled Push charge course ou tapis éteint : <b>6×12,5 m = 75 m</b>, récup 90 sec, chrono chaque longueur.<br/>Sled Pull charge course ou tirage corde : <b>6×12,5 m = 75 m</b>, récup 90 sec, traction régulière sans pause longue.<br/>Finisher protecteur : pont ischio iso 3×25 sec + mollets iso 3×30 sec.<br/><b>Règle : dérive &gt;15 % sur deux longueurs = arrêt ou baisse charge.</b><div class="recup">↩ Log tracker : meilleur / pire 12,5 m, dérive, RPE, sensation relance.</div></div>
+<div class="ss-kp"><span class="ki">Push <b>75 m</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">Dérive <b>&lt;15%</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
@@ -1474,9 +1474,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>3×5 @ 87.5 kg</b> (récup 3 min).<br/>RDL bilatéral <b>3×5 @ 85 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>3×6 @ 102.5 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>87.5 kg</b></span><span class="ki">RDL <b>85 kg</b></span><span class="ki">Hip <b>102.5 kg</b></span></div>
+<div class="ss-title">Force entretien bas — sans excentrique risqué + sled</div>
+<div class="ss-body"><b>Force entretien bas — transfert HYROX sans dette excessive</b><br/>Back squat ou trap bar : <b>3×3 RPE 6–7</b>, récup 2’30.<br/>Hip thrust : <b>3×5 RPE 6–7</b>, récup 90 sec.<br/>Split squat contrôle : <b>2×6/jambe</b>, léger, amplitude propre.<br/>Sled Push technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/>Sled Pull technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/><b>Aucun RDL, aucun nordic libre, aucun good morning, aucun broad jump.</b><div class="recup">↩ Log : temps push/pull, RPE jambes, raideur ischios/mollets. Si raideur &gt;3/10 : remplacer par vélo Z2 40 min + isométrie.</div></div>
+<div class="ss-kp"><span class="ki">Force <b>entretien</b></span><span class="ki">Sled <b>50+50 m</b></span><span class="ki">No excentrique</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>AM</div>
@@ -1490,15 +1490,15 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Mar<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Muscles négligés — Adducteurs + rotation + core</div>
-<div class="ss-body">Charges max 30 kg. Adducteur élastique <b>3×20/côté</b>. Sumo squat pause bas 3 sec <b>3×10 @ 30 kg</b>. <b>Good morning léger 3×10 @ 40 kg</b> tempo 3-1-1. Russian twist lesté <b>3×20 @ 6 kg</b>. Woodchop bande <b>3×12/côté</b>. Dead bug <b>3×10</b> + Bird dog <b>3×8/côté</b>.<div class="recup">↩ 45 sec entre séries max.</div></div>
-<div class="ss-kp"><span class="ki">Focus <b>Adducteurs + rotation + core</b></span><span class="ki">Durée <b>40 min</b></span><span class="ki">&lt;30 kg</span></div>
+<div class="ss-title">Préhab isométrique + transfert sled pull</div>
+<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
+<div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mer<br/>AM</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-ergo">ERGO</span></div>
-<div class="ss-title">Ergomètres Z2 — mercredi Cao</div>
+<div class="ss-title">Ergomètres technique / race pace contrôlé</div>
 <div class="ss-body">20 min Row @ 2'12–2'15/500 + 20 min SkiErg @ 2'08–2'12/500. RPE 4–5.<div class="recup">↩ 10 min étirements épaules. 2h avant mobilité.</div></div>
 <div class="ss-kp"><span class="ki">RPE <b>4–5</b></span><span class="ki">Articulaire Z2</span></div>
 </div>
@@ -1513,10 +1513,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Jeu<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-run">RUN</span></div>
-<div class="ss-title">Tempo — Compromised 8×400 m</div>
-<div class="ss-body">12 min échauff. <b>Compromised 8×400 m @ 4'10/km + stations</b>, récup 2'30. 10 min retour calme.<div class="recup">↩ 10 min marche + étirements. 3h avant Jeu midi.</div><br/><b>Après run — WB + course</b> : 4 tours : 200 m jog + 20 WB, récup 60 sec.<br/><b>Sled Pro obligatoire</b> : intégrer 10 m sled push + 10 m sled pull sur les tours 2 et 4. Chronométrer chaque 10 m. Si pas de sled : tapis éteint/plate push + tirage corde/poulie basse.</div>
-<div class="ss-kp"><span class="ki">RPE <b>7.5–8</b></span><span class="ki">WB <b>sous fatigue</b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Compromised sled Pro — S14</div>
+<div class="ss-body">8 tours contrôlés : <b>400 m run allure HYROX</b> + station alternée.<br/>Tours 1/5 : 15 wall balls qualité. Tours 2/6 : <b>12,5 m sled push</b>. Tours 3/7 : <b>12,5 m sled pull</b>. Tours 4/8 : 20 m farmer ou 10 m BBJ technique.<br/>Total sled : <b>25 m push + 25 m pull</b>. RPE 7. Dérive run &gt;15% = réduire à 6 tours.<div class="recup">↩ Log : allure run, temps push/pull 12,5 m, RPE, breaks WB.</div></div>
+<div class="ss-kp"><span class="ki">Sled <b>Pro</b></span><span class="ki">Dérive <b>&lt;15%</b></span><span class="ki">Log <b>obligatoire</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Jeu<br/>midi</div>
@@ -1538,9 +1538,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min). KB swing 4×10 @ <b>32 kg</b> explosif (récup 90 sec). Bulgarian split squat 3×6/jambe @ <b>27.5 kg</b>. Good morning 3×8 @ <b>52.5 kg</b> tempo 3-1-1. Mollets unijambiste excentrique 3×12/jambe descente 3 sec.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>libre 4×6</b></span><span class="ki">KB <b><b>32 kg</b></b></span></div>
+<div class="ss-title">Préhab isométrique + transfert sled pull</div>
+<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.Tirage corde/poulie basse type sled pull : , récup 60–75 sec, tirage régulier.Option jambes fraîches : tapis éteint très léger 4×15 sec.<b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b></div>
+<div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">No DOMS</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
@@ -1604,9 +1604,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>3×5 @ 90 kg</b> (récup 3 min).<br/>RDL bilatéral <b>3×5 @ 87.5 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>3×6 @ 105 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>90 kg</b></span><span class="ki">RDL <b>87.5 kg</b></span><span class="ki">Hip <b>105 kg</b></span></div>
+<div class="ss-title">Force entretien bas — sans excentrique risqué + sled</div>
+<div class="ss-body"><b>Force entretien bas — transfert HYROX sans dette excessive</b><br/>Back squat ou trap bar : <b>3×3 RPE 6–7</b>, récup 2’30.<br/>Hip thrust : <b>3×5 RPE 6–7</b>, récup 90 sec.<br/>Split squat contrôle : <b>2×6/jambe</b>, léger, amplitude propre.<br/>Sled Push technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/>Sled Pull technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/><b>Aucun RDL, aucun nordic libre, aucun good morning, aucun broad jump.</b><div class="recup">↩ Log : temps push/pull, RPE jambes, raideur ischios/mollets. Si raideur &gt;3/10 : remplacer par vélo Z2 40 min + isométrie.</div></div>
+<div class="ss-kp"><span class="ki">Force <b>entretien</b></span><span class="ki">Sled <b>50+50 m</b></span><span class="ki">No excentrique</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>midi</div>
@@ -1627,10 +1627,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Jeu<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-sp">SP</span></div>
-<div class="ss-title">Compromised — Bloc D</div>
-<div class="ss-body">6×400 m @ 4'15/km · <b>20 WB + 20 m BBJ + 20 m fentes 15 kg</b> · récup 90 sec<div class="recup">↩ 20 min marche + foam roll. Glucides 50g + protéines 30g.</div><br/><b>Après run — WB compromised</b> : 5 tours : 200 m jog + 20 WB, récup 60 sec. Volume 100 reps.<br/><b>Sled Pro obligatoire</b> : intégrer 10 m sled push + 10 m sled pull sur les tours 2 et 4. Chronométrer chaque 10 m. Si pas de sled : tapis éteint/plate push + tirage corde/poulie basse.</div>
-<div class="ss-kp"><span class="ki">Phase <b>D</b></span><span class="ki">Durée <b>~55 min</b></span><span class="ki">WB <b>sous fatigue</b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Compromised sled Pro — S15</div>
+<div class="ss-body">6 tours : <b>600 m run allure HYROX</b> + station précise.<br/>1) 20 WB · 2) <b>12,5 m sled push</b> · 3) <b>12,5 m sled pull</b> · 4) 30 m farmer · 5) 20 m lunges · 6) 20 WB.<br/>Puis rappel sled : <b>3×12,5 m push + 3×12,5 m pull</b>, récup 75 sec.<br/>Total sled : <b>50 m push + 50 m pull</b>.<div class="recup">↩ Log : temps sled, allure run, qualité relance.</div></div>
+<div class="ss-kp"><span class="ki">Sled <b>Pro</b></span><span class="ki">Dérive <b>&lt;15%</b></span><span class="ki">Log <b>obligatoire</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Jeu<br/>midi</div>
@@ -1644,17 +1644,17 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min). 4×10 @ <b>32 kg</b> explosif. Broad jumps BBJ continus 4×6 chrono. Good morning 3×8 @ 52.5 kg. Mollets unijambiste excentrique 3×12/jambe.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>libre 4×6</b></span><span class="ki">KB <b><b>32 kg</b></b></span></div>
+<div class="ss-title">Préhab isométrique + transfert sled pull</div>
+<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
+<div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-sp">SP</span></div>
-<div class="ss-title">Simulation HYROX</div>
-<div class="ss-body">Simulation 5 stations for time (Basic Fit)<div class="recup">↩ 20 min marche + foam roll complet. Repas complet dans l'heure.</div><br/><b>Wall Ball — point faible</b> : finir la simulation avec stratégie imposée 40/20/20/20 ou 30/25/25/20. Log : temps 100 WB, nb breaks, plus grosse série unbroken, RPE épaules/quads. Si la technique s’effondre : réduire de 20 reps, pas de no-rep sale.</div>
-<div class="ss-kp"><span class="ki">Volume <b>pic semaine</b></span><span class="ki">WB <b>100 reps cible</b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Simulation partielle — Ski + Sled + BBJ</div>
+<div class="ss-body">Simulation partielle coachée — 5 stations :<br/>1 km run cible HYROX · 1000 m SkiErg cible 4’05–4’25 · 1 km run · <b>50 m sled push</b> découpé 4×12,5 m · 1 km run · <b>50 m sled pull</b> découpé 4×12,5 m · 1 km run · 80 m BBJ contrôlé.<br/>Transitions : &lt;30 sec. Dérive station &gt;15% = stop qualité, pas de destruction.<div class="recup">↩ Log : temps run, Ski, push, pull, BBJ, transitions, RPE.</div></div>
+<div class="ss-kp"><span class="ki">Push/Pull <b>50m</b></span><span class="ki">Log <b>station</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
@@ -1690,9 +1690,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>3×5 @ 90 kg</b> (récup 3 min).<br/>RDL bilatéral <b>3×5 @ 87.5 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>3×6 @ 105 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>90 kg</b></span><span class="ki">RDL <b>87.5 kg</b></span><span class="ki">Hip <b>105 kg</b></span></div>
+<div class="ss-title">Force entretien bas — sans excentrique risqué + sled</div>
+<div class="ss-body"><b>Force entretien bas — transfert HYROX sans dette excessive</b><br/>Back squat ou trap bar : <b>3×3 RPE 6–7</b>, récup 2’30.<br/>Hip thrust : <b>3×5 RPE 6–7</b>, récup 90 sec.<br/>Split squat contrôle : <b>2×6/jambe</b>, léger, amplitude propre.<br/>Sled Push technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/>Sled Pull technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/><b>Aucun RDL, aucun nordic libre, aucun good morning, aucun broad jump.</b><div class="recup">↩ Log : temps push/pull, RPE jambes, raideur ischios/mollets. Si raideur &gt;3/10 : remplacer par vélo Z2 40 min + isométrie.</div></div>
+<div class="ss-kp"><span class="ki">Force <b>entretien</b></span><span class="ki">Sled <b>50+50 m</b></span><span class="ki">No excentrique</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>AM</div>
@@ -1706,15 +1706,15 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Mar<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Muscles négligés — Pied + tibialis + gainage avancé</div>
-<div class="ss-body">Charges max 30 kg. <b>Tibialis anterior 3×25 reps</b>. Pied intrinsèques (serviette) <b>3×30 sec/pied</b>. Hip hinge drill bâton <b>3×10</b>. <b>Dragon flag progressif 4×max reps</b>. Copenhagen plank <b>3×25 sec/côté</b>. Anti-rotation hold <b>3×25 sec/côté</b>. <b>Hollow body 4×20 sec</b>.<div class="recup">↩ 45 sec entre séries max.</div></div>
-<div class="ss-kp"><span class="ki">Focus <b>Pied + tibialis + gainage avancé</b></span><span class="ki">Durée <b>40 min</b></span><span class="ki">&lt;30 kg</span></div>
+<div class="ss-title">Préhab isométrique + transfert sled pull</div>
+<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
+<div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mer<br/>AM</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-ergo">ERGO</span></div>
-<div class="ss-title">Ergomètres Z2 — mercredi Cao</div>
+<div class="ss-title">Ergomètres technique / race pace contrôlé</div>
 <div class="ss-body">SkiErg 4×6 min @ 1'56–2'00/500 race pace (récup 3 min). Row 4×5 min @ 1'58–2'02/500.<div class="recup">↩ 10 min étirements épaules. 2h avant mobilité.</div></div>
 <div class="ss-kp"><span class="ki">RPE <b>4–5</b></span><span class="ki">Articulaire Z2</span></div>
 </div>
@@ -1729,10 +1729,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Jeu<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-sp">SP</span></div>
-<div class="ss-title">Compromised — Bloc D</div>
-<div class="ss-body">7×400 m @ 4'12/km · <b>22 WB + 40 m BBJ + 20 m fentes 20 kg</b> · récup 90 sec<div class="recup">↩ 20 min marche + foam roll. Glucides 50g + protéines 30g.</div><br/><b>Après run — WB compromised</b> : 6 tours : 200 m jog + 20 WB, récup 45–60 sec. Volume 120 reps.<br/><b>Sled Pro obligatoire</b> : intégrer 10 m sled push + 10 m sled pull sur les tours 2 et 4. Chronométrer chaque 10 m. Si pas de sled : tapis éteint/plate push + tirage corde/poulie basse.<br/><b>Clarification 6 tours</b> : Tour 1 Ski · T2 Sled Push · T3 Sled Pull · T4 Farmer · T5 Lunges/BBJ · T6 Wall Balls/Thrusters selon matériel.</div>
-<div class="ss-kp"><span class="ki">Phase <b>D</b></span><span class="ki">Durée <b>~55 min</b></span><span class="ki">WB <b>sous fatigue</b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Compromised sled Pro — S16</div>
+<div class="ss-body">Bloc sled lourd + compromised : 3 blocs.<br/><b>800 m run</b> allure HYROX + <b>25 m sled push</b> + 2 min récup + <b>800 m run</b> + <b>25 m sled pull</b> + 3 min récup.<br/>Total : <b>75 m push + 75 m pull</b>. RPE 8, pas d’échec technique.<div class="recup">↩ Log : run avant/après sled, temps 25 m, dérive &gt;15%.</div></div>
+<div class="ss-kp"><span class="ki">Sled <b>Pro</b></span><span class="ki">Dérive <b>&lt;15%</b></span><span class="ki">Log <b>obligatoire</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Jeu<br/>midi</div>
@@ -1754,17 +1754,17 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min). 4×10 @ <b>32 kg</b> explosif. Broad jumps BBJ continus 4×6 chrono. Good morning 3×8 @ 52.5 kg. Mollets unijambiste excentrique 3×12/jambe.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>libre 4×6</b></span><span class="ki">KB <b><b>32 kg</b></b></span></div>
+<div class="ss-title">Préhab isométrique + transfert sled pull</div>
+<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.Tirage corde/poulie basse type sled pull : , récup 60–75 sec, tirage régulier.Option jambes fraîches : tapis éteint très léger 4×15 sec.<b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b></div>
+<div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">No DOMS</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-sp">SP</span></div>
-<div class="ss-title">Simulation HYROX</div>
-<div class="ss-body">Simulation 5 stations for time (Basic Fit)<div class="recup">↩ 20 min marche + foam roll complet. Repas complet dans l'heure.</div><br/><b>Wall Ball — point faible</b> : finir la simulation avec stratégie imposée 40/20/20/20 ou 30/25/25/20. Log : temps 100 WB, nb breaks, plus grosse série unbroken, RPE épaules/quads. Si la technique s’effondre : réduire de 20 reps, pas de no-rep sale.</div>
-<div class="ss-kp"><span class="ki">Volume <b>pic semaine</b></span><span class="ki">WB <b>100 reps cible</b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Simulation partielle — Ski + Sled + BBJ</div>
+<div class="ss-body">Simulation partielle coachée — 5 stations :<br/>1 km run cible HYROX · 1000 m SkiErg cible 4’05–4’25 · 1 km run · <b>50 m sled push</b> découpé 4×12,5 m · 1 km run · <b>50 m sled pull</b> découpé 4×12,5 m · 1 km run · 80 m BBJ contrôlé.<br/>Transitions : &lt;30 sec. Dérive station &gt;15% = stop qualité, pas de destruction.<div class="recup">↩ Log : temps run, Ski, push, pull, BBJ, transitions, RPE.</div></div>
+<div class="ss-kp"><span class="ki">Push/Pull <b>50m</b></span><span class="ki">Log <b>station</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
@@ -1800,9 +1800,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>3×5 @ 90 kg</b> (récup 3 min).<br/>RDL bilatéral <b>3×5 @ 87.5 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>3×6 @ 105 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>90 kg</b></span><span class="ki">RDL <b>87.5 kg</b></span><span class="ki">Hip <b>105 kg</b></span></div>
+<div class="ss-title">Force entretien bas — sans excentrique risqué + sled</div>
+<div class="ss-body"><b>Force entretien bas — transfert HYROX sans dette excessive</b><br/>Back squat ou trap bar : <b>3×3 RPE 6–7</b>, récup 2’30.<br/>Hip thrust : <b>3×5 RPE 6–7</b>, récup 90 sec.<br/>Split squat contrôle : <b>2×6/jambe</b>, léger, amplitude propre.<br/>Sled Push technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/>Sled Pull technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/><b>Aucun RDL, aucun nordic libre, aucun good morning, aucun broad jump.</b><div class="recup">↩ Log : temps push/pull, RPE jambes, raideur ischios/mollets. Si raideur &gt;3/10 : remplacer par vélo Z2 40 min + isométrie.</div></div>
+<div class="ss-kp"><span class="ki">Force <b>entretien</b></span><span class="ki">Sled <b>50+50 m</b></span><span class="ki">No excentrique</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>midi</div>
@@ -1823,10 +1823,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Jeu<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-sp">SP</span></div>
-<div class="ss-title">Compromised — Bloc D</div>
-<div class="ss-body">8×400 m @ 4'10/km · <b>25 WB + 40 m BBJ + 20 m fentes 20 kg</b> · récup 90 sec<div class="recup">↩ 20 min marche + foam roll. Glucides 50g + protéines 30g.</div><br/><b>Après run — WB race strategy</b> : 100 WB en stratégie 40/20/20/20, cible breaks &lt;15 sec.<br/><b>Sled Pro obligatoire</b> : intégrer 10 m sled push + 10 m sled pull sur les tours 2 et 4. Chronométrer chaque 10 m. Si pas de sled : tapis éteint/plate push + tirage corde/poulie basse.</div>
-<div class="ss-kp"><span class="ki">Phase <b>D</b></span><span class="ki">Durée <b>~55 min</b></span><span class="ki">WB <b>sous fatigue</b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Compromised sled Pro — S17</div>
+<div class="ss-body">Compromised sled Pro : 3 blocs.<br/><b>1 km run</b> allure HYROX + <b>25 m sled push</b> + <b>1 km run</b> + <b>25 m sled pull</b>. Récup 4 min entre blocs.<br/>Total : <b>75 m push + 75 m pull</b>. Stop si relance run se dégrade &gt;20 sec/km.<div class="recup">↩ Log : allure run post-push/post-pull, temps sled, RPE jambes.</div></div>
+<div class="ss-kp"><span class="ki">Sled <b>Pro</b></span><span class="ki">Dérive <b>&lt;15%</b></span><span class="ki">Log <b>obligatoire</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Jeu<br/>midi</div>
@@ -1840,17 +1840,17 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min). 4×10 @ <b>32 kg</b> explosif. Broad jumps BBJ continus 4×6 chrono. Good morning 3×8 @ 52.5 kg. Mollets unijambiste excentrique 3×12/jambe.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>libre 4×6</b></span><span class="ki">KB <b><b>32 kg</b></b></span></div>
+<div class="ss-title">Préhab isométrique + transfert sled pull</div>
+<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
+<div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-sp">SP</span></div>
-<div class="ss-title">Simulation HYROX</div>
-<div class="ss-body">Simulation 7 stations for time (Basic Fit)<div class="recup">↩ 20 min marche + foam roll complet. Repas complet dans l'heure.</div><br/><b>Wall Ball — point faible</b> : finir la simulation avec stratégie imposée 40/20/20/20 ou 30/25/25/20. Log : temps 100 WB, nb breaks, plus grosse série unbroken, RPE épaules/quads. Si la technique s’effondre : réduire de 20 reps, pas de no-rep sale.</div>
-<div class="ss-kp"><span class="ki">Volume <b>pic semaine</b></span><span class="ki">WB <b>100 reps cible</b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Simulation 7 stations — coachée</div>
+<div class="ss-body">Simulation 7 stations — ordre HYROX :<br/>Run 1 km · SkiErg 1000 m cible 4’05–4’25 · Run · <b>Sled Push 50 m</b> · Run · <b>Sled Pull 50 m</b> · Run · BBJ 80 m · Run · Row 1000 m cible 4’00–4’20 · Run · Farmer 200 m · Run · Lunges 100 m.<br/>Transitions totales : &lt;3’30. Dérive &gt;15% sur 2 stations = transformer fin en technique.<div class="recup">↩ Log station par station + relance run après sled.</div></div>
+<div class="ss-kp"><span class="ki">7 stations</span><span class="ki">Transitions <b>&lt;3’30</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
@@ -1886,9 +1886,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>3×5 @ 90 kg</b> (récup 3 min).<br/>RDL bilatéral <b>3×5 @ 87.5 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>3×6 @ 105 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>90 kg</b></span><span class="ki">RDL <b>87.5 kg</b></span><span class="ki">Hip <b>105 kg</b></span></div>
+<div class="ss-title">Force entretien bas — sans excentrique risqué + sled</div>
+<div class="ss-body"><b>Force entretien bas — transfert HYROX sans dette excessive</b><br/>Back squat ou trap bar : <b>3×3 RPE 6–7</b>, récup 2’30.<br/>Hip thrust : <b>3×5 RPE 6–7</b>, récup 90 sec.<br/>Split squat contrôle : <b>2×6/jambe</b>, léger, amplitude propre.<br/>Sled Push technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/>Sled Pull technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/><b>Aucun RDL, aucun nordic libre, aucun good morning, aucun broad jump.</b><div class="recup">↩ Log : temps push/pull, RPE jambes, raideur ischios/mollets. Si raideur &gt;3/10 : remplacer par vélo Z2 40 min + isométrie.</div></div>
+<div class="ss-kp"><span class="ki">Force <b>entretien</b></span><span class="ki">Sled <b>50+50 m</b></span><span class="ki">No excentrique</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>AM</div>
@@ -1902,15 +1902,15 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Mar<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Muscles négligés — Fessiers moyens + stabilisation</div>
-<div class="ss-body">Charges max 30 kg. Abducteur bande <b>3×20/côté</b> (45 sec). Clamshell lesté <b>3×15/côté @ 5 kg</b> (45 sec). <b>Tibialis anterior 3×20 reps</b> (prévention douleurs tibiales run). Pallof press bande lourde <b>4×12/côté</b> (60 sec). Face pull <b>3×20</b> + External rotation bande <b>3×15/côté</b>. Planche RKC <b>4×20 sec</b> + Side plank <b>3×35 sec/côté</b>.<div class="recup">↩ 45 sec entre séries max.</div></div>
-<div class="ss-kp"><span class="ki">Focus <b>Fessiers moyens + stabilisation</b></span><span class="ki">Durée <b>40 min</b></span><span class="ki">&lt;30 kg</span></div>
+<div class="ss-title">Préhab isométrique + transfert sled pull</div>
+<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
+<div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mer<br/>AM</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-ergo">ERGO</span></div>
-<div class="ss-title">Ergomètres Z2 — mercredi Cao</div>
+<div class="ss-title">Ergomètres technique / race pace contrôlé</div>
 <div class="ss-body">SkiErg 4×6 min @ 1'56–2'00/500 race pace (récup 3 min). Row 4×5 min @ 1'58–2'02/500.<div class="recup">↩ 10 min étirements épaules. 2h avant mobilité.</div></div>
 <div class="ss-kp"><span class="ki">RPE <b>4–5</b></span><span class="ki">Articulaire Z2</span></div>
 </div>
@@ -1925,10 +1925,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Jeu<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-sp">SP</span></div>
-<div class="ss-title">Compromised — Bloc D</div>
-<div class="ss-body">6×400 m @ 4'15/km décharge · <b>20 WB + 20 m BBJ</b> · récup 2 min<div class="recup">↩ 20 min marche + foam roll. Glucides 50g + protéines 30g.</div><br/><b>Après run — WB décharge</b> : 4×12 WB facile.<br/><b>Sled Pro obligatoire</b> : intégrer 10 m sled push + 10 m sled pull sur les tours 2 et 4. Chronométrer chaque 10 m. Si pas de sled : tapis éteint/plate push + tirage corde/poulie basse.</div>
-<div class="ss-kp"><span class="ki">Phase <b>D</b></span><span class="ki">Durée <b>~55 min</b></span><span class="ki">WB <b>sous fatigue</b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Compromised sled Pro — S18</div>
+<div class="ss-body">Décharge compromised : 4 tours faciles.<br/>500 m run contrôlé + 10 m sled push technique + 10 m sled pull technique + 10 WB qualité. Récup 2 min.<br/>Total sled : <b>40 m push + 40 m pull</b>. Charge 60–70% course. Aucun effort maximal.<div class="recup">↩ Log : qualité technique seulement.</div></div>
+<div class="ss-kp"><span class="ki">Sled <b>Pro</b></span><span class="ki">Dérive <b>&lt;15%</b></span><span class="ki">Log <b>obligatoire</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Jeu<br/>midi</div>
@@ -1950,17 +1950,17 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min). 4×10 @ <b>32 kg</b> explosif. Broad jumps BBJ continus 4×6 chrono. Good morning 3×8 @ 52.5 kg. Mollets unijambiste excentrique 3×12/jambe.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>libre 4×6</b></span><span class="ki">KB <b><b>32 kg</b></b></span></div>
+<div class="ss-title">Préhab isométrique + transfert sled pull</div>
+<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.Tirage corde/poulie basse type sled pull : , récup 60–75 sec, tirage régulier.Option jambes fraîches : tapis éteint très léger 4×15 sec.<b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b></div>
+<div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">No DOMS</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-sp">SP</span></div>
-<div class="ss-title">Simulation HYROX</div>
-<div class="ss-body">Simulation 7 stations for time (Basic Fit)<div class="recup">↩ 20 min marche + foam roll complet. Repas complet dans l'heure.</div><br/><b>Wall Ball — point faible</b> : finir la simulation avec stratégie imposée 40/20/20/20 ou 30/25/25/20. Log : temps 100 WB, nb breaks, plus grosse série unbroken, RPE épaules/quads. Si la technique s’effondre : réduire de 20 reps, pas de no-rep sale.</div>
-<div class="ss-kp"><span class="ki">Volume <b>pic semaine</b></span><span class="ki">WB <b>100 reps cible</b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Simulation 7 stations — coachée</div>
+<div class="ss-body">Simulation 7 stations — ordre HYROX :<br/>Run 1 km · SkiErg 1000 m cible 4’05–4’25 · Run · <b>Sled Push 50 m</b> · Run · <b>Sled Pull 50 m</b> · Run · BBJ 80 m · Run · Row 1000 m cible 4’00–4’20 · Run · Farmer 200 m · Run · Lunges 100 m.<br/>Transitions totales : &lt;3’30. Dérive &gt;15% sur 2 stations = transformer fin en technique.<div class="recup">↩ Log station par station + relance run après sled.</div></div>
+<div class="ss-kp"><span class="ki">7 stations</span><span class="ki">Transitions <b>&lt;3’30</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
@@ -2015,9 +2015,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>3×3 @ 92.5 kg</b> (récup 3 min).<br/>RDL bilatéral <b>3×3 @ 87.5 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>3×5 @ 105 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>92.5 kg</b></span><span class="ki">RDL <b>87.5 kg</b></span><span class="ki">Hip <b>105 kg</b></span></div>
+<div class="ss-title">Force entretien bas — sans excentrique risqué + sled</div>
+<div class="ss-body"><b>Force entretien bas — transfert HYROX sans dette excessive</b><br/>Back squat ou trap bar : <b>3×3 RPE 6–7</b>, récup 2’30.<br/>Hip thrust : <b>3×5 RPE 6–7</b>, récup 90 sec.<br/>Split squat contrôle : <b>2×6/jambe</b>, léger, amplitude propre.<br/>Sled Push technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/>Sled Pull technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/><b>Aucun RDL, aucun nordic libre, aucun good morning, aucun broad jump.</b><div class="recup">↩ Log : temps push/pull, RPE jambes, raideur ischios/mollets. Si raideur &gt;3/10 : remplacer par vélo Z2 40 min + isométrie.</div></div>
+<div class="ss-kp"><span class="ki">Force <b>entretien</b></span><span class="ki">Sled <b>50+50 m</b></span><span class="ki">No excentrique</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>midi</div>
@@ -2038,10 +2038,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Jeu<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-sp">SP</span></div>
-<div class="ss-title">Compromised — Bloc E</div>
-<div class="ss-body">8×500 m @ 4'08/km · <b>25 WB + 40 m BBJ + 20 m fentes 20 kg</b> · récup 2 min<div class="recup">↩ 20 min marche + foam roll. Glucides 50g + protéines 30g.</div><br/><b>Après run — WB compromised Pro</b> : 5 tours : 400 m run + 20 WB, récup 75 sec. Volume 100 reps.<br/><b>Sled Pro obligatoire</b> : intégrer 10 m sled push + 10 m sled pull sur les tours 2 et 4. Chronométrer chaque 10 m. Si pas de sled : tapis éteint/plate push + tirage corde/poulie basse.</div>
-<div class="ss-kp"><span class="ki">Phase <b>E</b></span><span class="ki">Durée <b>~55 min</b></span><span class="ki">WB <b>sous fatigue</b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Compromised sled Pro — S19</div>
+<div class="ss-body">Race pace sled complet : 2 blocs.<br/>1 km run + <b>50 m sled push</b> découpé 4×12,5 m + 1 km run + <b>50 m sled pull</b> découpé 4×12,5 m. Récup 5 min entre blocs.<br/>Total : <b>100 m push + 100 m pull</b>. Objectif régularité ±10%, stop si dérive &gt;15%.<div class="recup">↩ Log : splits 12,5 m, relance run, RPE, pauses.</div></div>
+<div class="ss-kp"><span class="ki">Sled <b>Pro</b></span><span class="ki">Dérive <b>&lt;15%</b></span><span class="ki">Log <b>obligatoire</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Jeu<br/>midi</div>
@@ -2055,17 +2055,17 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min). 4×10 @ <b>32 kg</b> explosif. Broad jumps BBJ continus 4×6 chrono. Good morning 3×8 @ 52.5 kg. Mollets unijambiste excentrique 3×12/jambe.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>libre 4×6</b></span><span class="ki">KB <b><b>32 kg</b></b></span></div>
+<div class="ss-title">Préhab isométrique + transfert sled pull</div>
+<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
+<div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-sp">SP</span></div>
-<div class="ss-title">Simulation HYROX</div>
-<div class="ss-body">Simulation 8 stations for time — cible &lt; 75 min<div class="recup">↩ 20 min marche + foam roll complet. Repas complet dans l'heure.</div><br/><b>Wall Ball — point faible</b> : finir la simulation avec stratégie imposée 40/20/20/20 ou 30/25/25/20. Log : temps 100 WB, nb breaks, plus grosse série unbroken, RPE épaules/quads. Si la technique s’effondre : réduire de 20 reps, pas de no-rep sale.</div>
-<div class="ss-kp"><span class="ki">Volume <b>pic semaine</b></span><span class="ki">WB <b>100 reps cible</b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Simulation complète Pro — cibles station</div>
+<div class="ss-body">Simulation complète Pro — ordre HYROX exact :<br/>1 km run · SkiErg 1000 m 4’05–4’25 · 1 km run · <b>Sled Push 50 m</b> 4×12,5 m · 1 km run · <b>Sled Pull 50 m</b> 4×12,5 m · 1 km run · BBJ 80 m · 1 km run · Row 1000 m 4’00–4’20 · 1 km run · Farmer 200 m · 1 km run · Lunges 100 m · 1 km run · Wall Balls 100 reps stratégie 40/20/20/20 ou 30/25/25/20.<br/>Objectif : exécution, transitions &lt;3’30, zéro panique sur sled/WB. Dérive &gt;15% = réduire intensité, pas forcer un échec.<div class="recup">↩ Log complet dans tracker : tous temps station, runs, transitions, breaks WB, RPE.</div></div>
+<div class="ss-kp"><span class="ki">8 stations</span><span class="ki">Sled <b>50+50m</b></span><span class="ki">WB <b>100</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
@@ -2101,9 +2101,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>3×3 @ 92.5 kg</b> (récup 3 min).<br/>RDL bilatéral <b>3×3 @ 87.5 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>3×5 @ 105 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>libre 4×6</b> descente 4 sec (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>92.5 kg</b></span><span class="ki">RDL <b>87.5 kg</b></span><span class="ki">Hip <b>105 kg</b></span></div>
+<div class="ss-title">Force entretien bas — sans excentrique risqué + sled</div>
+<div class="ss-body"><b>Force entretien bas — transfert HYROX sans dette excessive</b><br/>Back squat ou trap bar : <b>3×3 RPE 6–7</b>, récup 2’30.<br/>Hip thrust : <b>3×5 RPE 6–7</b>, récup 90 sec.<br/>Split squat contrôle : <b>2×6/jambe</b>, léger, amplitude propre.<br/>Sled Push technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/>Sled Pull technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/><b>Aucun RDL, aucun nordic libre, aucun good morning, aucun broad jump.</b><div class="recup">↩ Log : temps push/pull, RPE jambes, raideur ischios/mollets. Si raideur &gt;3/10 : remplacer par vélo Z2 40 min + isométrie.</div></div>
+<div class="ss-kp"><span class="ki">Force <b>entretien</b></span><span class="ki">Sled <b>50+50 m</b></span><span class="ki">No excentrique</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>AM</div>
@@ -2117,15 +2117,15 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Mar<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Préhab bas — isométrie + sled transfert</div>
-<div class="ss-body">Pont ischio iso 4×25 sec · mollets iso 4×30 sec · Copenhagen 3×20 sec/côté · tirage corde type sled pull 4×12 m contrôlé. <b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
-<div class="ss-kp"><span class="ki">Focus <b>Stabilisation hanche + pied</b></span><span class="ki">Durée <b>40 min</b></span><span class="ki">&lt;30 kg</span></div>
+<div class="ss-title">Préhab isométrique + transfert sled pull</div>
+<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
+<div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mer<br/>AM</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-ergo">ERGO</span></div>
-<div class="ss-title">Ergomètres Z2 — mercredi Cao</div>
+<div class="ss-title">Ergomètres technique / race pace contrôlé</div>
 <div class="ss-body">SkiErg 4×6 min @ 1'56–2'00/500 race pace (récup 3 min). Row 4×5 min @ 1'58–2'02/500.<div class="recup">↩ 10 min étirements épaules. 2h avant mobilité.</div></div>
 <div class="ss-kp"><span class="ki">RPE <b>4–5</b></span><span class="ki">Articulaire Z2</span></div>
 </div>
@@ -2140,10 +2140,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Jeu<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-sp">SP</span></div>
-<div class="ss-title">Compromised — Bloc E</div>
-<div class="ss-body">10×500 m @ 4'05/km bear complex (récup = temps round) · <b>25 WB + 40 m BBJ + 20 m fentes</b><div class="recup">↩ 20 min marche + foam roll. Glucides 50g + protéines 30g.</div><br/><b>Après run — WB compromised Pro</b> : 6 tours : 400 m run + 20 WB, récup 60 sec. Volume 120 reps.<br/><b>Sled Pro obligatoire</b> : intégrer 10 m sled push + 10 m sled pull sur les tours 2 et 4. Chronométrer chaque 10 m. Si pas de sled : tapis éteint/plate push + tirage corde/poulie basse.<br/><b>Clarification 6 tours</b> : Tour 1 Ski · T2 Sled Push · T3 Sled Pull · T4 Farmer · T5 Lunges/BBJ · T6 Wall Balls/Thrusters selon matériel.</div>
-<div class="ss-kp"><span class="ki">Phase <b>E</b></span><span class="ki">Durée <b>~55 min</b></span><span class="ki">WB <b>sous fatigue</b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Compromised sled Pro — S20</div>
+<div class="ss-body">Sled lourd spécifique : Push <b>8×12,5 m = 100 m</b> charge &gt; course ou résistance lourde, récup 2’30–3’. Pull <b>8×12,5 m = 100 m</b>, récup 2’30–3’.<br/>Puis 4×400 m run easy pour relance technique, pas d’intensité.<div class="recup">↩ Log : charge/substitut, temps par longueur, dérive, RPE. Qualité avant ego.</div></div>
+<div class="ss-kp"><span class="ki">Sled <b>Pro</b></span><span class="ki">Dérive <b>&lt;15%</b></span><span class="ki">Log <b>obligatoire</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Jeu<br/>midi</div>
@@ -2165,17 +2165,17 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Préhab bas — isométrie + sled transfert</div>
-<div class="ss-body">Pont ischio iso 4×25 sec · mollets iso 4×30 sec · Copenhagen 3×20 sec/côté · tirage corde type sled pull 4×12 m contrôlé. <b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>libre 4×6</b></span><span class="ki">KB <b><b>32 kg</b></b></span></div>
+<div class="ss-title">Préhab isométrique + transfert sled pull</div>
+<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
+<div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-sp">SP</span></div>
-<div class="ss-title">Simulation HYROX</div>
-<div class="ss-body">Simulation 8 stations for time — cible &lt; 75 min<div class="recup">↩ 20 min marche + foam roll complet. Repas complet dans l'heure.</div><br/><b>Wall Ball — point faible</b> : finir la simulation avec stratégie imposée 40/20/20/20 ou 30/25/25/20. Log : temps 100 WB, nb breaks, plus grosse série unbroken, RPE épaules/quads. Si la technique s’effondre : réduire de 20 reps, pas de no-rep sale.</div>
-<div class="ss-kp"><span class="ki">Volume <b>pic semaine</b></span><span class="ki">WB <b>100 reps cible</b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Simulation complète Pro — cibles station</div>
+<div class="ss-body">Simulation complète Pro — ordre HYROX exact :<br/>1 km run · SkiErg 1000 m 4’05–4’25 · 1 km run · <b>Sled Push 50 m</b> 4×12,5 m · 1 km run · <b>Sled Pull 50 m</b> 4×12,5 m · 1 km run · BBJ 80 m · 1 km run · Row 1000 m 4’00–4’20 · 1 km run · Farmer 200 m · 1 km run · Lunges 100 m · 1 km run · Wall Balls 100 reps stratégie 40/20/20/20 ou 30/25/25/20.<br/>Objectif : exécution, transitions &lt;3’30, zéro panique sur sled/WB. Dérive &gt;15% = réduire intensité, pas forcer un échec.<div class="recup">↩ Log complet dans tracker : tous temps station, runs, transitions, breaks WB, RPE.</div></div>
+<div class="ss-kp"><span class="ki">8 stations</span><span class="ki">Sled <b>50+50m</b></span><span class="ki">WB <b>100</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
@@ -2211,9 +2211,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Force entretien bas — transfert sled</div>
-<div class="ss-body">Trap bar ou squat léger 3×3 RPE 6–7 · hip thrust 2×5 · sled push 4×10 m charge course, récup 75 sec · sled pull 4×10 m charge course, récup 75 sec. <b>Aucun RDL/nordic/good morning.</b><div class="recup">↩ Log : push/pull 10 m, dérive, RPE jambes.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>92.5 kg</b></span><span class="ki">RDL <b>87.5 kg</b></span><span class="ki">Hip <b>105 kg</b></span></div>
+<div class="ss-title">Force entretien bas — sans excentrique risqué + sled</div>
+<div class="ss-body"><b>Force entretien bas — transfert HYROX sans dette excessive</b><br/>Back squat ou trap bar : <b>3×3 RPE 6–7</b>, récup 2’30.<br/>Hip thrust : <b>3×5 RPE 6–7</b>, récup 90 sec.<br/>Split squat contrôle : <b>2×6/jambe</b>, léger, amplitude propre.<br/>Sled Push technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/>Sled Pull technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/><b>Aucun RDL, aucun nordic libre, aucun good morning, aucun broad jump.</b><div class="recup">↩ Log : temps push/pull, RPE jambes, raideur ischios/mollets. Si raideur &gt;3/10 : remplacer par vélo Z2 40 min + isométrie.</div></div>
+<div class="ss-kp"><span class="ki">Force <b>entretien</b></span><span class="ki">Sled <b>50+50 m</b></span><span class="ki">No excentrique</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>midi</div>
@@ -2234,10 +2234,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Jeu<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-sp">SP</span></div>
-<div class="ss-title">Compromised — Bloc E</div>
-<div class="ss-body">10×500 m @ 4'03/km · <b>25 WB + 80 m BBJ race distance</b> + 20 m fentes · récup autogérée<div class="recup">↩ 20 min marche + foam roll. Glucides 50g + protéines 30g.</div><br/><b>Après run — WB peak</b> : 100 WB for time contrôlé après run. Cible stratégie course, log temps + breaks.<br/><b>Sled Pro obligatoire</b> : intégrer 10 m sled push + 10 m sled pull sur les tours 2 et 4. Chronométrer chaque 10 m. Si pas de sled : tapis éteint/plate push + tirage corde/poulie basse.</div>
-<div class="ss-kp"><span class="ki">Phase <b>E</b></span><span class="ki">Durée <b>~55 min</b></span><span class="ki">WB <b>sous fatigue</b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Compromised sled Pro — S21</div>
+<div class="ss-body">Peak compromised sled : 2 blocs seulement, haute qualité.<br/>1 km run race pace + <b>50 m sled push</b> + 1 km run race pace + <b>50 m sled pull</b>. Récup 6 min entre blocs.<br/>Total : <b>100 m push + 100 m pull</b>. Si dérive &gt;15% dès bloc 1 : faire bloc 2 technique à 60–70%.<div class="recup">↩ Log obligatoire : push/pull 12,5 m, run post-sled, RPE, stratégie pauses.</div></div>
+<div class="ss-kp"><span class="ki">Sled <b>Pro</b></span><span class="ki">Dérive <b>&lt;15%</b></span><span class="ki">Log <b>obligatoire</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Jeu<br/>midi</div>
@@ -2251,17 +2251,17 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Préhab bas — isométrie + sled transfert</div>
-<div class="ss-body">Pont ischio iso 4×25 sec · mollets iso 4×30 sec · Copenhagen 3×20 sec/côté · tirage corde type sled pull 4×12 m contrôlé. <b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
-<div class="ss-kp"><span class="ki">Nordic <b>libre 4×6</b></span><span class="ki">KB <b><b>32 kg</b></b></span></div>
+<div class="ss-title">Préhab isométrique + transfert sled pull</div>
+<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
+<div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Sam<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-sp">SP</span></div>
-<div class="ss-title">Simulation HYROX</div>
-<div class="ss-body">Simulation 8 stations for time — cible &lt; 70 min<div class="recup">↩ 20 min marche + foam roll complet. Repas complet dans l'heure.</div><br/><b>Wall Ball — point faible</b> : finir la simulation avec stratégie imposée 40/20/20/20 ou 30/25/25/20. Log : temps 100 WB, nb breaks, plus grosse série unbroken, RPE épaules/quads. Si la technique s’effondre : réduire de 20 reps, pas de no-rep sale.</div>
-<div class="ss-kp"><span class="ki">Volume <b>pic semaine</b></span><span class="ki">WB <b>100 reps cible</b></span></div>
+<div class="ss-type"><span class="t t-sp">SPÉ</span></div>
+<div class="ss-title">Simulation complète Pro — cibles station</div>
+<div class="ss-body">Simulation complète Pro — ordre HYROX exact :<br/>1 km run · SkiErg 1000 m 4’05–4’25 · 1 km run · <b>Sled Push 50 m</b> 4×12,5 m · 1 km run · <b>Sled Pull 50 m</b> 4×12,5 m · 1 km run · BBJ 80 m · 1 km run · Row 1000 m 4’00–4’20 · 1 km run · Farmer 200 m · 1 km run · Lunges 100 m · 1 km run · Wall Balls 100 reps stratégie 40/20/20/20 ou 30/25/25/20.<br/>Objectif : exécution, transitions &lt;3’30, zéro panique sur sled/WB. Dérive &gt;15% = réduire intensité, pas forcer un échec.<div class="recup">↩ Log complet dans tracker : tous temps station, runs, transitions, breaks WB, RPE.</div></div>
+<div class="ss-kp"><span class="ki">8 stations</span><span class="ki">Sled <b>50+50m</b></span><span class="ki">WB <b>100</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
@@ -2284,7 +2284,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 <div class="wb">
 <div class="wbl"><b>S22 DÉCHARGE PRO</b> — baisse mécanique, rappel sled technique, aucun excentrique risqué.</div>
-<div class="ss-list"><div class="ss"><div class="ss-day">Lun<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-ergo">VÉLO</span></div><div class="ss-title">Vélo Z2 décharge — 45 min + 4 spin-ups</div><div class="ss-body">45 min vélo Z2 facile RPE 3–4 + 4×20 sec cadence haute, récup 1 min. Aucun impact course. <div class="recup">↩ Log tracker : durée, RPE, FC moyenne. Objectif : décharge mécanique.</div></div><div class="ss-kp"><span class="ki">Z2 <b>vélo</b></span><span class="ki">Sans impact</span></div></div></div><div class="ss"><div class="ss-day">Lun<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-str">MUSC</span></div><div class="ss-title">Force entretien bas — sans excentrique risqué</div><div class="ss-body">Activation : split squat poids du corps 2×8/jambe + hip thrust léger 2×8 + gainage anti-rotation 3×20 sec. <b>Aucun RDL, aucun nordic, aucun good morning.</b><div class="recup">↩ Objectif : tonicité, pas de DOMS. Stop si ischio tire.</div></div><div class="ss-kp"><span class="ki">No RDL</span><span class="ki">No Nordic</span></div></div></div><div class="ss"><div class="ss-day">Mar<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-run">RUN</span></div><div class="ss-title">Rappel seuil court — 5×2 min</div><div class="ss-body">12 min échauffement. 5×2 min allure HYROX contrôlée, récup 2 min trot/marche. Retour calme 10 min.<div class="recup">↩ Log : allure + RPE. Dérive &gt;15% = arrêter à 4 reps.</div></div><div class="ss-kp"><span class="ki">Rappel <b>court</b></span><span class="ki">Dérive <b>&lt;15%</b></span></div></div></div><div class="ss"><div class="ss-day">Mar<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-mob">MOB</span></div><div class="ss-title">Préhab isométrique — ischios/mollets/adducteurs</div><div class="ss-body">Pont ischio isométrique 4×25 sec · mollets iso 4×30 sec · Copenhagen court 3×20 sec/côté · respiration 5 min.<div class="recup">↩ Aucun excentrique lent.</div></div><div class="ss-kp"><span class="ki">Préhab <b>iso</b></span></div></div></div><div class="ss"><div class="ss-day">Mer<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-ergo">ERGO</span></div><div class="ss-title">Ergo Z2 réel — 35 à 40 min</div><div class="ss-body">20 min SkiErg + 15–20 min RowErg très facile RPE 4. Ce n’est pas du race pace.<div class="recup">↩ Log : allure /500m + RPE. Objectif drainage.</div></div><div class="ss-kp"><span class="ki">Z2 <b>réel</b></span></div></div></div><div class="ss"><div class="ss-day">Mer<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-mob">MOB</span></div><div class="ss-title">Mobilité fraîcheur — 30 min</div><div class="ss-body">Hanches/chevilles/thorax + respiration. Pas d’étirement agressif ischios.<div class="recup">↩ Sortir plus frais qu’en entrant.</div></div><div class="ss-kp"><span class="ki">Mobilité <b>30min</b></span></div></div></div><div class="ss"><div class="ss-day">Jeu<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-sp">SPÉ</span></div><div class="ss-title">Sled technique décharge — push/pull précision</div><div class="ss-body">3 tours qualité : 10 m sled push technique + récup 90 sec + 10 m sled pull technique + récup 90 sec. Charge 60–70% course. <b>Stop si dérive &gt;15% ou perte de posture.</b><div class="recup">↩ Log : temps par 10 m push/pull + RPE jambes.</div></div><div class="ss-kp"><span class="ki">Sled <b>technique</b></span><span class="ki">Dérive <b>&lt;15%</b></span></div></div></div><div class="ss"><div class="ss-day">Jeu<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-str">MUSC</span></div><div class="ss-title">Haut du corps entretien — tirage dominant</div><div class="ss-body">Tractions 3×5 RPE 6–7 · Rowing 3×8 · Face pull 3×20 · gainage 8 min. Pas de dips lourds.<div class="recup">↩ Objectif posture/grip sans dette.</div></div><div class="ss-kp"><span class="ki">Tirage <b>dominant</b></span></div></div></div><div class="ss"><div class="ss-day">Ven<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-ergo">VÉLO</span></div><div class="ss-title">VéloVÉLO</div><div class="ss-title">Vélo flush — 45 min</div><div class="ss-body">45 min vélo Z1/Z2 très facile, cadence souple. Option : marche si fatigue.<div class="recup">↩ Log fatigue ischios/mollets.</div></div><div class="ss-kp"><span class="ki">Flush</span></div></div></div><div class="ss"><div class="ss-day">Sam<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-sp">SPÉ</span></div><div class="ss-title">Mini-WOD Pro décharge — 6 expositions claires</div><div class="ss-body">6 tours contrôlés, RPE 6–7 : 1) 500 m SkiErg · 2) 10 m sled push · 3) 10 m sled pull · 4) 20 m farmer · 5) 10 wall balls qualité · 6) 400 m run facile. Récup 60–90 sec entre tours.<div class="recup">↩ Log chaque station. Aucun for time.</div></div><div class="ss-kp"><span class="ki">6 tours = <b>6 stations</b></span></div></div></div><div class="ss"><div class="ss-day">Dim<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-mob">MOB</span></div><div class="ss-title">Repos actif optionnel</div><div class="ss-body">Marche 30–40 min ou repos complet. Zéro contrainte.<div class="recup">↩ Si fatigue : off total.</div></div><div class="ss-kp"><span class="ki">Optionnel</span></div></div></div></div>
+<div class="ss-list"><div class="ss"><div class="ss-day">Lun<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-ergo">VÉLO</span></div><div class="ss-title">Vélo Z2 décharge — 45 min + 4 spin-ups</div><div class="ss-body">45 min vélo Z2 facile RPE 3–4 + 4×20 sec cadence haute, récup 1 min. Aucun impact course. <div class="recup">↩ Log tracker : durée, RPE, FC moyenne. Objectif : décharge mécanique.</div></div><div class="ss-kp"><span class="ki">Z2 <b>vélo</b></span><span class="ki">Sans impact</span></div></div></div><div class="ss"><div class="ss-day">Lun<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-str">MUSC</span></div><div class="ss-title">Force entretien bas — sans excentrique risqué</div><div class="ss-body">Activation : split squat poids du corps 2×8/jambe + hip thrust léger 2×8 + gainage anti-rotation 3×20 sec. <b>Aucun RDL, aucun nordic, aucun good morning.</b><div class="recup">↩ Objectif : tonicité, pas de DOMS. Stop si ischio tire.</div></div><div class="ss-kp"><span class="ki">No RDL</span><span class="ki">No Nordic</span></div></div></div><div class="ss"><div class="ss-day">Mar<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-run">RUN</span></div><div class="ss-title">Rappel seuil court — 5×2 min</div><div class="ss-body">12 min échauffement. 5×2 min allure HYROX contrôlée, récup 2 min trot/marche. Retour calme 10 min.<div class="recup">↩ Log : allure + RPE. Dérive &gt;15% = arrêter à 4 reps.</div></div><div class="ss-kp"><span class="ki">Rappel <b>court</b></span><span class="ki">Dérive <b>&lt;15%</b></span></div></div></div><div class="ss"><div class="ss-day">Mar<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-mob">MOB</span></div><div class="ss-title">Préhab isométrique — ischios/mollets/adducteurs</div><div class="ss-body">Pont ischio isométrique 4×25 sec · mollets iso 4×30 sec · Copenhagen court 3×20 sec/côté · respiration 5 min.<div class="recup">↩ Aucun excentrique lent.</div></div><div class="ss-kp"><span class="ki">Préhab <b>iso</b></span></div></div></div><div class="ss"><div class="ss-day">Mer<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-ergo">ERGO</span></div><div class="ss-title">Ergo Z2 réel — 35 à 40 min</div><div class="ss-body">20 min SkiErg + 15–20 min RowErg très facile RPE 4. Ce n’est pas du race pace.<div class="recup">↩ Log : allure /500m + RPE. Objectif drainage.</div></div><div class="ss-kp"><span class="ki">Z2 <b>réel</b></span></div></div></div><div class="ss"><div class="ss-day">Mer<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-mob">MOB</span></div><div class="ss-title">Mobilité fraîcheur — 30 min</div><div class="ss-body">Hanches/chevilles/thorax + respiration. Pas d’étirement agressif ischios.<div class="recup">↩ Sortir plus frais qu’en entrant.</div></div><div class="ss-kp"><span class="ki">Mobilité <b>30min</b></span></div></div></div><div class="ss"><div class="ss-day">Jeu<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-sp">SPÉ</span></div><div class="ss-title">Sled technique décharge — push/pull précision</div><div class="ss-body">4 tours qualité : 10 m sled push technique + récup 90 sec + 10 m sled pull technique + récup 90 sec. Total <b>40 m push + 40 m pull</b>. Charge 60–70% course. Stop si dérive &gt;15% ou perte de posture.
+<div class="recup">↩ Log : temps par 10 m push/pull + RPE jambes. Aucune lutte, aucune dette musculaire.</div></div><div class="ss-kp"><span class="ki">Sled <b>40m+40m</b></span><span class="ki">Dérive <b>&lt;15%</b></span></div></div></div><div class="ss"><div class="ss-day">Jeu<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-str">MUSC</span></div><div class="ss-title">Haut du corps entretien — tirage dominant</div><div class="ss-body">Tractions 3×5 RPE 6–7 · Rowing 3×8 · Face pull 3×20 · gainage 8 min. Pas de dips lourds.<div class="recup">↩ Objectif posture/grip sans dette.</div></div><div class="ss-kp"><span class="ki">Tirage <b>dominant</b></span></div></div></div><div class="ss"><div class="ss-day">Ven<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-ergo">VÉLO</span></div><div class="ss-title">Vélo flush — 45 min</div><div class="ss-body">45 min vélo Z1/Z2 très facile, cadence souple. Option : marche si fatigue.<div class="recup">↩ Log fatigue ischios/mollets.</div></div><div class="ss-kp"><span class="ki">Flush</span></div></div></div><div class="ss"><div class="ss-day">Sam<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-sp">SPÉ</span></div><div class="ss-title">Mini-WOD Pro décharge — 6 expositions claires</div><div class="ss-body">Circuit 6 expositions contrôlées, RPE 6–7, pas 6 rounds : 1) 500 m SkiErg · 2) 10 m sled push · 3) 10 m sled pull · 4) 20 m farmer · 5) 10 wall balls qualité · 6) 400 m run facile. Récup 60–90 sec entre expositions.
+<div class="recup">↩ Log chaque station. Aucun for time. Volume sled volontairement bas en décharge.</div></div><div class="ss-kp"><span class="ki">6 tours = <b>6 stations</b></span></div></div></div><div class="ss"><div class="ss-day">Dim<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-mob">MOB</span></div><div class="ss-title">Repos actif optionnel</div><div class="ss-body">Marche 30–40 min ou repos complet. Zéro contrainte.<div class="recup">↩ Si fatigue : off total.</div></div><div class="ss-kp"><span class="ki">Optionnel</span></div></div></div></div>
 </div>
 </div> </div>
 </div><div class="bloc-wrap">
@@ -2315,7 +2317,8 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 <div class="wb">
 <div class="wbl"><b>S23 TAPER 1</b> — conserver la vitesse et les gestes, supprimer toute dette musculaire.</div>
-<div class="ss-list"><div class="ss"><div class="ss-day">Lun<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-run">RUN</span></div><div class="ss-title">Run easy + strides — 35 min</div><div class="ss-body">35 min facile + 4×15 sec progressif. RPE 3–4.<div class="recup">↩ Log allure/RPE. Objectif fraîcheur.</div></div><div class="ss-kp"><span class="ki">Easy</span></div></div></div><div class="ss"><div class="ss-day">Lun<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-str">MUSC</span></div><div class="ss-title">Activation bas — zéro dette</div><div class="ss-body">2 tours : step-up léger 8/jambe · hip thrust léger 8 · gainage 30 sec · mollets iso 30 sec. <b>Aucun RDL/nordic/good morning.</b><div class="recup">↩ Stop si jambes lourdes.</div></div><div class="ss-kp"><span class="ki">Activation</span></div></div></div><div class="ss"><div class="ss-day">Mar<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-sp">SPÉ</span></div><div class="ss-title">Sled race pace court — push/pull chiffré</div><div class="ss-body">Push : 4×10 m charge course, récup 75 sec, objectif régularité ±10%. Pull : 4×10 m charge course, récup 75 sec. <b>Stop si dérive &gt;15% sur 2 reps.</b><div class="recup">↩ Log : temps de chaque 10 m + RPE.</div></div><div class="ss-kp"><span class="ki">Push/Pull <b>4×10m</b></span></div></div></div><div class="ss"><div class="ss-day">Mer<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-mob">MOB</span></div><div class="ss-title">Mobilité fraîcheur — 25 min</div><div class="ss-body">Mobilité dynamique + respiration. Pas de stretching agressif.<div class="recup">↩ Sortir frais.</div></div><div class="ss-kp"><span class="ki">25min</span></div></div></div><div class="ss"><div class="ss-day">Jeu<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-run">RUN</span></div><div class="ss-title">Primer HYROX court</div><div class="ss-body">3×500 m allure race contrôlée, récup 2 min + 3×10 wall balls qualité si ballon disponible. Sinon 3×8 thrusters DB légers.<div class="recup">↩ Log : allure 500m + RPE + qualité WB/thruster.</div></div><div class="ss-kp"><span class="ki">Primer</span></div></div></div><div class="ss"><div class="ss-day">Jeu<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-str">MUSC</span></div><div class="ss-title">Activation haut — tirage/posture</div><div class="ss-body">Pull-up 2×4 · Rowing 2×8 · Face pull 2×20 · Pallof 2×10/côté. RPE 5–6.<div class="recup">↩ Zéro fatigue.</div></div><div class="ss-kp"><span class="ki">Haut <b>léger</b></span></div></div></div><div class="ss"><div class="ss-day">Ven<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-ergo">VÉLO</span></div><div class="ss-title">VéloVÉLO</div><div class="ss-title">Vélo ou marche flush — 30 min</div><div class="ss-body">30 min très facile. Option off si sommeil/fatigue mauvais.<div class="recup">↩ Aucun objectif fitness.</div></div><div class="ss-kp"><span class="ki">Flush</span></div></div></div><div class="ss"><div class="ss-day">Sam<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-sp">SPÉ</span></div><div class="ss-title">Rappel Wall Ball point faible — qualité</div><div class="ss-body">Après 15–20 min easy run ou mobilité : 4×15 wall balls, récup 60 sec. Stratégie respiration + trajectoire verticale. Sans ballon : 4×8 thrusters DB légers.<div class="recup">↩ Log : breaks, qualité, RPE épaules/quads.</div></div><div class="ss-kp"><span class="ki">WB <b>qualité</b></span></div></div></div><div class="ss"><div class="ss-day">Dim<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-mob">MOB</span></div><div class="ss-title">Repos complet ou marche</div><div class="ss-body">Repos complet recommandé. Marche 20–30 min seulement si besoin de déverrouiller.<div class="recup">↩ Préparer semaine course.</div></div><div class="ss-kp"><span class="ki">Repos</span></div></div></div></div>
+<div class="ss-list"><div class="ss"><div class="ss-day">Lun<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-run">RUN</span></div><div class="ss-title">Run easy + strides — 35 min</div><div class="ss-body">35 min facile + 4×15 sec progressif. RPE 3–4.<div class="recup">↩ Log allure/RPE. Objectif fraîcheur.</div></div><div class="ss-kp"><span class="ki">Easy</span></div></div></div><div class="ss"><div class="ss-day">Lun<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-str">MUSC</span></div><div class="ss-title">Activation bas — zéro dette</div><div class="ss-body">2 tours : step-up léger 8/jambe · hip thrust léger 8 · gainage 30 sec · mollets iso 30 sec. <b>Aucun RDL/nordic/good morning.</b><div class="recup">↩ Stop si jambes lourdes.</div></div><div class="ss-kp"><span class="ki">Activation</span></div></div></div><div class="ss"><div class="ss-day">Mar<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-sp">SPÉ</span></div><div class="ss-title">Sled race pace court — push/pull chiffré</div><div class="ss-body">Push : 3×10 m charge course, récup 90 sec, objectif fluidité. Pull : 3×10 m charge course, récup 90 sec. Total <b>30 m push + 30 m pull</b>. Stop si dérive &gt;15% ou sensation jambes lourdes.
+<div class="recup">↩ Log : temps de chaque 10 m + RPE. Rappel taper, pas séance de développement.</div></div><div class="ss-kp"><span class="ki">Push/Pull <b>30m+30m</b></span><span class="ki">Rappel taper</span></div></div></div><div class="ss"><div class="ss-day">Mer<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-mob">MOB</span></div><div class="ss-title">Mobilité fraîcheur — 25 min</div><div class="ss-body">Mobilité dynamique + respiration. Pas de stretching agressif.<div class="recup">↩ Sortir frais.</div></div><div class="ss-kp"><span class="ki">25min</span></div></div></div><div class="ss"><div class="ss-day">Jeu<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-run">RUN</span></div><div class="ss-title">Primer HYROX court</div><div class="ss-body">3×500 m allure race contrôlée, récup 2 min + 3×10 wall balls qualité si ballon disponible. Sinon 3×8 thrusters DB légers.<div class="recup">↩ Log : allure 500m + RPE + qualité WB/thruster.</div></div><div class="ss-kp"><span class="ki">Primer</span></div></div></div><div class="ss"><div class="ss-day">Jeu<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-str">MUSC</span></div><div class="ss-title">Activation haut — tirage/posture</div><div class="ss-body">Pull-up 2×4 · Rowing 2×8 · Face pull 2×20 · Pallof 2×10/côté. RPE 5–6.<div class="recup">↩ Zéro fatigue.</div></div><div class="ss-kp"><span class="ki">Haut <b>léger</b></span></div></div></div><div class="ss"><div class="ss-day">Ven<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-ergo">VÉLO</span></div><div class="ss-title">Vélo ou marche flush — 30 min</div><div class="ss-body">30 min très facile. Option off si sommeil/fatigue mauvais.<div class="recup">↩ Aucun objectif fitness.</div></div><div class="ss-kp"><span class="ki">Flush</span></div></div></div><div class="ss"><div class="ss-day">Sam<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-sp">SPÉ</span></div><div class="ss-title">Rappel Wall Ball point faible — qualité</div><div class="ss-body">Après 15–20 min easy run ou mobilité : 4×15 wall balls, récup 60 sec. Stratégie respiration + trajectoire verticale. Sans ballon : 4×8 thrusters DB légers.<div class="recup">↩ Log : breaks, qualité, RPE épaules/quads.</div></div><div class="ss-kp"><span class="ki">WB <b>qualité</b></span></div></div></div><div class="ss"><div class="ss-day">Dim<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-mob">MOB</span></div><div class="ss-title">Repos complet ou marche</div><div class="ss-body">Repos complet recommandé. Marche 20–30 min seulement si besoin de déverrouiller.<div class="recup">↩ Préparer semaine course.</div></div><div class="ss-kp"><span class="ki">Repos</span></div></div></div></div>
 </div>
 </div><div class="wk">
 <div class="wh">
@@ -2327,11 +2330,11 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 <div class="wb">
 <div class="wbl"><b>S24 SEMAINE COURSE</b> — course vendredi 13 novembre. Fraîcheur, rappels courts, aucun travail destructeur.</div>
-<div class="ss-list"><div class="ss"><div class="ss-day">Lun<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-run">RUN</span></div><div class="ss-title">Run easy — 30 à 35 min + 4 strides</div><div class="ss-body">30–35 min facile + 4×12–15 sec progressif. RPE 3–4.<div class="recup">↩ Log allure/RPE. Aucun volume ajouté.</div></div><div class="ss-kp"><span class="ki">Race week</span></div></div></div><div class="ss"><div class="ss-day">Mar<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-sp">SPÉ</span></div><div class="ss-title">Rappel HYROX court — sled + wall ball</div><div class="ss-body">2 tours seulement : 500 m run allure race + 10 m sled push charge course + 10 m sled pull charge course + 12 wall balls qualité. Récup 3 min. Sans ballon : 8 thrusters DB légers.<div class="recup">↩ Log : push/pull 10 m, RPE, qualité WB. Stop si dérive &gt;15%.</div></div><div class="ss-kp"><span class="ki">Rappel <b>court</b></span></div></div></div><div class="ss"><div class="ss-day">Mer<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-mob">MOB</span></div><div class="ss-title">Mobilité fraîcheur — 20 à 25 min</div><div class="ss-body">Hanches, chevilles, thorax, respiration. Aucun étirement profond.<div class="recup">↩ Objectif : nervosité + amplitude, zéro fatigue.</div></div><div class="ss-kp"><span class="ki">Freshness</span></div></div></div><div class="ss"><div class="ss-day">Jeu<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-run">RUN</span></div><div class="ss-title">Shake-out — 15 à 20 min</div><div class="ss-body">15–20 min très facile + 3 accélérations de 10 sec. Préparer matériel/course.<div class="recup">↩ Si jambes lourdes : 10 min marche uniquement.</div></div><div class="ss-kp"><span class="ki">Shake-out</span></div></div></div><div class="ss"><div class="ss-day">Ven<br/>RACE</div><div class="ss-content"><div class="ss-type"><span class="t t-sp">SPÉ</span></div><div class="ss-title">HYROX RACE DAY — vendredi 13 novembre</div><div class="ss-body">Objectif : exécution propre. Pacing : runs 1–3 contrôlés, sled sans panique, relances courtes, wall balls avec stratégie 40/20/20/20 ou 30/25/25/20. Transitions : viser &lt;3’30 total.<div class="recup">↩ À logger dans tracker : temps final, splits stations, run total, Roxzone, WB breaks, sled push/pull ressenti.</div></div><div class="ss-kp"><span class="ki">RACE DAY</span></div></div></div><div class="ss"><div class="ss-day">Sam<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-mob">MOB</span></div><div class="ss-title">Récupération post-course optionnelle</div><div class="ss-body">Marche 20–40 min + mobilité douce 10 min. Pas d’entraînement.<div class="recup">↩ Hydratation, sommeil, bilan sensations.</div></div><div class="ss-kp"><span class="ki">Recovery</span></div></div></div><div class="ss"><div class="ss-day">Dim<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-mob">MOB</span></div><div class="ss-title">Repos complet post-course</div><div class="ss-body">Repos complet. Débrief uniquement.<div class="recup">↩ Analyse tracker : splits, stations, points faibles, décisions suite.</div></div><div class="ss-kp"><span class="ki">OFF</span></div></div></div></div>
+<div class="ss-list"><div class="ss"><div class="ss-day">Lun<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-run">RUN</span></div><div class="ss-title">Run easy — 30 à 35 min + 4 strides</div><div class="ss-body">30–35 min facile + 4×12–15 sec progressif. RPE 3–4.<div class="recup">↩ Log allure/RPE. Aucun volume ajouté.</div></div><div class="ss-kp"><span class="ki">Race week</span></div></div></div><div class="ss"><div class="ss-day">Mar<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-sp">SPÉ</span></div><div class="ss-title">Rappel HYROX court — sled + wall ball</div><div class="ss-body">2 tours seulement : 500 m run allure race + 10 m sled push charge course + 10 m sled pull charge course + 12 wall balls qualité. Récup 3 min. Total <b>20 m push + 20 m pull</b>. Sans ballon : 8 thrusters DB légers.
+<div class="recup">↩ Log : push/pull 10 m, RPE, qualité WB. Stop si dérive &gt;15%. Objectif sensation, pas fatigue.</div></div><div class="ss-kp"><span class="ki">Rappel <b>court</b></span><span class="ki">Sled<b>20m+20m</b></span></div></div></div><div class="ss"><div class="ss-day">Mer<br/>midi</div><div class="ss-content"><div class="ss-type"><span class="t t-mob">MOB</span></div><div class="ss-title">Mobilité fraîcheur — 20 à 25 min</div><div class="ss-body">Hanches, chevilles, thorax, respiration. Aucun étirement profond.<div class="recup">↩ Objectif : nervosité + amplitude, zéro fatigue.</div></div><div class="ss-kp"><span class="ki">Freshness</span></div></div></div><div class="ss"><div class="ss-day">Jeu<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-run">RUN</span></div><div class="ss-title">Shake-out — 15 à 20 min</div><div class="ss-body">15–20 min très facile + 3 accélérations de 10 sec. Préparer matériel/course.<div class="recup">↩ Si jambes lourdes : 10 min marche uniquement.</div></div><div class="ss-kp"><span class="ki">Shake-out</span></div></div></div><div class="ss"><div class="ss-day">Ven<br/>RACE</div><div class="ss-content"><div class="ss-type"><span class="t t-sp">SPÉ</span></div><div class="ss-title">HYROX RACE DAY — vendredi 13 novembre</div><div class="ss-body">Objectif : exécution propre. Pacing : runs 1–3 contrôlés, sled sans panique, relances courtes, wall balls avec stratégie 40/20/20/20 ou 30/25/25/20. Transitions : viser &lt;3’30 total.<div class="recup">↩ À logger dans tracker : temps final, splits stations, run total, Roxzone, WB breaks, sled push/pull ressenti.</div></div><div class="ss-kp"><span class="ki">RACE DAY</span></div></div></div><div class="ss"><div class="ss-day">Sam<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-mob">MOB</span></div><div class="ss-title">Récupération post-course optionnelle</div><div class="ss-body">Marche 20–40 min + mobilité douce 10 min. Pas d’entraînement.<div class="recup">↩ Hydratation, sommeil, bilan sensations.</div></div><div class="ss-kp"><span class="ki">Recovery</span></div></div></div><div class="ss"><div class="ss-day">Dim<br/>AM</div><div class="ss-content"><div class="ss-type"><span class="t t-mob">MOB</span></div><div class="ss-title">Repos complet post-course</div><div class="ss-body">Repos complet. Débrief uniquement.<div class="recup">↩ Analyse tracker : splits, stations, points faibles, décisions suite.</div></div><div class="ss-kp"><span class="ki">OFF</span></div></div></div></div>
 </div>
 </div> </div>
 </div></div>
-
 <script id="plan-supabase-sync">
 // ════════════════════════════════════
 // SYNC FORCÉE SUPABASE → CACHE TRACKER
@@ -2395,7 +2398,6 @@ window.addEventListener('load',()=>{
   forceTrackerSyncFromPlan();
 });
 </script>
-
 <script>
 function showPhase(ph) {
   document.querySelectorAll('.phase-section').forEach(s => s.classList.remove('on'));
