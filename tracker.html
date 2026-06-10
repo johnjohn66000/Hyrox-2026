@@ -579,9 +579,9 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 </nav>
 
 <script>
-// ════════════════════════════════════
+// ====================================
 // DATA LAYER
-// ════════════════════════════════════
+// ====================================
 
 var SUPA_URL = 'https://bafypharhwkaqymjvqge.supabase.co';
 var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhZnlwaGFyaHdrYXF5bWp2cWdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyODM0MTYsImV4cCI6MjA5NTg1OTQxNn0.NT7eGzDqUdTBOJMj6spixsb0QhnITjYWSXOkRtc1Uw4';
@@ -666,7 +666,7 @@ function syncAll(cb) {
   });
 }
 
-// ════ EXERCICES PAR SERIES ════
+// ==== EXERCICES PAR SERIES ====
 var EXO_NAMES = {
   squat:'Back squat', front_squat:'Front squat', rdl:'RDL bilateral',
   hip_thrust:'Hip thrust', bulgarian:'Bulgarian split squat', nordic:'Nordic curl',
@@ -735,28 +735,25 @@ function renderStrExos() {
     var rows = '';
     exo.series.forEach(function(s, i) {
       var rm = (s.kg && s.reps) ? ('~' + (Math.round(parseFloat(s.kg)*(1+parseInt(s.reps)/30)*4)/4) + ' kg 1RM') : '';
-      rows += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;align-items:center;margin:.2rem 0">'
-        + '<input type="number" step="0.5" placeholder="kg" value="' + (s.kg||'') + '"'
-        + ' oninput="strUpdate('' + exo.key + '',' + i + ','kg',this.value)"'
-        + ' style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">'
-        + '<input type="number" placeholder="reps" value="' + (s.reps||'') + '"'
-        + ' oninput="strUpdate('' + exo.key + '',' + i + ','reps',this.value)"'
-        + ' style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">'
-        + '<span id="rmp-' + exo.key + '-' + i + '" style="font-family:monospace;font-size:10px;color:' + (rm?'var(--gr)':'var(--tx4)') + '">' + (rm||'1RM auto') + '</span>'
-        + '<button onclick="strDelSerie('' + exo.key + '',' + i + ')"'
-        + ' style="background:transparent;border:0;color:var(--tx4);font-size:16px;cursor:pointer;line-height:1;padding:0">x</button>'
-        + '</div>';
+      var rmColor = rm ? 'var(--gr)' : 'var(--tx4)';
+      var rmText = rm || '1RM auto';
+      rows += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;align-items:center;margin:.2rem 0">';
+      rows += '<input type="number" step="0.5" placeholder="kg" value="' + (s.kg||'') + '" oninput="strUpdate(' + JSON.stringify(exo.key) + ',' + i + ',\'kg\',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">';
+      rows += '<input type="number" placeholder="reps" value="' + (s.reps||'') + '" oninput="strUpdate(' + JSON.stringify(exo.key) + ',' + i + ',\'reps\',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">';
+      rows += '<span id="rmp-' + exo.key + '-' + i + '" style="font-family:monospace;font-size:10px;color:' + rmColor + '">' + rmText + '</span>';
+      rows += '<button onclick="strDelSerie(' + JSON.stringify(exo.key) + ',' + i + ')" style="background:transparent;border:0;color:var(--tx4);font-size:16px;cursor:pointer;line-height:1;padding:0">x</button>';
+      rows += '</div>';
     });
-    html += '<div style="background:var(--bg2);border:1px solid var(--bo2);border-radius:8px;padding:.55rem .65rem;margin-bottom:.4rem">'
-      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">'
-      + '<span style="font-size:12.5px;font-weight:700;color:var(--tx)">' + name + '</span>'
-      + '<button onclick="strDelExo('' + exo.key + '')" style="background:transparent;border:0;color:var(--tx4);font-family:monospace;font-size:10px;cursor:pointer">Retirer</button>'
-      + '</div>'
-      + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;font-family:monospace;font-size:9px;color:var(--tx4);margin-bottom:.2rem">'
-      + '<span>Poids (kg)</span><span>Reps</span><span>1RM estime</span><span></span></div>'
-      + rows
-      + '<button onclick="strAddSerie('' + exo.key + '')" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;color:var(--tx3);font-family:monospace;font-size:10px;padding:.25rem .6rem;cursor:pointer;margin-top:.3rem">+ Serie</button>'
-      + '</div>';
+    html += '<div style="background:var(--bg2);border:1px solid var(--bo2);border-radius:8px;padding:.55rem .65rem;margin-bottom:.4rem">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">';
+    html += '<span style="font-size:12.5px;font-weight:700;color:var(--tx)">' + name + '</span>';
+    html += '<button onclick="strDelExo(' + JSON.stringify(exo.key) + ')" style="background:transparent;border:0;color:var(--tx4);font-family:monospace;font-size:10px;cursor:pointer">Retirer</button>';
+    html += '</div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;font-family:monospace;font-size:9px;color:var(--tx4);margin-bottom:.2rem">';
+    html += '<span>Poids (kg)</span><span>Reps</span><span>1RM estime</span><span></span></div>';
+    html += rows;
+    html += '<button onclick="strAddSerie(' + JSON.stringify(exo.key) + ')" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;color:var(--tx3);font-family:monospace;font-size:10px;padding:.25rem .6rem;cursor:pointer;margin-top:.3rem">+ Serie</button>';
+    html += '</div>';
   });
   box.innerHTML = html;
 }
@@ -768,7 +765,7 @@ document.addEventListener('change', function(e) {
     renderStrExos();
   }
 });
-// ════════════════════════════════
+// ================================
 
 
 
@@ -821,9 +818,9 @@ function fmtDate(d) {
 }
 function today() { return new Date().toISOString().split('T')[0]; }
 
-// ════════════════════════════════════
+// ====================================
 // NAVIGATION
-// ════════════════════════════════════
+// ====================================
 function showTab(t) {
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
   document.getElementById('tab-'+t).classList.add('on');
@@ -855,9 +852,9 @@ function showHistType(type) {
   renderHistory(type);
 }
 
-// ════════════════════════════════════
+// ====================================
 // FORM LOGIC
-// ════════════════════════════════════
+// ====================================
 document.getElementById('t-type').addEventListener('change', function() {
   const v = this.value;
   document.getElementById('t-run-fields').style.display =
@@ -894,9 +891,9 @@ window.addEventListener('load', function() {
   }, 500);
 });
 
-// ════════════════════════════════════
+// ====================================
 // SAVE FUNCTIONS
-// ════════════════════════════════════
+// ====================================
 function saveTraining() {
   const db = loadDB();
   const type = document.getElementById('t-type').value;
@@ -1036,9 +1033,9 @@ function saveRace() {
   }, 1500);
 }
 
-// ════════════════════════════════════
+// ====================================
 // DASHBOARD ANALYSIS ENGINE
-// ════════════════════════════════════
+// ====================================
 function renderDashboard() {
   const db = loadDB();
   renderAlerts(db);
@@ -1312,9 +1309,9 @@ function renderRPEAnalysis(db) {
     </div>`;
 }
 
-// ════════════════════════════════════
+// ====================================
 // HISTORY RENDER
-// ════════════════════════════════════
+// ====================================
 function renderHistory(filter) {
   const db = loadDB();
   const el = document.getElementById('history-list');
@@ -1407,9 +1404,9 @@ function deleteEntry(id, cat) {
   renderHistory('all');
 }
 
-// ════════════════════════════════════
+// ====================================
 // RACE RENDER + ANALYSIS
-// ════════════════════════════════════
+// ====================================
 const STATION_TARGETS = {
   ski:{label:'Ski Erg', target:'3:52', prev:'4:36', color:'#00c4a7'},
   sled_push:{label:'Sled Push', target:'2:45', prev:'4:00', color:'#ff6b35'},
@@ -1503,9 +1500,9 @@ function deleteRace(id) {
   renderRaces();
 }
 
-// ════════════════════════════════════
+// ====================================
 // CHART (lightweight SVG)
-// ════════════════════════════════════
+// ====================================
 function drawLineChart(canvas, data, opts={}) {
   if (!data.length) { canvas.style.display='none'; return; }
   canvas.style.display = 'block';
@@ -1560,9 +1557,9 @@ function drawLineChart(canvas, data, opts={}) {
   }
 }
 
-// ════════════════════════════════════
+// ====================================
 // IMPORT / EXPORT
-// ════════════════════════════════════
+// ====================================
 function exportData() {
   const db = loadDB();
   const blob = new Blob([JSON.stringify(db, null, 2)], {type:'application/json'});
@@ -1599,7 +1596,7 @@ function clearAll() {
 }
 
 
-// ═══ CHARGES 1RM ═══
+// === CHARGES 1RM ===
 const EXO_LABELS_CH = {
   squat:'Back squat',rdl:'RDL',hip_thrust:'Hip thrust',nordic:'Nordic',bulgarian:'Bulgarian',
   bench:'Bench press',pullup:'Pull-up lestes',press:'Strict press',pendlay:'Pendlay row',
@@ -1658,7 +1655,7 @@ function renderChargesHistory(sel) {
     }).join('');
 }
 
-// ═══ MENSURATIONS ═══
+// === MENSURATIONS ===
 const MENSUR_FIELDS = [
   {key:'taille',label:'Taille',color:'#00c4a7',trend:'down'},
   {key:'poitrine',label:'Poitrine',color:'#4488ff',trend:'neutral'},
@@ -1718,7 +1715,7 @@ function renderMensur() {
       }).join('');
   }
 }
-// ══════════════════
+// ==================
 
 // Init
 showTab('dashboard');
