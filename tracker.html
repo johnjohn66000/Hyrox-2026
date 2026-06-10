@@ -141,7 +141,7 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 <header class="hdr">
   <div class="hdr-badge">HYROX TRACKER · 2026</div>
   <h1>Performances & Analyse</h1>
-  <div class="hdr-sub">Objectif 1h10 · 15 novembre 2026 &nbsp;<span id="sync-status" style="font-family:monospace;font-size:9px;color:var(--tx4)">...</span>&nbsp;<button onclick="syncAll(function(){renderDashboard();renderHistory('all');renderRaces();renderChargesHistory();renderMensur();})" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:4px;color:var(--tx3);font-family:monospace;font-size:9px;padding:1px 6px;cursor:pointer">Sync</button></div>
+  <div class="hdr-sub">Objectif 1h10 · 15 novembre 2026 &nbsp;<span id="sync-status" style="font-family:monospace;font-size:9px;color:var(--tx4)">...</span>&nbsp;<button onclick="syncAll(function(){renderDashboard();renderHistory('all');renderRaces();})" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:4px;color:var(--tx3);font-family:monospace;font-size:9px;padding:1px 6px;cursor:pointer;-webkit-tap-highlight-color:transparent">Sync</button></div>
 </header>
 
 <div class="tabs">
@@ -274,51 +274,20 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
       </div>
 
       <div id="t-str-fields" style="display:none">
-          <div class="sep-label">Exercices de la seance</div>
-          <div id="str-exo-list">
-            <div style="font-size:11px;color:var(--tx4);text-align:center;padding:.4rem 0">
-              Ajoute tes exercices depuis la liste ci-dessous
-            </div>
-          </div>
-          <div style="display:flex;gap:.4rem;margin-top:.4rem;align-items:center">
-            <select id="str-add-sel" style="flex:1;background:var(--bg3);border:1px solid var(--bo2);border-radius:6px;padding:.42rem .5rem;color:var(--tx);font-family:monospace;font-size:12px;-webkit-appearance:none;outline:none">
-              <option value="">Choisir un exercice...</option>
-              <optgroup label="Jambes">
-                <option value="squat">Back squat</option>
-                <option value="front_squat">Front squat</option>
-                <option value="rdl">RDL bilateral</option>
-                <option value="hip_thrust">Hip thrust</option>
-                <option value="bulgarian">Bulgarian split squat</option>
-                <option value="nordic">Nordic curl</option>
-                <option value="good_morning">Good morning</option>
-                <option value="kb_swing">KB swing</option>
-                <option value="leg_press">Leg press</option>
-                <option value="mollets">Mollets debout</option>
-              </optgroup>
-              <optgroup label="Haut du corps">
-                <option value="bench">Developpe couche</option>
-                <option value="bench_incline">Developpe incline</option>
-                <option value="pullup">Pull-up lestes</option>
-                <option value="press">Strict press</option>
-                <option value="push_press">Push press</option>
-                <option value="pendlay">Pendlay row</option>
-                <option value="yates">Yates row</option>
-                <option value="lat_pulldown">Lat pulldown</option>
-                <option value="curl">Curl barre</option>
-                <option value="skull">Skull crusher</option>
-                <option value="dips">Dips lestes</option>
-                <option value="face_pull">Face pull</option>
-              </optgroup>
-              <optgroup label="HYROX">
-                <option value="farmer">Farmer carry</option>
-                <option value="sled_push">Sled push</option>
-                <option value="wall_ball">Wall ball</option>
-                <option value="sandbag">Sandbag lunge</option>
-              </optgroup>
-            </select>
-            <button onclick="strAdd()" style="background:var(--gr);color:#000;border:0;border-radius:6px;padding:.42rem .75rem;font-family:monospace;font-size:11px;font-weight:700;cursor:pointer">+ Ajouter</button>
-          </div>
+        <div class="sep-label">Charges principales</div>
+        <div class="field-row">
+          <div class="field"><label>Squat / Front squat (kg)</label><input type="number" step="2.5" id="t-squat" placeholder="ex : 90"></div>
+          <div class="field"><label>Bench press (kg)</label><input type="number" step="2.5" id="t-bench" placeholder="ex : 82.5"></div>
         </div>
+        <div class="field-row">
+          <div class="field"><label>RDL (kg)</label><input type="number" step="2.5" id="t-rdl" placeholder="ex : 82.5"></div>
+          <div class="field"><label>Hip thrust (kg)</label><input type="number" step="2.5" id="t-hip" placeholder="ex : 105"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Farmer carry (2× kg)</label><input type="number" step="1" id="t-farmer" placeholder="ex : 28"></div>
+          <div class="field"><label>Pull-up lesté (+kg)</label><input type="number" step="2.5" id="t-pullup" placeholder="ex : 12.5"></div>
+        </div>
+      </div>
 
       <div id="t-sp-fields" style="display:none">
         <div class="sep-label">Données compromised / simulation</div>
@@ -510,21 +479,22 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 // DATA LAYER
 // ════════════════════════════════════
 
-var SUPA_URL = 'https://bafypharhwkaqymjvqge.supabase.co';
-var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhZnlwaGFyaHdrYXF5bWp2cWdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyODM0MTYsImV4cCI6MjA5NTg1OTQxNn0.NT7eGzDqUdTBOJMj6spixsb0QhnITjYWSXOkRtc1Uw4';
-var DB_KEY = 'hyrox_tracker_v1';
-
-function getDeviceId() {
-  var id = localStorage.getItem('hyrox_device_id');
-  if (!id) {
-    id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2,9);
-    localStorage.setItem('hyrox_device_id', id);
+// ══════════════════════════════════════════════════
+// SUPABASE — Connexion base de données
+// ══════════════════════════════════════════════════
+const SUPA_URL = 'https://bafypharhwkaqymjvqge.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhZnlwaGFyaHdrYXF5bWp2cWdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyODM0MTYsImV4cCI6MjA5NTg1OTQxNn0.NT7eGzDqUdTBOJMj6spixsb0QhnITjYWSXOkRtc1Uw4';
+const DEVICE_ID = (function() {
+  // Utilise le device_id stocké, ou celui par défaut si aucun
+  var stored = localStorage.getItem('hyrox_device_id');
+  if (!stored) {
+    stored = 'dev_1780497706541_v1enad9aa';
+    localStorage.setItem('hyrox_device_id', stored);
   }
-  return id;
-}
-var DEVICE_ID = getDeviceId();
+  return stored;
+})();
 
-var SB_HEADERS = {
+const SB_HEADERS = {
   'apikey': SUPA_KEY,
   'Authorization': 'Bearer ' + SUPA_KEY,
   'Content-Type': 'application/json',
@@ -536,151 +506,55 @@ function sbSave(table, entry) {
   var payload = Object.assign({}, entry, {device_id: DEVICE_ID});
   delete payload.id;
   fetch(SUPA_URL + '/rest/v1/' + table, {
-    method: 'POST', headers: SB_HEADERS, body: JSON.stringify(payload)
-  }).catch(function(e) { console.warn('sbSave failed', e); });
+    method: 'POST',
+    headers: SB_HEADERS,
+    body: JSON.stringify(payload)
+  }).catch(function(e) { console.warn('sbSave failed', table, e); });
 }
 
 function sbLoad(table, cb) {
-  fetch(SUPA_URL + '/rest/v1/' + table + '?device_id=eq.' + DEVICE_ID + '&order=created_at.desc', {
+  fetch(SUPA_URL + '/rest/v1/' + table + '?device_id=eq.' + DEVICE_ID + '&order=created_at.asc', {
     headers: SB_HEADERS
   }).then(function(r) { return r.ok ? r.json() : []; })
-    .then(cb)
+    .then(function(data) { cb(data || []); })
     .catch(function() { cb([]); });
 }
 
 function sbDelete(table, id) {
   fetch(SUPA_URL + '/rest/v1/' + table + '?id=eq.' + id, {
-    method: 'DELETE', headers: SB_HEADERS
-  }).catch(function(e) { console.warn('sbDelete failed', e); });
+    method: 'DELETE',
+    headers: SB_HEADERS
+  }).catch(function() {});
 }
 
 function syncAll(cb) {
   var el = document.getElementById('sync-status');
-  if (el) el.textContent = 'Sync...';
-  var done = 0; var tables = ['trainings','poids','tests','races','charges','mensur'];
+  if (el) { el.textContent = 'Sync...'; el.style.color = 'var(--tx3)'; }
+  var tables = ['trainings','poids','tests','races','charges','mensur'];
   var result = {};
+  var done = 0;
   tables.forEach(function(t) {
     sbLoad(t, function(data) {
       result[t] = data;
       done++;
       if (done === tables.length) {
         saveDB(result);
-        if (el) { el.textContent = 'OK ' + new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); el.style.color='var(--gr)'; }
+        if (el) {
+          el.textContent = 'OK ' + new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'});
+          el.style.color = 'var(--gr)';
+        }
         if (cb) cb(result);
       }
     });
   });
 }
+// ══════════════════════════════════════════════════
 
-// ════ EXERCICES PAR SERIES ════
-var EXO_NAMES = {
-  squat:'Back squat', front_squat:'Front squat', rdl:'RDL bilateral',
-  hip_thrust:'Hip thrust', bulgarian:'Bulgarian split squat', nordic:'Nordic curl',
-  good_morning:'Good morning', kb_swing:'KB swing', leg_press:'Leg press', mollets:'Mollets debout',
-  bench:'Developpe couche', bench_incline:'Developpe incline', pullup:'Pull-up lestes',
-  press:'Strict press', push_press:'Push press', pendlay:'Pendlay row', yates:'Yates row',
-  lat_pulldown:'Lat pulldown', curl:'Curl barre', skull:'Skull crusher',
-  dips:'Dips lestes', face_pull:'Face pull',
-  farmer:'Farmer carry', sled_push:'Sled push', wall_ball:'Wall ball', sandbag:'Sandbag lunge'
-};
-
-window._strExos = [];
-
-function strAdd() {
-  var sel = document.getElementById('str-add-sel');
-  var key = sel.value;
-  if (!key) return;
-  if (window._strExos.filter(function(e) { return e.key === key; }).length) { sel.value = ''; return; }
-  window._strExos.push({key: key, series: [{kg: '', reps: ''}]});
-  sel.value = '';
-  renderStrExos();
-}
-
-function strAddSerie(key) {
-  var exo = window._strExos.filter(function(e) { return e.key === key; })[0];
-  if (exo) { exo.series.push({kg:'',reps:''}); renderStrExos(); }
-}
-
-function strDelSerie(key, idx) {
-  var exo = window._strExos.filter(function(e) { return e.key === key; })[0];
-  if (exo) {
-    exo.series.splice(idx, 1);
-    if (!exo.series.length) exo.series.push({kg:'',reps:''});
-    renderStrExos();
-  }
-}
-
-function strDelExo(key) {
-  window._strExos = window._strExos.filter(function(e) { return e.key !== key; });
-  renderStrExos();
-}
-
-function strUpdate(key, idx, field, val) {
-  var exo = window._strExos.filter(function(e) { return e.key === key; })[0];
-  if (!exo || !exo.series[idx]) return;
-  exo.series[idx][field] = val;
-  var kg = parseFloat(exo.series[idx].kg);
-  var reps = parseInt(exo.series[idx].reps);
-  var el = document.getElementById('rmp-' + key + '-' + idx);
-  if (el && kg && reps) {
-    el.textContent = '~' + (Math.round(kg*(1+reps/30)*4)/4) + ' kg 1RM';
-    el.style.color = 'var(--gr)';
-  }
-}
-
-function renderStrExos() {
-  var box = document.getElementById('str-exo-list');
-  if (!box) return;
-  if (!window._strExos.length) {
-    box.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.4rem 0">Ajoute tes exercices depuis la liste ci-dessous</div>';
-    return;
-  }
-  var html = '';
-  window._strExos.forEach(function(exo) {
-    var name = EXO_NAMES[exo.key] || exo.key;
-    var rows = '';
-    exo.series.forEach(function(s, i) {
-      var rm = (s.kg && s.reps) ? ('~' + (Math.round(parseFloat(s.kg)*(1+parseInt(s.reps)/30)*4)/4) + ' kg 1RM') : '';
-      rows += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;align-items:center;margin:.2rem 0">'
-        + '<input type="number" step="0.5" placeholder="kg" value="' + (s.kg||'') + '"'
-        + ' oninput="strUpdate('' + exo.key + '',' + i + ','kg',this.value)"'
-        + ' style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">'
-        + '<input type="number" placeholder="reps" value="' + (s.reps||'') + '"'
-        + ' oninput="strUpdate('' + exo.key + '',' + i + ','reps',this.value)"'
-        + ' style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">'
-        + '<span id="rmp-' + exo.key + '-' + i + '" style="font-family:monospace;font-size:10px;color:' + (rm?'var(--gr)':'var(--tx4)') + '">' + (rm||'1RM auto') + '</span>'
-        + '<button onclick="strDelSerie('' + exo.key + '',' + i + ')"'
-        + ' style="background:transparent;border:0;color:var(--tx4);font-size:16px;cursor:pointer;line-height:1;padding:0">x</button>'
-        + '</div>';
-    });
-    html += '<div style="background:var(--bg2);border:1px solid var(--bo2);border-radius:8px;padding:.55rem .65rem;margin-bottom:.4rem">'
-      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">'
-      + '<span style="font-size:12.5px;font-weight:700;color:var(--tx)">' + name + '</span>'
-      + '<button onclick="strDelExo('' + exo.key + '')" style="background:transparent;border:0;color:var(--tx4);font-family:monospace;font-size:10px;cursor:pointer">Retirer</button>'
-      + '</div>'
-      + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;font-family:monospace;font-size:9px;color:var(--tx4);margin-bottom:.2rem">'
-      + '<span>Poids (kg)</span><span>Reps</span><span>1RM estime</span><span></span></div>'
-      + rows
-      + '<button onclick="strAddSerie('' + exo.key + '')" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;color:var(--tx3);font-family:monospace;font-size:10px;padding:.25rem .6rem;cursor:pointer;margin-top:.3rem">+ Serie</button>'
-      + '</div>';
-  });
-  box.innerHTML = html;
-}
-
-// Reset exercise list on type change
-document.addEventListener('change', function(e) {
-  if (e.target.id === 't-type' && ['str_bas','str_haut','str_full'].indexOf(e.target.value) >= 0) {
-    window._strExos = [];
-    renderStrExos();
-  }
-});
-// ════════════════════════════════
-
-
+const DB_KEY = 'hyrox_tracker_v1';
 
 function loadDB() {
   try { return JSON.parse(localStorage.getItem(DB_KEY)) || {trainings:[],poids:[],tests:[],races:[]}; }
-  catch { return {trainings:[],poids:[],tests:[],races:[]}; }
+  catch(e) { return {trainings:[],poids:[],tests:[],races:[]}; }
 }
 function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
 
@@ -786,14 +660,7 @@ function updateRpe(v) {
 }
 
 // Set today's date on load
-window.addEventListener('load', () => {
-  const t = today();
-  ['t-date','p-date','ts-date','r-date'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = t;
-  });
-  renderDashboard();
-});
+
 
 // ════════════════════════════════════
 // SAVE FUNCTIONS
@@ -818,23 +685,12 @@ function saveTraining() {
     entry.fc = +document.getElementById('t-fc').value || null;
   }
   if (['str_bas','str_haut','str_full'].includes(type)) {
-    var exos = window._strExos || [];
-    entry.exercises = exos.map(function(exo) {
-      return {
-        key: exo.key,
-        label: EXO_NAMES[exo.key] || exo.key,
-        series: exo.series.filter(function(s) { return s.kg && s.reps; }).map(function(s) {
-          var kg = parseFloat(s.kg); var reps = parseInt(s.reps);
-          return { kg: kg, reps: reps, rm: Math.round(kg * (1 + reps/30) * 4) / 4 };
-        })
-      };
-    }).filter(function(e) { return e.series.length > 0; });
-    // Legacy best-set fields
-    entry.exercises.forEach(function(exo) {
-      var best = exo.series.reduce(function(a,b) { return a.rm > b.rm ? a : b; }, {rm:0,kg:0,reps:0});
-      var map = {squat:'squat',bench:'bench',rdl:'rdl',hip_thrust:'hip',pullup:'pullup',farmer:'farmer'};
-      if (map[exo.key]) { entry[map[exo.key]] = best.kg; entry[map[exo.key]+'_reps'] = best.reps; }
-    });
+    entry.squat = +document.getElementById('t-squat').value || null;
+    entry.bench = +document.getElementById('t-bench').value || null;
+    entry.rdl = +document.getElementById('t-rdl').value || null;
+    entry.hip = +document.getElementById('t-hip').value || null;
+    entry.farmer = +document.getElementById('t-farmer').value || null;
+    entry.pullup = +document.getElementById('t-pullup').value || null;
   }
   if (['compromised','simulation'].includes(type)) {
     entry.sp_allure = document.getElementById('t-sp-allure').value;
@@ -846,39 +702,16 @@ function saveTraining() {
   db.trainings.push(entry);
   sbSave('trainings', entry);
   saveDB(db);
-  // Reset form
-  document.getElementById('t-type').value = '';
-  document.getElementById('t-duree').value = '';
-  document.getElementById('t-comment').value = '';
-  document.getElementById('t-qualite').value = '';
-  document.getElementById('t-rpe').value = 7;
-  document.getElementById('rpe-display').textContent = '7';
-  // Hide all conditional sections
-  ['t-run-fields','t-str-fields','t-sp-fields'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-  });
-  // Reset exercise list
-  window._strExos = [];
-  var exoList = document.getElementById('str-exo-list');
-  if (exoList) exoList.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.4rem 0">Ajoute tes exercices depuis la liste ci-dessous</div>';
-  // Reset run fields
-  ['t-dist','t-allure','t-intervals','t-fc','t-sp-allure','t-sp-total','t-sp-rounds','t-sp-bbj','t-sp-wb'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  // Show feedback
-  var fb = document.getElementById('save-feedback');
-  if (fb) { fb.style.display = 'block'; setTimeout(function() { fb.style.display='none'; }, 2500); }
-  // Refresh history
-  renderHistory('all');
+  const fb = document.getElementById('save-feedback');
+  fb.style.display = 'block';
+  setTimeout(() => fb.style.display='none', 2000);
 }
 
 function savePoids() {
   const db = loadDB();
-  var pe = {date: document.getElementById('p-date').value, val: +document.getElementById('p-val').value, moment: document.getElementById('p-moment').value};
-  db.poids.push(Object.assign({id: Date.now()}, pe));
-  sbSave('poids', pe);
+  var pe={date:document.getElementById('p-date').value,val:+document.getElementById('p-val').value,moment:document.getElementById('p-moment').value};
+  db.poids.push(Object.assign({id:Date.now()},pe));
+  sbSave('poids',pe);
   saveDB(db);
   document.getElementById('poids-feedback').style.display = 'block';
   setTimeout(() => document.getElementById('poids-feedback').style.display='none', 2000);
@@ -886,9 +719,9 @@ function savePoids() {
 
 function saveTest() {
   const db = loadDB();
-  var te = {date: document.getElementById('ts-date').value, type: document.getElementById('ts-type').value, result: document.getElementById('ts-result').value, cible: document.getElementById('ts-cible').value, comment: document.getElementById('ts-comment').value};
-  db.tests.push(Object.assign({id: Date.now()}, te));
-  sbSave('tests', te);
+  var te={date:document.getElementById('ts-date').value,type:document.getElementById('ts-type').value,result:document.getElementById('ts-result').value,cible:document.getElementById('ts-cible').value,comment:document.getElementById('ts-comment').value};
+  db.tests.push(Object.assign({id:Date.now()},te));
+  sbSave('tests',te);
   saveDB(db);
   document.getElementById('test-feedback').style.display = 'block';
   setTimeout(() => document.getElementById('test-feedback').style.display='none', 2000);
@@ -920,7 +753,7 @@ function saveRace() {
     comment: document.getElementById('r-comment').value
   };
   db.races.push(race);
-  sbSave('races', race);
+  sbSave('races',race);
   saveDB(db);
   document.getElementById('race-feedback').style.display = 'block';
   setTimeout(() => {
@@ -1249,8 +1082,8 @@ function renderHistory(filter) {
       }
     } else {
       const typeLabels = {vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',compromised:'Compromised',
-        simulation:'Simulation',str_bas:'Half-body bas',str_haut:'Half-body haut',str_full:'Full body',ergo:'Ergo',mob:'Mobilite'};
-      title = (item.type && typeLabels[item.type]) ? typeLabels[item.type] : (item.type || 'Seance');
+        simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',ergo:'Ergo',mob:'Mobilité'};
+      title = typeLabels[item.type] || item.type;
       if (item.duree) title += ` — ${item.duree} min`;
       meta = fmtDate(item.date);
       if (item.rpe) {
@@ -1264,16 +1097,8 @@ function renderHistory(filter) {
         tags.push({txt:`RPE ${item.rpe}`, cls});
       }
       if (item.allure) tags.push({txt:item.allure+'/km', cls:'etag'});
-      if (item.exercises && item.exercises.length) {
-        item.exercises.slice(0,3).forEach(function(exo) {
-          if (!exo.series || !exo.series.length) return;
-          var best = exo.series.reduce(function(a,b){return (a.rm||0)>(b.rm||0)?a:b;},{rm:0,kg:0,reps:0});
-          if (best.kg) tags.push({txt:(exo.label||exo.key)+' '+best.kg+'kg×'+best.reps+' →~'+best.rm+'kg 1RM', cls:'etag-ok'});
-        });
-      } else {
-        if (item.squat) tags.push({txt:'Squat '+item.squat+'kg', cls:'etag'});
-        if (item.bench) tags.push({txt:'Bench '+item.bench+'kg', cls:'etag'});
-      }
+      if (item.squat) tags.push({txt:'Squat '+item.squat+'kg', cls:'etag'});
+      if (item.bench) tags.push({txt:'Bench '+item.bench+'kg', cls:'etag'});
       if (item.sp_wb) tags.push({txt:'WB '+item.sp_wb, cls:'etag'});
     }
 
@@ -1478,7 +1303,7 @@ function handleImport(input) {
         renderHistory('all');
         alert('✅ Import réussi');
       }
-    } catch { alert('Fichier JSON invalide'); }
+    } catch(e) { alert('Fichier JSON invalide'); }
   };
   reader.readAsText(file);
 }
@@ -1493,17 +1318,11 @@ function clearAll() {
 
 // Init
 showTab('dashboard');
-window.addEventListener('load', function() { syncAll(function() { renderDashboard(); }); });
+window.addEventListener('load', function() {
+  var t = today();
+  ['t-date','p-date','ts-date','r-date'].forEach(function(id){var el=document.getElementById(id);if(el)el.value=t;});
+  syncAll(function() { renderDashboard(); });
+});
 </script>
 </body>
-</html>    if (entry.exercises && entry.exercises.length) {
-      entry.exercises.forEach(function(exo) {
-        exo.series.forEach(function(s) {
-          if (!s.kg || !s.reps) return;
-          var ch = {date: entry.date, exo: exo.key, kg: s.kg, reps: s.reps,
-                    sets: 1, rpe: entry.rpe || 7, rm_estimated: s.rm, auto: true};
-          db.charges.push(Object.assign({id: Date.now() + Math.random(), training_id: entry.id}, ch));
-          sbSave('charges', ch);
-        });
-      });
-    }
+</html>
