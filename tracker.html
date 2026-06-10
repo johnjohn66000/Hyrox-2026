@@ -26,7 +26,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);
   letter-spacing:.1em;display:inline-block;margin-bottom:.25rem}
 .hdr h1{font-size:.95rem;font-weight:900;letter-spacing:-.02em}
 .hdr-sub{font-family:monospace;font-size:9.5px;color:var(--tx3);margin-top:1px}
-.tabs{display:grid;grid-template-columns:repeat(6,1fr);background:var(--bg2);
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);
   border-bottom:1px solid var(--bo2);position:sticky;top:62px;z-index:99}
 .tab{background:transparent;border:0;color:var(--tx4);font-family:monospace;font-size:9px;
   font-weight:700;padding:.5rem .2rem;cursor:pointer;border-bottom:2px solid transparent;
@@ -126,7 +126,7 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 /* Dock */
 .dock{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;
   z-index:200;background:rgba(8,11,10,.96);border-top:1px solid var(--bo2);
-  display:grid;grid-template-columns:repeat(6,1fr);backdrop-filter:blur(12px)}
+  display:grid;grid-template-columns:repeat(4,1fr);backdrop-filter:blur(12px)}
 .dock-btn{background:transparent;border:0;color:var(--tx4);font-family:monospace;font-size:9px;
   font-weight:700;padding:.6rem .2rem;cursor:pointer;border-right:1px solid var(--bo2);
   -webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -149,8 +149,6 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
   <button class="tab" onclick="showTab('log')">➕ Log</button>
   <button class="tab" onclick="showTab('history')">📋 Histo</button>
   <button class="tab" onclick="showTab('race')">🏁 Course</button>
-  <button class="tab" onclick="showTab('charges')">💪 Charges</button>
-  <button class="tab" onclick="showTab('mensur')">📏 Corps</button>
 </div>
 
 <!-- ═══════════════════════════════
@@ -500,88 +498,17 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 
 </div>
 
-
-<!-- TAB CHARGES -->
-<div id="tab-charges" class="sec">
-  <div class="card">
-    <div class="card-title">Calculateur 1RM</div>
-    <div class="field">
-      <label>Exercice</label>
-      <select id="ch-exo">
-        <option value="">Choisir...</option>
-        <optgroup label="Jambes">
-          <option value="squat">Back squat</option><option value="rdl">RDL</option>
-          <option value="hip_thrust">Hip thrust</option><option value="nordic">Nordic</option>
-          <option value="bulgarian">Bulgarian</option>
-        </optgroup>
-        <optgroup label="Haut">
-          <option value="bench">Bench press</option><option value="pullup">Pull-up lestes</option>
-          <option value="press">Strict press</option><option value="pendlay">Pendlay row</option>
-          <option value="curl">Curl barre</option><option value="skull">Skull crusher</option>
-        </optgroup>
-        <optgroup label="HYROX">
-          <option value="farmer">Farmer carry</option><option value="kb_swing">KB swing</option>
-        </optgroup>
-      </select>
-    </div>
-    <div class="field-row">
-      <div class="field"><label>Charge (kg)</label><input type="number" step="0.5" id="ch-kg" placeholder="87.5"></div>
-      <div class="field"><label>Reps</label><input type="number" id="ch-reps" placeholder="5"></div>
-    </div>
-    <div class="field-row">
-      <div class="field"><label>Series</label><input type="number" id="ch-sets" value="1"></div>
-      <div class="field"><label>Date</label><input type="date" id="ch-date"></div>
-    </div>
-    <button class="btn" onclick="saveCharge()">Calculer + Enregistrer</button>
-    <div id="ch-result" style="display:none;margin-top:.5rem;padding:.5rem;background:var(--bg3);border-radius:6px;font-family:monospace;font-size:12px;color:var(--gr)"></div>
-  </div>
-  <div class="card">
-    <div class="card-title">Historique 1RM</div>
-    <div class="subtabs" id="exo-subtabs" style="flex-wrap:wrap"></div>
-    <div id="rm-history"></div>
-  </div>
-</div>
-
-<!-- TAB MENSURATIONS -->
-<div id="tab-mensur" class="sec">
-  <div class="card">
-    <div class="card-title">Mensurations</div>
-    <div class="field"><label>Date</label><input type="date" id="m-date"></div>
-    <div class="field-row">
-      <div class="field"><label>Taille (cm)</label><input type="number" step="0.5" id="m-taille" placeholder="90"></div>
-      <div class="field"><label>Poitrine (cm)</label><input type="number" step="0.5" id="m-poitrine" placeholder="100"></div>
-    </div>
-    <div class="field-row">
-      <div class="field"><label>Cuisse D (cm)</label><input type="number" step="0.5" id="m-cuisse" placeholder="60"></div>
-      <div class="field"><label>Biceps D (cm)</label><input type="number" step="0.5" id="m-biceps" placeholder="38"></div>
-    </div>
-    <div class="field"><label>Note</label><input type="text" id="m-note" placeholder="matin a jeun..."></div>
-    <button class="btn" onclick="saveMensur()">Enregistrer</button>
-    <div id="m-feedback" style="display:none;text-align:center;font-family:monospace;font-size:11px;color:var(--gr);margin-top:.4rem">Enregistre</div>
-  </div>
-  <div id="m-charts-section" style="display:none">
-    <div class="card"><div class="card-title">Taille</div><div class="chart-wrap"><canvas id="chart-taille" height="80"></canvas></div><div id="delta-taille" style="font-family:monospace;font-size:11px;color:var(--tx3);text-align:center;margin-top:.3rem"></div></div>
-    <div class="card"><div class="card-title">Cuisse</div><div class="chart-wrap"><canvas id="chart-cuisse" height="80"></canvas></div><div id="delta-cuisse" style="font-family:monospace;font-size:11px;color:var(--tx3);text-align:center;margin-top:.3rem"></div></div>
-    <div class="card"><div class="card-title">Poitrine</div><div class="chart-wrap"><canvas id="chart-poitrine" height="80"></canvas></div><div id="delta-poitrine" style="font-family:monospace;font-size:11px;color:var(--tx3);text-align:center;margin-top:.3rem"></div></div>
-    <div class="card"><div class="card-title">Biceps</div><div class="chart-wrap"><canvas id="chart-biceps" height="80"></canvas></div><div id="delta-biceps" style="font-family:monospace;font-size:11px;color:var(--tx3);text-align:center;margin-top:.3rem"></div></div>
-    <div class="card"><div class="card-title">Historique</div><div id="m-history-table"></div></div>
-  </div>
-  <div id="m-empty" class="empty"><div class="empty-icon">📏</div><p>Prends tes premieres mensurations.</p></div>
-</div>
-
 <nav class="dock">
   <button class="dock-btn on" onclick="showTab('dashboard')"><div class="dock-icon">📊</div>Bilan</button>
   <button class="dock-btn" onclick="showTab('log')"><div class="dock-icon">➕</div>Log</button>
   <button class="dock-btn" onclick="showTab('history')"><div class="dock-icon">📋</div>Histo</button>
   <button class="dock-btn" onclick="showTab('race')"><div class="dock-icon">🏁</div>Course</button>
-  <button class="dock-btn" onclick="showTab('charges')"><div class="dock-icon">💪</div>Charges</button>
-  <button class="dock-btn" onclick="showTab('mensur')"><div class="dock-icon">📏</div>Corps</button>
 </nav>
 
 <script>
-// ====================================
+// ════════════════════════════════════
 // DATA LAYER
-// ====================================
+// ════════════════════════════════════
 
 var SUPA_URL = 'https://bafypharhwkaqymjvqge.supabase.co';
 var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhZnlwaGFyaHdrYXF5bWp2cWdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyODM0MTYsImV4cCI6MjA5NTg1OTQxNn0.NT7eGzDqUdTBOJMj6spixsb0QhnITjYWSXOkRtc1Uw4';
@@ -596,27 +523,6 @@ function getDeviceId() {
   return id;
 }
 var DEVICE_ID = getDeviceId();
-
-// On load: sync device_id with Supabase (single user - use first device found)
-function syncDeviceId() {
-  fetch(SUPA_URL + '/rest/v1/device_users?select=device_id&order=created_at.asc&limit=1', {
-    headers: {
-      'apikey': SUPA_KEY,
-      'Authorization': 'Bearer ' + SUPA_KEY
-    }
-  }).then(function(r) { return r.ok ? r.json() : []; })
-    .then(function(data) {
-      if (data && data.length > 0 && data[0].device_id) {
-        var dbDeviceId = data[0].device_id;
-        if (DEVICE_ID !== dbDeviceId) {
-          DEVICE_ID = dbDeviceId;
-          localStorage.setItem('hyrox_device_id', dbDeviceId);
-          // Update headers
-          SB_HEADERS['x-device-id'] = dbDeviceId;
-        }
-      }
-    }).catch(function() {});
-}
 
 var SB_HEADERS = {
   'apikey': SUPA_KEY,
@@ -635,7 +541,7 @@ function sbSave(table, entry) {
 }
 
 function sbLoad(table, cb) {
-  fetch(SUPA_URL + '/rest/v1/' + table + '?order=created_at.desc', {
+  fetch(SUPA_URL + '/rest/v1/' + table + '?device_id=eq.' + DEVICE_ID + '&order=created_at.desc', {
     headers: SB_HEADERS
   }).then(function(r) { return r.ok ? r.json() : []; })
     .then(cb)
@@ -666,7 +572,7 @@ function syncAll(cb) {
   });
 }
 
-// ==== EXERCICES PAR SERIES ====
+// ════ EXERCICES PAR SERIES ════
 var EXO_NAMES = {
   squat:'Back squat', front_squat:'Front squat', rdl:'RDL bilateral',
   hip_thrust:'Hip thrust', bulgarian:'Bulgarian split squat', nordic:'Nordic curl',
@@ -735,25 +641,28 @@ function renderStrExos() {
     var rows = '';
     exo.series.forEach(function(s, i) {
       var rm = (s.kg && s.reps) ? ('~' + (Math.round(parseFloat(s.kg)*(1+parseInt(s.reps)/30)*4)/4) + ' kg 1RM') : '';
-      var rmColor = rm ? 'var(--gr)' : 'var(--tx4)';
-      var rmText = rm || '1RM auto';
-      rows += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;align-items:center;margin:.2rem 0">';
-      rows += '<input type="number" step="0.5" placeholder="kg" value="' + (s.kg||'') + '" oninput="strUpdate(' + JSON.stringify(exo.key) + ',' + i + ',\'kg\',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">';
-      rows += '<input type="number" placeholder="reps" value="' + (s.reps||'') + '" oninput="strUpdate(' + JSON.stringify(exo.key) + ',' + i + ',\'reps\',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">';
-      rows += '<span id="rmp-' + exo.key + '-' + i + '" style="font-family:monospace;font-size:10px;color:' + rmColor + '">' + rmText + '</span>';
-      rows += '<button onclick="strDelSerie(' + JSON.stringify(exo.key) + ',' + i + ')" style="background:transparent;border:0;color:var(--tx4);font-size:16px;cursor:pointer;line-height:1;padding:0">x</button>';
-      rows += '</div>';
+      rows += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;align-items:center;margin:.2rem 0">'
+        + '<input type="number" step="0.5" placeholder="kg" value="' + (s.kg||'') + '"'
+        + ' oninput="strUpdate('' + exo.key + '',' + i + ','kg',this.value)"'
+        + ' style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">'
+        + '<input type="number" placeholder="reps" value="' + (s.reps||'') + '"'
+        + ' oninput="strUpdate('' + exo.key + '',' + i + ','reps',this.value)"'
+        + ' style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">'
+        + '<span id="rmp-' + exo.key + '-' + i + '" style="font-family:monospace;font-size:10px;color:' + (rm?'var(--gr)':'var(--tx4)') + '">' + (rm||'1RM auto') + '</span>'
+        + '<button onclick="strDelSerie('' + exo.key + '',' + i + ')"'
+        + ' style="background:transparent;border:0;color:var(--tx4);font-size:16px;cursor:pointer;line-height:1;padding:0">x</button>'
+        + '</div>';
     });
-    html += '<div style="background:var(--bg2);border:1px solid var(--bo2);border-radius:8px;padding:.55rem .65rem;margin-bottom:.4rem">';
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">';
-    html += '<span style="font-size:12.5px;font-weight:700;color:var(--tx)">' + name + '</span>';
-    html += '<button onclick="strDelExo(' + JSON.stringify(exo.key) + ')" style="background:transparent;border:0;color:var(--tx4);font-family:monospace;font-size:10px;cursor:pointer">Retirer</button>';
-    html += '</div>';
-    html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;font-family:monospace;font-size:9px;color:var(--tx4);margin-bottom:.2rem">';
-    html += '<span>Poids (kg)</span><span>Reps</span><span>1RM estime</span><span></span></div>';
-    html += rows;
-    html += '<button onclick="strAddSerie(' + JSON.stringify(exo.key) + ')" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;color:var(--tx3);font-family:monospace;font-size:10px;padding:.25rem .6rem;cursor:pointer;margin-top:.3rem">+ Serie</button>';
-    html += '</div>';
+    html += '<div style="background:var(--bg2);border:1px solid var(--bo2);border-radius:8px;padding:.55rem .65rem;margin-bottom:.4rem">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">'
+      + '<span style="font-size:12.5px;font-weight:700;color:var(--tx)">' + name + '</span>'
+      + '<button onclick="strDelExo('' + exo.key + '')" style="background:transparent;border:0;color:var(--tx4);font-family:monospace;font-size:10px;cursor:pointer">Retirer</button>'
+      + '</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;font-family:monospace;font-size:9px;color:var(--tx4);margin-bottom:.2rem">'
+      + '<span>Poids (kg)</span><span>Reps</span><span>1RM estime</span><span></span></div>'
+      + rows
+      + '<button onclick="strAddSerie('' + exo.key + '')" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;color:var(--tx3);font-family:monospace;font-size:10px;padding:.25rem .6rem;cursor:pointer;margin-top:.3rem">+ Serie</button>'
+      + '</div>';
   });
   box.innerHTML = html;
 }
@@ -765,13 +674,13 @@ document.addEventListener('change', function(e) {
     renderStrExos();
   }
 });
-// ================================
+// ════════════════════════════════
 
 
 
 function loadDB() {
   try { return JSON.parse(localStorage.getItem(DB_KEY)) || {trainings:[],poids:[],tests:[],races:[]}; }
-  catch(e) { return {trainings:[],poids:[],tests:[],races:[]}; }
+  catch { return {trainings:[],poids:[],tests:[],races:[]}; }
 }
 function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
 
@@ -818,23 +727,21 @@ function fmtDate(d) {
 }
 function today() { return new Date().toISOString().split('T')[0]; }
 
-// ====================================
+// ════════════════════════════════════
 // NAVIGATION
-// ====================================
+// ════════════════════════════════════
 function showTab(t) {
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
   document.getElementById('tab-'+t).classList.add('on');
   document.querySelectorAll('.tab').forEach((b,i) => {
-    b.classList.toggle('on', ['dashboard','log','history','race','charges','mensur'][i]===t);
+    b.classList.toggle('on', ['dashboard','log','history','race'][i]===t);
   });
   document.querySelectorAll('.dock-btn').forEach((b,i) => {
-    b.classList.toggle('on', ['dashboard','log','history','race','charges','mensur'][i]===t);
+    b.classList.toggle('on', ['dashboard','log','history','race'][i]===t);
   });
   if (t==='dashboard') renderDashboard();
   if (t==='history') renderHistory('all');
   if (t==='race') renderRaces();
-  if (t==='charges') renderChargesHistory();
-  if (t==='mensur') renderMensur();
 }
 
 function showLogType(type) {
@@ -852,9 +759,9 @@ function showHistType(type) {
   renderHistory(type);
 }
 
-// ====================================
+// ════════════════════════════════════
 // FORM LOGIC
-// ====================================
+// ════════════════════════════════════
 document.getElementById('t-type').addEventListener('change', function() {
   const v = this.value;
   document.getElementById('t-run-fields').style.display =
@@ -879,21 +786,18 @@ function updateRpe(v) {
 }
 
 // Set today's date on load
-window.addEventListener('load', function() {
-  var t = today();
-  ['t-date','p-date','ts-date','r-date','ch-date','m-date'].forEach(function(id) {
-    var el = document.getElementById(id);
+window.addEventListener('load', () => {
+  const t = today();
+  ['t-date','p-date','ts-date','r-date'].forEach(id => {
+    const el = document.getElementById(id);
     if (el) el.value = t;
   });
-  syncDeviceId();
-  setTimeout(function() {
-    syncAll(function() { renderDashboard(); });
-  }, 500);
+  renderDashboard();
 });
 
-// ====================================
+// ════════════════════════════════════
 // SAVE FUNCTIONS
-// ====================================
+// ════════════════════════════════════
 function saveTraining() {
   const db = loadDB();
   const type = document.getElementById('t-type').value;
@@ -963,18 +867,10 @@ function saveTraining() {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
-  // Reset exercises
-  window._strExos = [];
-  var exoEl = document.getElementById('str-exo-list');
-  if (exoEl) exoEl.innerHTML = '';
-  // Retour accueil log
-  ['log-training','log-poids','log-test'].forEach(function(id) {
-    var x = document.getElementById(id); if (x) x.style.display = 'none';
-  });
-  document.querySelectorAll('#log-subtabs .stab').forEach(function(b) { b.classList.remove('on'); });
-  // Feedback
+  // Show feedback
   var fb = document.getElementById('save-feedback');
-  if (fb) { fb.style.display='block'; fb.textContent='Seance enregistree !'; setTimeout(function() { fb.style.display='none'; }, 2500); }
+  if (fb) { fb.style.display = 'block'; setTimeout(function() { fb.style.display='none'; }, 2500); }
+  // Refresh history
   renderHistory('all');
 }
 
@@ -1033,9 +929,9 @@ function saveRace() {
   }, 1500);
 }
 
-// ====================================
+// ════════════════════════════════════
 // DASHBOARD ANALYSIS ENGINE
-// ====================================
+// ════════════════════════════════════
 function renderDashboard() {
   const db = loadDB();
   renderAlerts(db);
@@ -1309,9 +1205,9 @@ function renderRPEAnalysis(db) {
     </div>`;
 }
 
-// ====================================
+// ════════════════════════════════════
 // HISTORY RENDER
-// ====================================
+// ════════════════════════════════════
 function renderHistory(filter) {
   const db = loadDB();
   const el = document.getElementById('history-list');
@@ -1404,9 +1300,9 @@ function deleteEntry(id, cat) {
   renderHistory('all');
 }
 
-// ====================================
+// ════════════════════════════════════
 // RACE RENDER + ANALYSIS
-// ====================================
+// ════════════════════════════════════
 const STATION_TARGETS = {
   ski:{label:'Ski Erg', target:'3:52', prev:'4:36', color:'#00c4a7'},
   sled_push:{label:'Sled Push', target:'2:45', prev:'4:00', color:'#ff6b35'},
@@ -1500,9 +1396,9 @@ function deleteRace(id) {
   renderRaces();
 }
 
-// ====================================
+// ════════════════════════════════════
 // CHART (lightweight SVG)
-// ====================================
+// ════════════════════════════════════
 function drawLineChart(canvas, data, opts={}) {
   if (!data.length) { canvas.style.display='none'; return; }
   canvas.style.display = 'block';
@@ -1557,9 +1453,9 @@ function drawLineChart(canvas, data, opts={}) {
   }
 }
 
-// ====================================
+// ════════════════════════════════════
 // IMPORT / EXPORT
-// ====================================
+// ════════════════════════════════════
 function exportData() {
   const db = loadDB();
   const blob = new Blob([JSON.stringify(db, null, 2)], {type:'application/json'});
@@ -1582,7 +1478,7 @@ function handleImport(input) {
         renderHistory('all');
         alert('✅ Import réussi');
       }
-    } catch(e) { alert('Fichier JSON invalide'); }
+    } catch { alert('Fichier JSON invalide'); }
   };
   reader.readAsText(file);
 }
@@ -1595,134 +1491,9 @@ function clearAll() {
   }
 }
 
-
-// === CHARGES 1RM ===
-const EXO_LABELS_CH = {
-  squat:'Back squat',rdl:'RDL',hip_thrust:'Hip thrust',nordic:'Nordic',bulgarian:'Bulgarian',
-  bench:'Bench press',pullup:'Pull-up lestes',press:'Strict press',pendlay:'Pendlay row',
-  curl:'Curl barre',skull:'Skull crusher',farmer:'Farmer carry',kb_swing:'KB swing'
-};
-const PLAN_PCTS = [
-  {label:'5x8 hypertrophie',pct:0.675},{label:'5x5 force',pct:0.80},
-  {label:'5-3-1 sem A 95%',pct:0.95},{label:'5-3-1 sem B 100%',pct:1.00},
-  {label:'3x5 maintenance',pct:0.775},{label:'3RM test',pct:0.90}
-];
-function epley(kg,reps){return reps===1?kg:Math.round(kg*(1+reps/30)*4)/4;}
-function r25(kg){return Math.round(kg/2.5)*2.5;}
-
-function saveCharge() {
-  var db = loadDB();
-  var exo = document.getElementById('ch-exo').value;
-  var kg = parseFloat(document.getElementById('ch-kg').value);
-  var reps = parseInt(document.getElementById('ch-reps').value);
-  var sets = parseInt(document.getElementById('ch-sets').value)||1;
-  var date = document.getElementById('ch-date').value;
-  if (!exo||!kg||!reps) { alert('Exercice, charge et reps requis.'); return; }
-  var rm = epley(kg, reps);
-  if (!db.charges) db.charges = [];
-  var entry = {id:Date.now(), date:date, exo:exo, kg:kg, reps:reps, sets:sets, rpe:7, rm_estimated:rm};
-  db.charges.push(entry);
-  saveDB(db);
-  sbSave('charges', entry);
-  var res = document.getElementById('ch-result');
-  res.style.display = 'block';
-  res.innerHTML = '1RM estime: <b>' + rm + ' kg</b><br/>' +
-    PLAN_PCTS.map(function(p) {
-      return p.label + ': <b>' + r25(rm*p.pct) + ' kg</b>';
-    }).join(' &middot; ');
-  renderChargesHistory();
-}
-
-function renderChargesHistory(sel) {
-  var db = loadDB();
-  var charges = db.charges || [];
-  var exos = [];
-  charges.forEach(function(c) { if (exos.indexOf(c.exo)<0) exos.push(c.exo); });
-  var tabsEl = document.getElementById('exo-subtabs');
-  var histEl = document.getElementById('rm-history');
-  if (!tabsEl||!histEl) return;
-  if (!exos.length) { histEl.innerHTML='<div class="empty"><div class="empty-icon">💪</div><p>Enregistre des series.</p></div>'; return; }
-  var cur = sel || exos[0];
-  tabsEl.innerHTML = exos.map(function(e) {
-    return '<button class="stab '+(e===cur?'on':'')+'" onclick="renderChargesHistory(''+e+'')">'+( EXO_LABELS_CH[e]||e)+'</button>';
-  }).join('');
-  var filtered = charges.filter(function(c) { return c.exo===cur; }).sort(function(a,b){return a.date.localeCompare(b.date);});
-  if (!filtered.length) { histEl.innerHTML='<div style="font-size:11px;color:var(--tx4);padding:.5rem">Aucune donnee.</div>'; return; }
-  var best = filtered.reduce(function(a,b){return a.rm_estimated>b.rm_estimated?a:b;});
-  histEl.innerHTML = '<div class="stat-grid" style="margin-bottom:.4rem"><div class="stat-box"><div class="val" style="color:var(--gr)">'+filtered[filtered.length-1].rm_estimated+' kg</div><div class="lbl">1RM actuel</div></div><div class="stat-box"><div class="val" style="color:var(--am)">'+best.rm_estimated+' kg</div><div class="lbl">Record</div></div></div>' +
-    filtered.slice(-5).reverse().map(function(ch) {
-      return '<div class="entry"><div class="entry-content"><div class="entry-title">'+ch.kg+'kg x'+ch.reps+' reps = <b style="color:var(--gr)">'+ch.rm_estimated+'kg 1RM</b></div><div class="entry-meta">'+fmtDate(ch.date)+'</div><div class="entry-tags">'+PLAN_PCTS.slice(0,3).map(function(p){return '<span class="etag">'+p.label.split(' ')[0]+': <b>'+r25(ch.rm_estimated*p.pct)+'kg</b></span>';}).join('')+'</div></div></div>';
-    }).join('');
-}
-
-// === MENSURATIONS ===
-const MENSUR_FIELDS = [
-  {key:'taille',label:'Taille',color:'#00c4a7',trend:'down'},
-  {key:'poitrine',label:'Poitrine',color:'#4488ff',trend:'neutral'},
-  {key:'cuisse',label:'Cuisse',color:'#a855f7',trend:'up'},
-  {key:'biceps',label:'Biceps',color:'#ffb800',trend:'up'}
-];
-
-function saveMensur() {
-  var db = loadDB();
-  if (!db.mensur) db.mensur = [];
-  var entry = {id:Date.now(), date:document.getElementById('m-date').value, note:document.getElementById('m-note').value};
-  var hasVal = false;
-  MENSUR_FIELDS.forEach(function(f) {
-    var v = parseFloat(document.getElementById('m-'+f.key).value);
-    if (v>0) { entry[f.key]=v; hasVal=true; }
-  });
-  if (!entry.date||!hasVal) { alert('Date et au moins une mesure requis.'); return; }
-  db.mensur.push(entry);
-  saveDB(db);
-  sbSave('mensur', entry);
-  var fb = document.getElementById('m-feedback');
-  if (fb) { fb.style.display='block'; setTimeout(function(){fb.style.display='none';renderMensur();},1500); }
-}
-
-function renderMensur() {
-  var db = loadDB();
-  var entries = (db.mensur||[]).sort(function(a,b){return a.date.localeCompare(b.date);});
-  var empty = document.getElementById('m-empty');
-  var charts = document.getElementById('m-charts-section');
-  if (!empty||!charts) return;
-  if (!entries.length) { empty.style.display='block'; charts.style.display='none'; return; }
-  empty.style.display='none'; charts.style.display='block';
-  var last = entries[entries.length-1];
-  var first = entries[0];
-  MENSUR_FIELDS.forEach(function(f) {
-    var vals = entries.filter(function(e){return e[f.key];}).map(function(e){return {x:fmtDate(e.date),y:e[f.key]};});
-    if (!vals.length) return;
-    var canvas = document.getElementById('chart-'+f.key);
-    if (canvas) {
-      var mn = Math.min.apply(null,vals.map(function(v){return v.y;}))-2;
-      var mx = Math.max.apply(null,vals.map(function(v){return v.y;}))+2;
-      drawLineChart(canvas, vals, {color:f.color, min:mn, max:mx});
-    }
-    var delta = vals.length>=2 ? (vals[vals.length-1].y - vals[0].y).toFixed(1) : null;
-    var el = document.getElementById('delta-'+f.key);
-    if (el && delta!==null) {
-      var sign = delta>0?'+':''; var arrow = delta<0?'↓':delta>0?'↑':'→';
-      var col = (f.trend==='down'&&delta<0)||(f.trend==='up'&&delta>0)?'var(--ok)':'var(--am)';
-      el.innerHTML = '<span style="color:'+col+'">'+arrow+' '+sign+delta+' cm</span> depuis le '+vals[0].x;
-    }
-  });
-  var tbl = document.getElementById('m-history-table');
-  if (tbl) {
-    tbl.innerHTML = '<div style="display:grid;grid-template-columns:80px repeat(4,1fr);gap:.2rem;font-family:monospace;font-size:9.5px;color:var(--tx4);padding:.2rem 0;border-bottom:1px solid var(--bo2)"><span>Date</span>'+MENSUR_FIELDS.map(function(f){return '<span style="color:'+f.color+'">'+f.label+'</span>';}).join('')+'</div>'+
-      entries.slice().reverse().slice(0,10).map(function(e){
-        return '<div style="display:grid;grid-template-columns:80px repeat(4,1fr);gap:.2rem;font-family:monospace;font-size:10.5px;padding:.3rem 0;border-bottom:1px solid var(--bo)"><span style="color:var(--tx4)">'+fmtDate(e.date)+'</span>'+MENSUR_FIELDS.map(function(f){return '<span>'+(e[f.key]?e[f.key]+' cm':'—')+'</span>';}).join('')+'</div>';
-      }).join('');
-  }
-}
-// ==================
-
 // Init
 showTab('dashboard');
-window.addEventListener('load', function() {
-  syncDeviceId();
-  setTimeout(function() { syncAll(function() { renderDashboard(); }); }, 500);
-});
+window.addEventListener('load', function() { syncAll(function() { renderDashboard(); }); });
 </script>
 </body>
 </html>    if (entry.exercises && entry.exercises.length) {
