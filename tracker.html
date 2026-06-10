@@ -134,6 +134,24 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 .dock-btn.on{color:var(--gr)}
 .dock-icon{font-size:1rem}
 @media(min-width:431px){body{border-left:1px solid var(--bo);border-right:1px solid var(--bo)}}
+
+/* History detail clickable cards */
+.entry.js-history-entry{cursor:pointer;transition:border-color .15s, background .15s}
+.entry.js-history-entry:active{border-color:var(--gr);background:var(--bg4)}
+.history-detail{display:none;margin-top:.45rem;padding:.55rem .6rem;background:var(--bg2);border:1px solid var(--bo2);border-radius:7px;font-family:monospace;font-size:10.5px;color:var(--tx3);line-height:1.55}
+.entry.open .history-detail{display:block}
+.history-detail-title{color:var(--tx2);font-weight:700;margin:.25rem 0 .15rem;text-transform:uppercase;font-size:9px;letter-spacing:.06em}
+.history-detail-row{display:flex;justify-content:space-between;gap:.6rem;border-bottom:1px solid var(--bo);padding:2px 0}
+.history-detail-row:last-child{border-bottom:0}
+.history-detail-row b{color:var(--tx2)}
+.history-series{margin-left:.3rem;color:var(--tx2)}
+.history-detail{max-height:none!important;overflow:visible!important;white-space:normal}
+.history-exercises-list{display:flex;flex-direction:column;gap:.35rem;margin-top:.35rem}
+.history-exercise-card{background:var(--bg3);border:1px solid var(--bo);border-radius:7px;padding:.45rem .5rem;overflow:visible}
+.history-exercise-name{font-weight:900;color:var(--tx);font-size:11px;margin-bottom:.2rem}
+.history-exercise-series{font-family:monospace;font-size:10.5px;color:var(--tx2);line-height:1.55}
+.history-exercise-empty{font-family:monospace;font-size:10.5px;color:var(--tx4);font-style:italic}
+
 </style>
 </head>
 <body>
@@ -306,10 +324,12 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
         <option value="squat">Back squat</option>
         <option value="front_squat">Front squat</option>
         <option value="rdl">RDL bilatéral</option>
+        <option value="deadlift">SDT / Deadlift</option>
         <option value="hip_thrust">Hip thrust</option>
         <option value="bulgarian">Bulgarian split squat</option>
         <option value="leg_press">Leg press</option>
         <option value="nordic">Nordic curl</option>
+        <option value="nordic_assiste">Nordic assisté</option>
         <option value="good_morning">Good morning</option>
         <option value="kb_swing">KB swing</option>
         <option value="box_jump">Box jump</option>
@@ -317,11 +337,14 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
       </optgroup>
       <optgroup label="Haut du corps">
         <option value="bench">Développé couché</option>
+        <option value="db_bench">DC haltères</option>
         <option value="bench_incline">Développé incliné</option>
+        <option value="db_incline">DI haltères</option>
         <option value="pullup">Pull-up lestés</option>
         <option value="press">Strict press</option>
         <option value="push_press">Push press</option>
         <option value="pendlay">Pendlay row</option>
+        <option value="rowing">Rowing</option>
         <option value="yates">Yates row</option>
         <option value="lat_pulldown">Lat pulldown</option>
         <option value="curl">Curl barre</option>
@@ -333,6 +356,9 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
       <optgroup label="HYROX">
         <option value="farmer">Farmer carry (kg/main)</option>
         <option value="sled_push">Sled push</option>
+        <option value="sled_pull">Sled pull</option>
+        <option value="ski_erg">SkiErg</option>
+        <option value="row_erg">Rameur / RowErg</option>
         <option value="wall_ball">Wall ball</option>
         <option value="sandbag">Sandbag lunge</option>
         <option value="bbj">Burpee broad jump</option>
@@ -530,6 +556,21 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 ═══════════════════════════════ -->
 <div id="tab-charges" class="sec">
 
+  <!-- Calculateur charge %1RM -->
+  <div class="card">
+    <div class="card-title">Calculateur %1RM <span>charge cible</span></div>
+    <div class="field">
+      <label>Exercice</label>
+      <select id="calc-exo"><option value="">— Choisir —</option></select>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>1RM de référence (kg)</label><input type="number" step="0.5" id="calc-rm" placeholder="auto ou ex : 120"></div>
+      <div class="field"><label>% du 1RM</label><input type="number" step="0.5" id="calc-pct" placeholder="ex : 75" value="75"></div>
+    </div>
+    <div id="calc-result" class="alert alert-info" style="display:none"></div>
+    <button type="button" class="btn btn-sec" onclick="applyCalcToCharge()">↳ Utiliser cette charge dans la série</button>
+  </div>
+
   <!-- Formulaire saisie -->
   <div class="card">
     <div class="card-title">Enregistrer une série</div>
@@ -561,6 +602,14 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
           <option value="farmer">Farmer carry (2× kg)</option>
           <option value="kb_swing">KB swing</option>
           <option value="nordic">Nordic (lest additionnel)</option>
+          <option value="nordic_assiste">Nordic assisté</option>
+          <option value="sled_push">Sled push</option>
+          <option value="sled_pull">Sled pull</option>
+          <option value="ski_erg">SkiErg</option>
+          <option value="row_erg">Rameur / RowErg</option>
+          <option value="wall_ball">Wall ball</option>
+          <option value="sandbag">Sandbag lunge</option>
+          <option value="bbj">Burpee broad jump</option>
         </optgroup>
       </select>
     </div>
@@ -621,15 +670,16 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
     </div>
   </div>
 
-  <!-- Sélecteur exercice pour historique -->
+  <!-- Synthèse 1RM par exercice -->
   <div class="card">
-    <div class="card-title">Historique 1RM par exercice</div>
-    <div class="subtabs" id="exo-subtabs" style="flex-wrap:wrap"></div>
-    <div id="rm-history"></div>
-    <div id="rm-chart-wrap" class="chart-wrap" style="display:none">
-      <div class="chart-title">Évolution 1RM estimé</div>
-      <canvas id="rm-chart" height="90"></canvas>
+    <div class="card-title">Historique 1RM par exercice <span>synthèse</span></div>
+    <div class="field">
+      <label>Exercice</label>
+      <select id="rm-exo-select" onchange="renderChargesHistory(this.value)">
+        <option value="">— Choisir —</option>
+      </select>
     </div>
+    <div id="rm-history"></div>
   </div>
 
 </div>
@@ -738,11 +788,8 @@ const DEVICE_ID=getDeviceId();
 const SB={'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','x-device-id':DEVICE_ID,'Prefer':'return=representation'};
 async function sbEnsureDevice(){const r=await fetch(SUPA_URL+'/rest/v1/device_users?device_id=eq.'+DEVICE_ID,{headers:SB});const d=await r.json();if(!d.length)await fetch(SUPA_URL+'/rest/v1/device_users',{method:'POST',headers:SB,body:JSON.stringify({device_id:DEVICE_ID})});}
 window.__lastSupabaseError = null;
-
 function normalizeSupabaseRow(row){
   if(!row || typeof row !== 'object') return row;
-  // Les anciennes versions peuvent stocker le vrai contenu dans row.data.
-  // Sans cette normalisation, les tableaux reviennent vides/inexploitables côté UI.
   if(row.data && typeof row.data === 'object' && !Array.isArray(row.data)){
     return {...row.data, supabase_id: row.id, _supabase_row: row};
   }
@@ -752,100 +799,208 @@ function normalizeSupabaseRow(row){
 function normalizeSupabaseRows(rows){
   return Array.isArray(rows) ? rows.map(normalizeSupabaseRow) : [];
 }
+
+function buildSupabasePayload(table, entry, mode){
+  const localId = entry.local_id || entry.id || (Date.now()+'_'+Math.random().toString(36).slice(2));
+  const data = {...entry, local_id:String(localId)};
+  const p = {...entry, device_id:DEVICE_ID, local_id:String(localId), data};
+
+  // Colonnes locales uniquement / incompatibles avec certaines tables Supabase
+  delete p.id;
+  delete p.supabase_id;
+  delete p._supabase_row;
+  if(table==='trainings') delete p.fc; // legacy local uniquement
+
+  if(mode === 'safe_local_id'){
+    return {device_id:DEVICE_ID, local_id:String(localId), data};
+  }
+  if(mode === 'safe_no_local_id'){
+    return {device_id:DEVICE_ID, data};
+  }
+  return p;
+}
+
+function isSchemaColumnError(txt){
+  txt = String(txt || '');
+  return txt.includes('schema cache') ||
+         txt.includes('Could not find') ||
+         txt.includes('column') ||
+         txt.includes('relation') ||
+         txt.includes('violates not-null constraint');
+}
+
 async function sbSave(table,entry){
   window.__lastSupabaseError = null;
-  try{
-    const localId = entry.local_id || entry.id || (Date.now()+'_'+Math.random().toString(36).slice(2));
-    const p={...entry,device_id:DEVICE_ID,local_id:String(localId)};
-    if(table==='trainings'){ delete p.fc; } // évite l'échec si la colonne legacy fc n'existe pas
-    delete p.id;          // id reste géré par Supabase
-    delete p.supabase_id; // colonne locale uniquement
-    const r=await fetch(SUPA_URL+'/rest/v1/'+table,{method:'POST',headers:SB,body:JSON.stringify(p)});
-    if(!r.ok){
-      const txt=await r.text();
-      window.__lastSupabaseError = {table,status:r.status,message:txt,payload:p};
-      console.warn('sb save fail',table,r.status,txt,p);
+  const attempts = [
+    {label:'full+data', payload:buildSupabasePayload(table, entry, 'full')},
+    {label:'safe local_id+data', payload:buildSupabasePayload(table, entry, 'safe_local_id')},
+    {label:'safe data only', payload:buildSupabasePayload(table, entry, 'safe_no_local_id')}
+  ];
+
+  for(const attempt of attempts){
+    try{
+      const r = await fetch(SUPA_URL+'/rest/v1/'+table,{method:'POST',headers:SB,body:JSON.stringify(attempt.payload)});
+      if(r.ok){
+        const raw = await r.json().catch(()=>[]);
+        const row = Array.isArray(raw) ? (raw[0]||null) : raw;
+        window.__lastSupabaseError = null;
+        return normalizeSupabaseRow(row);
+      }
+      const txt = await r.text();
+      window.__lastSupabaseError = {table,status:r.status,message:txt,payload:attempt.payload,attempt:attempt.label};
+      console.warn('sb save fail',table,attempt.label,r.status,txt,attempt.payload);
+      // On retente toujours les payloads sûrs pour les erreurs 400/409 :
+      // c'est crucial pour les séances muscu, car exercises/charges peuvent varier selon le schéma Supabase.
+      // On arrête seulement pour les erreurs de droits/auth, qui ne peuvent pas être corrigées par un payload minimal.
+      if(r.status === 401 || r.status === 403) return null;
+    }catch(e){
+      window.__lastSupabaseError = {table,status:'network',message:String(e),payload:attempt.payload,attempt:attempt.label};
+      console.warn('sb save exception',table,attempt.label,e,attempt.payload);
       return null;
     }
-    const data=await r.json().catch(()=>[]);
-    return Array.isArray(data)?(data[0]||null):data;
-  }catch(e){
-    window.__lastSupabaseError = {table,status:'offline/fetch',message:String(e),payload:entry};
-    console.warn('sb save offline/fail',table,e);
-    return null;
   }
+  return null;
 }
-function showSupabaseSaveStatus(ok, table){
-  const fb=document.getElementById('save-feedback');
-  if(!fb)return;
-  fb.style.display='block';
-  fb.style.color = ok ? 'var(--gr)' : 'var(--am)';
-  if(ok){
-    fb.innerHTML='✅ Séance enregistrée localement + Supabase OK';
-  }else{
-    const err=window.__lastSupabaseError;
-    const msg=err ? (err.status+' · '+String(err.message).slice(0,220)) : 'erreur inconnue';
-    fb.innerHTML='⚠️ Séance enregistrée sur le téléphone, mais Supabase a refusé l’enregistrement.<br><span style="color:var(--tx3)">'+msg+'</span>';
-  }
-  setTimeout(()=>{fb.style.display='none';}, ok ? 2500 : 9000);
-}
+
 async function sbLoad(table){
-  // Supabase reste la source principale. Pas de filtre device_id ici :
-  // on veut récupérer les données enregistrées depuis n'importe quel navigateur/téléphone.
-  const r = await fetch(SUPA_URL + '/rest/v1/' + table + '?order=created_at.desc', {headers:SB});
-  if(!r.ok)return [];
-  const rows = await r.json().catch(()=>[]);
+  // Supabase est la source principale. Ne pas filtrer par device_id :
+  // si le téléphone est vidé, un nouveau device_id est créé, mais les anciennes données doivent remonter.
+  const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?order=created_at.desc',{headers:SB});
+  if(!r.ok){ console.warn('sb load fail', table, r.status, await r.text().catch(()=>'')); return []; }
+  const rows=await r.json().catch(()=>[]);
   return normalizeSupabaseRows(rows);
 }
-async function sbDel(table,entryOrId){
-  const entry = (entryOrId && typeof entryOrId === 'object') ? entryOrId : {id:entryOrId,local_id:entryOrId};
-  const remoteId = entry.supabase_id;
-  const localId = entry.local_id || entry.id;
-  if((remoteId===undefined||remoteId===null||remoteId==='') && (localId===undefined||localId===null||localId===''))return false;
+
+async function sbDeleteRows(table, queryLabel, query){
+  if(!query) return false;
+  const url = SUPA_URL + '/rest/v1/' + table + '?' + query;
   try{
-    // 1) Suppression la plus fiable pour les nouvelles entrées : local_id + device_id
-    if(localId!==undefined && localId!==null && localId!==''){
-      const url=SUPA_URL+'/rest/v1/'+table+'?local_id=eq.'+encodeURIComponent(String(localId))+'&device_id=eq.'+encodeURIComponent(DEVICE_ID);
-      const r=await fetch(url,{method:'DELETE',headers:SB});
-      if(r.ok)return true;
-      const txt=await r.text();
-      console.warn('sb delete by local_id fail',table,localId,txt);
+    const r = await fetch(url,{method:'DELETE',headers:SB});
+    const txt = await r.text().catch(()=> '');
+    if(!r.ok){
+      console.warn('sb cascade delete fail', table, queryLabel, r.status, txt);
+      return false;
     }
-    // 2) Fallback pour les anciennes entrées qui ont gardé l'id Supabase en local
-    const idToDelete = remoteId || entry.id;
-    if(idToDelete!==undefined && idToDelete!==null && idToDelete!==''){
-      const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+encodeURIComponent(String(idToDelete)),{method:'DELETE',headers:SB});
-      if(!r.ok)console.warn('sb delete by id fail',table,idToDelete,await r.text());
-      return r.ok;
-    }
+    return true;
+  }catch(e){
+    console.warn('sb cascade delete exception', table, queryLabel, e);
     return false;
-  }catch(e){console.warn('sb delete offline/fail',table,entryOrId,e);return false;}
+  }
+}
+function getTrainingCascadeIds(training){
+  const vals = [];
+  if(training){
+    vals.push(training.id, training.local_id, training.supabase_id, training.training_id);
+    if(training.data && typeof training.data === 'object') vals.push(training.data.id, training.data.local_id);
+    if(training._supabase_row && training._supabase_row.data) vals.push(training._supabase_row.data.id, training._supabase_row.data.local_id);
+  }
+  return [...new Set(vals.filter(v => v !== undefined && v !== null && String(v) !== '').map(v => String(v)))];
+}
+async function sbDelChargesLinkedToTraining(training){
+  const ids = getTrainingCascadeIds(training);
+  let okAny = false;
+  for(const id of ids){
+    const q = encodeURIComponent(String(id));
+    // Charges auto créées depuis une séance : colonne training_id quand disponible.
+    okAny = await sbDeleteRows('charges','training_id '+id,'training_id=eq.'+q) || okAny;
+    // Fallback pour les anciennes lignes sauvegardées uniquement dans data.
+    okAny = await sbDeleteRows('charges','data.training_id '+id,'data->>training_id=eq.'+q) || okAny;
+  }
+  return okAny;
+}
+
+async function sbDel(table,entryOrId){
+  const entry = (entryOrId && typeof entryOrId === 'object') ? entryOrId : {id:entryOrId};
+  const idsTried = [];
+
+  async function delBy(queryLabel, query){
+    if(!query) return false;
+    const url = SUPA_URL + '/rest/v1/' + table + '?' + query;
+    try{
+      const r = await fetch(url,{method:'DELETE',headers:SB});
+      const txt = await r.text().catch(()=> '');
+      idsTried.push({queryLabel, ok:r.ok, status:r.status, response:txt});
+      if(!r.ok){
+        console.warn('sb delete fail', table, queryLabel, r.status, txt);
+        return false;
+      }
+      // Avec Prefer:return=representation, Supabase renvoie les lignes supprimées.
+      // Si la réponse est vide malgré 200/204, on considère la requête valide,
+      // car certaines configurations PostgREST ne renvoient pas le body.
+      if(!txt) return true;
+      try{
+        const rows = JSON.parse(txt);
+        return !Array.isArray(rows) || rows.length > 0;
+      }catch(e){
+        return true;
+      }
+    }catch(e){
+      idsTried.push({queryLabel, ok:false, status:'fetch_error', response:String(e)});
+      console.warn('sb delete fetch fail', table, queryLabel, e);
+      return false;
+    }
+  }
+
+  const deviceQ = 'device_id=eq.' + encodeURIComponent(DEVICE_ID);
+  const remoteId = entry.supabase_id;
+  const localId = entry.local_id;
+  const rawId = entry.id || entryOrId;
+
+  // 1) Cas le plus fiable : id Supabase connu.
+  // On teste avec device_id puis sans device_id pour gérer les cas où le téléphone a changé de device_id.
+  if(remoteId !== undefined && remoteId !== null && remoteId !== ''){
+    const idQ = 'id=eq.' + encodeURIComponent(String(remoteId));
+    if(await delBy('supabase_id + device_id', idQ + '&' + deviceQ)) return true;
+    if(await delBy('supabase_id only', idQ)) return true;
+  }
+
+  // 2) Cas recommandé : local_id stable envoyé par le tracker.
+  // On teste la colonne local_id puis le JSON data->>local_id, car certains inserts
+  // ont pu passer par le payload sécurisé minimal {device_id, data} sans colonne local_id remplie.
+  if(localId !== undefined && localId !== null && localId !== ''){
+    const local = encodeURIComponent(String(localId));
+    const localQ = 'local_id=eq.' + local;
+    if(await delBy('local_id + device_id', localQ + '&' + deviceQ)) return true;
+    if(await delBy('local_id only', localQ)) return true;
+    const dataLocalQ = 'data->>local_id=eq.' + local;
+    if(await delBy('data.local_id + device_id', dataLocalQ + '&' + deviceQ)) return true;
+    if(await delBy('data.local_id only', dataLocalQ)) return true;
+  }
+
+  // 3) Fallback : id présent dans l'objet. Après sync, entry.id est souvent l'id Supabase.
+  // Pour les très anciennes entrées, il peut être l'id local ; la requête ne supprimera rien mais ne casse pas l'UI.
+  if(rawId !== undefined && rawId !== null && rawId !== ''){
+    const raw = encodeURIComponent(String(rawId));
+    const idQ = 'id=eq.' + raw;
+    if(await delBy('id + device_id', idQ + '&' + deviceQ)) return true;
+    if(await delBy('id only', idQ)) return true;
+    const dataIdQ = 'data->>id=eq.' + raw;
+    if(await delBy('data.id + device_id', dataIdQ + '&' + deviceQ)) return true;
+    if(await delBy('data.id only', dataIdQ)) return true;
+  }
+
+  window.__lastSupabaseDeleteError = {table, entry, idsTried};
+  console.warn('Suppression Supabase non confirmée', window.__lastSupabaseDeleteError);
+  return false;
 }
 async function syncAll(){
   const el=document.getElementById('sync-status');
-  const stamp=()=>new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-  if(el){el.textContent='Sync...';el.style.color='var(--tx3)';}
+  if(el)el.textContent='Sync Supabase...';
   try{
-    // Ne bloque jamais la synchro principale sur device_users.
-    // Si cette table refuse l'accès ou répond lentement, les données peuvent quand même être lues.
-    sbEnsureDevice().catch(e=>console.warn('device ensure skipped',e));
-
+    await sbEnsureDevice();
     const[tr,po,te,ra,ch,me]=await Promise.all([
       sbLoad('trainings'),sbLoad('poids'),sbLoad('tests'),sbLoad('races'),sbLoad('charges'),sbLoad('mensur')
     ]);
+    // Le cache local est remplacé par Supabase, il n'est plus la source de vérité.
     const db={trainings:tr,poids:po,tests:te,races:ra,charges:ch,mensur:me};
     saveDB(db);
-    if(el){el.textContent='✅ Sync OK '+stamp();el.style.color='var(--gr)';}
+    if(el){el.textContent='✅ Supabase '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});el.style.color='var(--gr)';}
     return db;
   }catch(e){
-    console.warn('syncAll fallback cache',e);
-    const cached=loadDB();
-    const hasCache=['trainings','poids','tests','races','charges','mensur'].some(k=>(cached[k]||[]).length>0);
-    if(el){
-      el.textContent=(hasCache?'⚠️ Cache local ':'❌ Offline ')+stamp();
-      el.style.color=hasCache?'var(--am)':'var(--rd)';
-    }
-    return cached;
+    console.warn('syncAll offline/fail', e);
+    if(el){el.textContent='❌ Supabase offline';el.style.color='var(--rd)';}
+    // fallback affichage uniquement si Supabase inaccessible
+    return loadDB();
   }
 }
 // ═══════════════
@@ -854,6 +1009,84 @@ async function syncAll(){
 // DATA LAYER
 // ════════════════════════════════════
 const DB_KEY = 'hyrox_tracker_v1';
+const UI_STATE_KEY = 'hyrox_tracker_ui_state_v1';
+const DRAFT_KEY = 'hyrox_tracker_draft_v1';
+
+function loadUiState() {
+  try { return JSON.parse(localStorage.getItem(UI_STATE_KEY)) || {}; }
+  catch { return {}; }
+}
+function saveUiState(patch) {
+  try {
+    const current = loadUiState();
+    localStorage.setItem(UI_STATE_KEY, JSON.stringify({...current, ...patch}));
+  } catch(e) {}
+}
+
+function saveCurrentDraft() {
+  try {
+    const ids = [
+      't-date','t-type','t-duree','t-dist','t-allure','t-intervals','t-fc-avg','t-fc-max','t-fc','t-sp-allure','t-sp-total','t-sp-rounds','t-sp-bbj','t-sp-wb','t-sp-fc-avg','t-sp-fc-max','t-rpe','t-qualite','t-comment',
+      'p-date','p-val','p-moment',
+      'ts-date','ts-type','ts-result','ts-cible','ts-comment',
+      'r-date','r-event','r-total','r-ov','r-ag','r-total-fin','r-ski','r-sled-p','r-sled-pu','r-bbj','r-row','r-farmers','r-fentes','r-wb','r-rox','r-run','r-fonc','r-comment',
+      'ch-exo','ch-kg','ch-reps','ch-sets','ch-date','ch-rpe',
+      'm-date','m-taille','m-poitrine','m-cuisse','m-biceps','m-note'
+    ];
+    const fields = {};
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) fields[id] = el.value;
+    });
+    const activeTab = (document.querySelector('.sec.on')?.id || 'tab-dashboard').replace('tab-','');
+    const visibleLog = ['training','poids','test'].find(t => document.getElementById('log-'+t)?.style.display !== 'none') || 'training';
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({fields, strExos: window._strExos || [], activeTab, logType: visibleLog, savedAt: Date.now()}));
+  } catch(e) {}
+}
+
+function clearCurrentDraft() {
+  try { localStorage.removeItem(DRAFT_KEY); } catch(e) {}
+}
+
+function restoreCurrentDraft() {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return;
+    const draft = JSON.parse(raw);
+    Object.entries(draft.fields || {}).forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (el && value !== undefined && value !== null && value !== '') el.value = value;
+    });
+    if (Array.isArray(draft.strExos)) {
+      window._strExos = draft.strExos;
+      if (typeof renderStrExercises === 'function') renderStrExercises();
+    }
+    if (draft.logType && typeof showLogType === 'function') showLogType(draft.logType);
+    if (document.getElementById('t-type')) document.getElementById('t-type').dispatchEvent(new Event('change'));
+    if (document.getElementById('ts-type')) document.getElementById('ts-type').dispatchEvent(new Event('change'));
+    if (document.getElementById('t-rpe')) updateRpe(document.getElementById('t-rpe').value);
+  } catch(e) {}
+}
+
+function setupDraftAutosave() {
+  document.addEventListener('input', e => {
+    if (e.target && (e.target.matches('input') || e.target.matches('select') || e.target.matches('textarea'))) saveCurrentDraft();
+  });
+  document.addEventListener('change', e => {
+    if (e.target && (e.target.matches('input') || e.target.matches('select') || e.target.matches('textarea'))) saveCurrentDraft();
+  });
+  window.addEventListener('beforeunload', e => {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return;
+    const draft = JSON.parse(raw);
+    const f = draft.fields || {};
+    const hasMeaningful = Object.entries(f).some(([k,v]) => v && !['t-rpe','ch-rpe'].includes(k));
+    if (hasMeaningful) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+}
 
 function emptyDB(){return {trainings:[],poids:[],tests:[],races:[],charges:[],mensur:[]};}
 function normalizeDB(db){return {...emptyDB(), ...(db||{})};}
@@ -862,9 +1095,19 @@ function loadDB() {
   catch { return emptyDB(); }
 }
 function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function jsArg(v){return String(v??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/[\r\n]/g,' ');}
 function parsePaceToSec(p){return timeToSec(p);}
 function isRecentDate(date,days){if(!date)return false;const d=new Date(date);const now=new Date();return (now-d)/(1000*60*60*24)<=days;}
 function tableForCat(cat){return {training:'trainings',test:'tests',poids:'poids',race:'races',charge:'charges',mensur:'mensur'}[cat]||cat;}
+function entryDeleteKey(entry){
+  if(!entry) return '';
+  return String(entry.local_id || entry.supabase_id || entry.id || '');
+}
+function sameEntryKey(entry,key){
+  if(!entry) return false;
+  const k=String(key);
+  return String(entry.id)===k || String(entry.local_id)===k || String(entry.supabase_id)===k;
+}
 function getFcAvg(t){const v=Number(t&&t.fc_avg);return Number.isFinite(v)&&v>0?v:null;}
 function getFcMax(t){const v=Number(t&&t.fc_max);if(Number.isFinite(v)&&v>0)return v;const legacy=Number(t&&t.fc);return Number.isFinite(legacy)&&legacy>0?legacy:null;}
 function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
@@ -915,34 +1158,54 @@ function today() { return new Date().toISOString().split('T')[0]; }
 // ════════════════════════════════════
 // NAVIGATION
 // ════════════════════════════════════
-function showTab(t) {
+function showTab(t, opts={}) {
+  const tabs = ['dashboard','log','history','race','charges','mensur'];
+  if (!tabs.includes(t) || !document.getElementById('tab-'+t)) t = 'dashboard';
+  // Persistance triple : URL hash + localStorage + sessionStorage.
+  // Objectif : rester sur le même onglet après actualisation, même si le navigateur mobile perd le hash.
+  saveUiState({activeTab:t});
+  try { localStorage.setItem('hyrox_tracker_active_tab_v1', t); } catch(e) {}
+  try { sessionStorage.setItem('hyrox_tracker_active_tab_v1', t); } catch(e) {}
+  if (!opts.silentHash) {
+    try { history.replaceState(null, '', '#'+t); } catch(e) {}
+  }
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
   document.getElementById('tab-'+t).classList.add('on');
   document.querySelectorAll('.tab').forEach((b,i) => {
-    b.classList.toggle('on', ['dashboard','log','history','race','charges','mensur'][i]===t);
+    b.classList.toggle('on', tabs[i]===t);
   });
   document.querySelectorAll('.dock-btn').forEach((b,i) => {
-    b.classList.toggle('on', ['dashboard','log','history','race','charges','mensur'][i]===t);
+    b.classList.toggle('on', tabs[i]===t);
   });
   if (t==='dashboard') renderDashboard();
-  if (t==='history') renderHistory('all');
+  if (t==='history') renderHistory(loadUiState().histType || 'all');
   if (t==='race') renderRaces();
   if (t==='charges') renderChargesHistory();
   if (t==='mensur') renderMensur();
 }
 
 function showLogType(type) {
-  ['training','poids','test'].forEach(t => {
-    document.getElementById('log-'+t).style.display = t===type ? 'block' : 'none';
+  ['training','poids','test'].forEach(function(t) {
+    var el = document.getElementById('log-'+t);
+    if (el) el.style.display = (type === t) ? 'block' : 'none';
   });
-  document.querySelectorAll('#log-subtabs .stab').forEach((b,i) => {
-    b.classList.toggle('on', ['training','poids','test'][i]===type);
+  document.querySelectorAll('#log-subtabs .stab').forEach(function(b,i) {
+    b.classList.toggle('on', ['training','poids','test'][i] === type);
   });
+  // 'home' = show subtabs but no form — user picks what to log
+  if (type === 'home') {
+    ['training','poids','test'].forEach(function(t) {
+      var el = document.getElementById('log-'+t);
+      if (el) el.style.display = 'none';
+    });
+    document.querySelectorAll('#log-subtabs .stab').forEach(function(b) { b.classList.remove('on'); });
+  }
 }
 
 function showHistType(type) {
+  saveUiState({histType:type});
   document.querySelectorAll('#tab-history .stab').forEach(b => b.classList.remove('on'));
-  event.target.classList.add('on');
+  if (typeof event !== 'undefined' && event.target) event.target.classList.add('on');
   renderHistory(type);
 }
 
@@ -977,9 +1240,23 @@ window.addEventListener('load', () => {
   const t = today();
   ['t-date','p-date','ts-date','r-date','ch-date','m-date'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.value = t;
+    if (el && !el.value) el.value = t;
   });
-  renderDashboard();
+  setupDraftAutosave();
+  restoreCurrentDraft();
+  const tabs = ['dashboard','log','history','race','charges','mensur'];
+  const hashTab = (location.hash || '').replace('#','');
+  const ui = loadUiState();
+  const draft = (() => { try { return JSON.parse(localStorage.getItem(DRAFT_KEY)) || {}; } catch { return {}; } })();
+  const ssTab = (() => { try { return sessionStorage.getItem('hyrox_tracker_active_tab_v1'); } catch(e) { return null; } })();
+  const lsTab = (() => { try { return localStorage.getItem('hyrox_tracker_active_tab_v1'); } catch(e) { return null; } })();
+  const targetTab = tabs.includes(hashTab) ? hashTab : (tabs.includes(ssTab) ? ssTab : (tabs.includes(lsTab) ? lsTab : (tabs.includes(draft.activeTab) ? draft.activeTab : (tabs.includes(ui.activeTab) ? ui.activeTab : 'dashboard'))));
+  showTab(targetTab, {silentHash: tabs.includes(hashTab)});
+});
+
+window.addEventListener('hashchange', () => {
+  const t = (location.hash || '').replace('#','');
+  if (['dashboard','log','history','race','charges','mensur'].includes(t)) showTab(t, {silentHash:true});
 });
 
 // ════════════════════════════════════
@@ -988,15 +1265,15 @@ window.addEventListener('load', () => {
 
 // ════ MUSCU — EXERCICES PAR SÉRIES ════
 const EXO_NAMES = {
-  squat:'Back squat',front_squat:'Front squat',rdl:'RDL bilatéral',
+  squat:'Back squat',front_squat:'Front squat',rdl:'RDL bilatéral',deadlift:'SDT / Deadlift',
   hip_thrust:'Hip thrust',bulgarian:'Bulgarian split squat',leg_press:'Leg press',
-  nordic:'Nordic curl',good_morning:'Good morning',kb_swing:'KB swing',
+  nordic:'Nordic curl',nordic_assiste:'Nordic assisté',good_morning:'Good morning',kb_swing:'KB swing',
   box_jump:'Box jump',mollets:'Mollets debout',
-  bench:'Développé couché',bench_incline:'Développé incliné',pullup:'Pull-up lestés',
-  press:'Strict press',push_press:'Push press',pendlay:'Pendlay row',yates:'Yates row',
+  bench:'Développé couché',db_bench:'DC haltères',bench_incline:'Développé incliné',db_incline:'DI haltères',pullup:'Pull-up lestés',
+  press:'Strict press',push_press:'Push press',pendlay:'Pendlay row',rowing:'Rowing',yates:'Yates row',
   lat_pulldown:'Lat pulldown',curl:'Curl barre',skull:'Skull crusher',
   dips:'Dips lestés',face_pull:'Face pull',hammer:'Curl marteau',
-  farmer:'Farmer carry',sled_push:'Sled push',wall_ball:'Wall ball',
+  farmer:'Farmer carry',sled_push:'Sled push',sled_pull:'Sled pull',ski_erg:'SkiErg',row_erg:'Rameur / RowErg',wall_ball:'Wall ball',
   sandbag:'Sandbag lunge',bbj:'Burpee broad jump'
 };
 
@@ -1010,27 +1287,30 @@ function strAddExercise() {
   window._strExos.push({key, series:[{kg:'',reps:''}]});
   sel.value = '';
   renderStrExercises();
+  saveCurrentDraft();
 }
 
 function strAddSerie(key) {
   const e = window._strExos.find(e=>e.key===key);
-  if(e){e.series.push({kg:'',reps:''});renderStrExercises();}
+  if(e){e.series.push({kg:'',reps:''});renderStrExercises();saveCurrentDraft();}
 }
 
 function strRemoveSerie(key,idx) {
   const e = window._strExos.find(e=>e.key===key);
-  if(e){e.series.splice(idx,1);if(!e.series.length)e.series.push({kg:'',reps:''});renderStrExercises();}
+  if(e){e.series.splice(idx,1);if(!e.series.length)e.series.push({kg:'',reps:''});renderStrExercises();saveCurrentDraft();}
 }
 
 function strRemoveExo(key) {
   window._strExos = window._strExos.filter(e=>e.key!==key);
   renderStrExercises();
+  saveCurrentDraft();
 }
 
 function strUpdate(key,idx,field,val) {
   const e = window._strExos.find(e=>e.key===key);
   if(!e||!e.series[idx])return;
   e.series[idx][field]=val;
+  saveCurrentDraft();
   const kg=parseFloat(e.series[idx].kg), reps=parseInt(e.series[idx].reps);
   const el=document.getElementById('rm-prev-'+key+'-'+idx);
   if(el&&kg&&reps){el.textContent='~'+(Math.round(kg*(1+reps/30)*4)/4)+' kg 1RM';el.style.color='var(--gr)';}
@@ -1048,8 +1328,8 @@ function renderStrExercises() {
     const rows = exo.series.map((s,i)=>{
       const rm = (s.kg&&s.reps)?('~'+(Math.round(parseFloat(s.kg)*(1+parseInt(s.reps)/30)*4)/4)+' kg 1RM'):'';
       return `<div style="display:grid;grid-template-columns:1fr 1fr 1fr 22px;gap:.3rem;align-items:center;margin:.2rem 0">
-        <input type="number" step="0.5" placeholder="kg" value="${escapeHtml(s.kg)}" oninput="strUpdate('${exo.key}',${i},'kg',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">
-        <input type="number" placeholder="reps" value="${escapeHtml(s.reps)}" oninput="strUpdate('${exo.key}',${i},'reps',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">
+        <input type="number" step="0.5" placeholder="kg" value="${escapeHtml(s.kg)}" data-str-key="${escapeHtml(exo.key)}" data-str-idx="${i}" data-str-field="kg" oninput="strUpdate('${exo.key}',${i},'kg',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">
+        <input type="number" placeholder="reps" value="${escapeHtml(s.reps)}" data-str-key="${escapeHtml(exo.key)}" data-str-idx="${i}" data-str-field="reps" oninput="strUpdate('${exo.key}',${i},'reps',this.value)" style="background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.35rem .4rem;color:var(--tx);font-family:monospace;font-size:12px;width:100%;outline:none">
         <span id="rm-prev-${exo.key}-${i}" style="font-family:monospace;font-size:10px;color:${rm?'var(--gr)':'var(--tx4)'}">${rm||'1RM auto'}</span>
         <button onclick="strRemoveSerie('${exo.key}',${i})" style="background:transparent;border:0;color:var(--tx4);font-size:15px;cursor:pointer;line-height:1;padding:0">×</button>
       </div>`;
@@ -1068,6 +1348,59 @@ function renderStrExercises() {
   }).join('');
 }
 
+function syncStrExercisesFromDom() {
+  try {
+    document.querySelectorAll('[data-str-key][data-str-idx][data-str-field]').forEach(function(input){
+      var key = input.getAttribute('data-str-key');
+      var idx = parseInt(input.getAttribute('data-str-idx'), 10);
+      var field = input.getAttribute('data-str-field');
+      if (!key || Number.isNaN(idx) || !field) return;
+      var exo = (window._strExos || []).find(function(e){ return e.key === key; });
+      if (!exo) {
+        exo = { key: key, series: [] };
+        window._strExos.push(exo);
+      }
+      if (!exo.series) exo.series = [];
+      while (exo.series.length <= idx) exo.series.push({kg:'', reps:''});
+      exo.series[idx][field] = input.value;
+    });
+  } catch(e) {
+    console.warn('syncStrExercisesFromDom fail', e);
+  }
+}
+
+function normalizeExerciseSeriesForSave(series) {
+  var src = Array.isArray(series) && series.length ? series : [{kg:'', reps:''}];
+  return src.map(function(s){
+    var kgRaw = (s && s.kg !== undefined && s.kg !== null) ? String(s.kg).trim() : '';
+    var repsRaw = (s && s.reps !== undefined && s.reps !== null) ? String(s.reps).trim() : '';
+    var kg = kgRaw === '' ? null : parseFloat(kgRaw);
+    var reps = repsRaw === '' ? null : parseInt(repsRaw, 10);
+    var hasKg = Number.isFinite(kg);
+    var hasReps = Number.isFinite(reps);
+    var out = {
+      kg: hasKg ? kg : null,
+      reps: hasReps ? reps : null
+    };
+    if (hasKg && hasReps) out.rm = Math.round(kg * (1 + reps / 30) * 4) / 4;
+    return out;
+  });
+}
+
+function exerciseSummaryTag(exo){
+  if(!exo) return '';
+  var label = exo.label || exo.key || 'Exercice';
+  var series = Array.isArray(exo.series) ? exo.series : [];
+  var valid = series.filter(function(s){ return (s.kg!==undefined && s.kg!==null && s.kg!=='') || (s.reps!==undefined && s.reps!==null && s.reps!==''); });
+  if(!valid.length) return label;
+  var best = valid.reduce(function(a,b){ return (Number(a.rm)||0) > (Number(b.rm)||0) ? a : b; }, valid[0]);
+  var parts = [label];
+  if(best.kg!==undefined && best.kg!==null && best.kg!=='') parts.push(best.kg+'kg');
+  if(best.reps!==undefined && best.reps!==null && best.reps!=='') parts.push('×'+best.reps);
+  if(best.rm) parts.push('~'+best.rm+'kg 1RM');
+  return parts.join(' ');
+}
+
 // Reset on type change — no presets
 document.getElementById('t-type').addEventListener('change', function(){
   if(['str_bas','str_haut','str_full'].includes(this.value)){
@@ -1075,6 +1408,102 @@ document.getElementById('t-type').addEventListener('change', function(){
     renderStrExercises();
   }
 });
+
+function showSupabaseSaveStatus(ok, table){
+  var fb = document.getElementById('save-feedback');
+  if (!fb) return;
+  fb.style.display = 'block';
+  fb.style.fontWeight = '700';
+  fb.style.color = ok ? 'var(--gr)' : 'var(--am)';
+  fb.textContent = ok
+    ? '✅ Séance enregistrée · Supabase OK'
+    : '⚠️ Séance enregistrée sur le téléphone · Supabase à vérifier (' + (table || 'sync') + ')';
+  clearTimeout(window.__saveFeedbackTimer);
+  window.__saveFeedbackTimer = setTimeout(function(){
+    if (fb) fb.style.display = 'none';
+  }, 4500);
+}
+
+function resetTrainingFormAfterSave(){
+  var keepDate = today();
+  var idsToClear = [
+    't-duree','t-dist','t-allure','t-intervals','t-fc-avg','t-fc-max','t-fc',
+    't-sp-allure','t-sp-total','t-sp-rounds','t-sp-bbj','t-sp-wb','t-sp-fc-avg','t-sp-fc-max',
+    't-qualite','t-comment'
+  ];
+  idsToClear.forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  var dateEl=document.getElementById('t-date'); if(dateEl) dateEl.value=keepDate;
+  var typeEl=document.getElementById('t-type'); if(typeEl) typeEl.value='';
+  var rpe=document.getElementById('t-rpe'); if(rpe) rpe.value=7;
+  updateRpe(7);
+  var rpeLabel=document.getElementById('rpe-cible-label'); if(rpeLabel) rpeLabel.textContent='Cible : —';
+  ['t-run-fields','t-str-fields','t-sp-fields'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
+  window._strExos=[];
+  if (typeof renderStrExercises === 'function') renderStrExercises();
+  clearCurrentDraft();
+  showLogType('training');
+}
+
+function historyDetailHtml(item){
+  var rows = [];
+  function row(label, value){ if(value!==undefined && value!==null && value!=='') rows.push('<div class="history-detail-row"><span>'+escapeHtml(label)+'</span><b>'+escapeHtml(value)+'</b></div>'); }
+  if(item._cat==='training'){
+    row('Date', fmtDate(item.date));
+    row('Durée', item.duree ? item.duree+' min' : '');
+    row('RPE', item.rpe);
+    row('Qualité', item.qualite);
+    row('Distance', item.dist ? item.dist+' km' : '');
+    row('Allure', item.allure ? item.allure+'/km' : '');
+    row('Intervalles', item.intervals);
+    row('FC moyenne', getFcAvg(item) ? getFcAvg(item)+' bpm' : '');
+    row('FC max', getFcMax(item) ? getFcMax(item)+' bpm' : '');
+    row('Temps total SP', item.sp_total ? item.sp_total+' min' : '');
+    row('Rounds', item.sp_rounds);
+    row('BBJ', item.sp_bbj ? item.sp_bbj+' m' : '');
+    row('WB 100', item.sp_wb);
+    if(item.comment) row('Commentaire', item.comment);
+    if(item.exercises && item.exercises.length){
+      rows.push('<div class="history-detail-title">Exercices</div>');
+      rows.push('<div class="history-exo-count"><b>'+item.exercises.length+'</b> exercice'+(item.exercises.length>1?'s':'')+' enregistré'+(item.exercises.length>1?'s':'')+'</div>');
+      var exoHtml = '<div class="history-exercises-list">';
+      item.exercises.forEach(function(exo, exoIndex){
+        var exoName = escapeHtml(exo.label || exo.key || ('Exercice '+(exoIndex+1)));
+        exoHtml += '<div class="history-exercise-card"><div class="history-exercise-name">'+(exoIndex+1)+'. '+exoName+'</div>';
+        var series = Array.isArray(exo.series) ? exo.series : [];
+        if(!series.length){
+          exoHtml += '<div class="history-exercise-empty">Aucune série renseignée</div>';
+        } else {
+          series.forEach(function(ser,i){
+            var kgTxt=(ser.kg!==undefined && ser.kg!==null && ser.kg!=='') ? ser.kg : '—';
+            var repsTxt=(ser.reps!==undefined && ser.reps!==null && ser.reps!=='') ? ser.reps : '—';
+            var txt='Série '+(i+1)+' : '+kgTxt+' kg × '+repsTxt+(ser.rm?' · ~'+ser.rm+' kg 1RM':'');
+            exoHtml += '<div class="history-exercise-series">'+escapeHtml(txt)+'</div>';
+          });
+        }
+        exoHtml += '</div>';
+      });
+      exoHtml += '</div>';
+      rows.push(exoHtml);
+    }
+  } else if(item._cat==='test'){
+    row('Date', fmtDate(item.date)); row('Type', item.type); row('Résultat', item.result); row('Cible', item.cible); row('Commentaire', item.comment);
+  } else if(item._cat==='poids'){
+    row('Date', fmtDate(item.date)); row('Poids', item.val ? item.val+' kg' : ''); row('Moment', item.moment);
+  }
+  return '<div class="history-detail">'+(rows.join('') || '<span>Aucun détail disponible.</span>')+'</div>';
+}
+
+function setupHistoryDetails(){
+  if(window.__hyroxHistoryDetailReady) return;
+  window.__hyroxHistoryDetailReady = true;
+  document.addEventListener('click', function(e){
+    if(e.target.closest('.js-delete-entry')) return;
+    var card = e.target.closest('.js-history-entry');
+    if(!card) return;
+    card.classList.toggle('open');
+  }, false);
+}
+
 // ═══════════════════════════════════════
 async function saveTraining() {
   const db = loadDB();
@@ -1098,19 +1527,20 @@ async function saveTraining() {
     entry.fc = entry.fc_max; // compatibilité locale avec anciennes données
   }
   if (['str_bas','str_haut','str_full'].includes(type)) {
-    entry.exercises = (window._strExos||[]).map(exo=>({
-      key: exo.key,
-      label: EXO_NAMES[exo.key]||exo.key,
-      series: exo.series.filter(s=>s.kg&&s.reps).map(s=>({
-        kg: parseFloat(s.kg), reps: parseInt(s.reps),
-        rm: Math.round(parseFloat(s.kg)*(1+parseInt(s.reps)/30)*4)/4
-      }))
-    })).filter(e=>e.series.length>0);
+    if (typeof syncStrExercisesFromDom === 'function') syncStrExercisesFromDom();
+    entry.exercises = (window._strExos||[])
+      .filter(exo=>exo && exo.key)
+      .map(exo=>({
+        key: exo.key,
+        label: EXO_NAMES[exo.key]||exo.key,
+        series: normalizeExerciseSeriesForSave(exo.series)
+      }));
     // Legacy best-set fields for backward compat
     entry.exercises.forEach(exo=>{
-      const best=exo.series.reduce((a,b)=>a.rm>b.rm?a:b,{rm:0,kg:0,reps:0});
+      const validSeries=(exo.series||[]).filter(s=>s && s.kg!==null && s.reps!==null && s.rm);
+      const best=validSeries.reduce((a,b)=>(a.rm||0)>(b.rm||0)?a:b,{rm:0,kg:null,reps:null});
       const map={squat:'squat',bench:'bench',rdl:'rdl',hip_thrust:'hip',pullup:'pullup',farmer:'farmer'};
-      if(map[exo.key]){entry[map[exo.key]]=best.kg;entry[map[exo.key]+'_reps']=best.reps;}
+      if(map[exo.key] && best.kg!==null){entry[map[exo.key]]=best.kg;entry[map[exo.key]+'_reps']=best.reps;}
     });
   }
   if (['compromised','simulation'].includes(type)) {
@@ -1124,7 +1554,8 @@ async function saveTraining() {
     entry.fc = entry.fc_max; // compatibilité locale avec anciennes données
   }
   entry.local_id = String(entry.id);
-  const savedTraining=await sbSave('trainings',entry); if(savedTraining&&savedTraining.id)entry.supabase_id=savedTraining.id; db.trainings.push(entry);
+  const savedTraining=await sbSave('trainings',entry); if(savedTraining&&savedTraining.supabase_id)entry.supabase_id=savedTraining.supabase_id; db.trainings.push(entry);
+  window._pendingChargeSaves = [];
   
   // Auto-extract charges for 1RM calculation
   if (['str_bas','str_haut','str_full'].includes(type)) {
@@ -1133,17 +1564,26 @@ async function saveTraining() {
     if(entry.exercises&&entry.exercises.length){
       entry.exercises.forEach(exo=>{
         exo.series.forEach(s=>{
-          if(!s.kg||!s.reps)return;
+          if(s.kg===null||s.kg===undefined||s.reps===null||s.reps===undefined)return;
           const chargeId=Date.now()+Math.random();
           const ch={id:chargeId,local_id:String(chargeId),date:entry.date,exo:exo.key,kg:s.kg,reps:s.reps,sets:1,rpe:entry.rpe||7,rm_estimated:s.rm,auto:true,training_id:entry.id};
           db.charges.push(ch);
-          sbSave('charges',ch).then(saved=>{ if(saved&&saved.id){ ch.supabase_id=saved.id; saveDB(db); } });
+          if(!window._pendingChargeSaves) window._pendingChargeSaves = [];
+          window._pendingChargeSaves.push(sbSave('charges',ch).then(saved=>{ if(saved&&saved.supabase_id){ ch.supabase_id=saved.supabase_id; saveDB(db); return true; } return false; }).catch(()=>false));
         });
       });
     }  }
   
+  let chargeResults = [];
+  if(window._pendingChargeSaves && window._pendingChargeSaves.length){
+    chargeResults = await Promise.all(window._pendingChargeSaves);
+  }
   saveDB(db);
-  showSupabaseSaveStatus(!!savedTraining, 'trainings');
+  clearCurrentDraft();
+  const chargesOk = !chargeResults.length || chargeResults.every(Boolean);
+  showSupabaseSaveStatus(!!savedTraining && chargesOk, chargesOk ? 'trainings' : 'trainings/charges');
+  resetTrainingFormAfterSave();
+  try { renderHistory(getCurrentHistoryFilter()); renderDashboard(); renderChargesHistory(); } catch(e) { console.warn('post-save render fail', e); }
 }
 
 async function savePoids() {
@@ -1151,8 +1591,8 @@ async function savePoids() {
   const entry={id: Date.now(),date: document.getElementById('p-date').value,val: +document.getElementById('p-val').value,moment: document.getElementById('p-moment').value};
   if(!entry.date || !entry.val){ alert('Date et poids obligatoires.'); return; }
   entry.local_id = String(entry.id);
-  const saved=await sbSave('poids',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
-  db.poids.push(entry); saveDB(db);
+  const saved=await sbSave('poids',entry); if(saved&&saved.supabase_id)entry.supabase_id=saved.supabase_id;
+  db.poids.push(entry); saveDB(db); clearCurrentDraft();
   document.getElementById('poids-feedback').style.display = 'block';
   setTimeout(() => document.getElementById('poids-feedback').style.display='none', 2000);
 }
@@ -1162,8 +1602,8 @@ async function saveTest() {
   const entry={id: Date.now(),date: document.getElementById('ts-date').value,type: document.getElementById('ts-type').value,result: document.getElementById('ts-result').value,cible: document.getElementById('ts-cible').value,comment: document.getElementById('ts-comment').value};
   if(!entry.date || !entry.type || !entry.result){ alert('Date, type et résultat obligatoires.'); return; }
   entry.local_id = String(entry.id);
-  const saved=await sbSave('tests',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
-  db.tests.push(entry); saveDB(db);
+  const saved=await sbSave('tests',entry); if(saved&&saved.supabase_id)entry.supabase_id=saved.supabase_id;
+  db.tests.push(entry); saveDB(db); clearCurrentDraft();
   document.getElementById('test-feedback').style.display = 'block';
   setTimeout(() => document.getElementById('test-feedback').style.display='none', 2000);
 }
@@ -1194,7 +1634,7 @@ async function saveRace() {
     comment: document.getElementById('r-comment').value
   };
   race.local_id = String(race.id);
-  const savedRace=await sbSave('races',race); if(savedRace&&savedRace.id)race.supabase_id=savedRace.id; db.races.push(race); saveDB(db);
+  const savedRace=await sbSave('races',race); if(savedRace&&savedRace.supabase_id)race.supabase_id=savedRace.supabase_id; db.races.push(race); saveDB(db); clearCurrentDraft();
   document.getElementById('race-feedback').style.display = 'block';
   setTimeout(() => {
     document.getElementById('race-feedback').style.display='none';
@@ -1533,13 +1973,13 @@ function renderHistory(filter) {
                ...(db.poids||[]).map(t=>({...t,_cat:'poids'}))];
 
   if (filter !== 'all') {
-    const map = {run:['vma','tempo','z2','long'], str:['str_bas','str_haut','str_full'],
+    const map = {run:['vma','tempo','z2','long','bike','ergo'], str:['str_bas','str_haut','str_full'],
       sp:['compromised','simulation'], test:['_cat=test']};
     if (filter === 'test') items = items.filter(t=>t._cat==='test');
     else items = items.filter(t => (map[filter]||[]).includes(t.type));
   }
 
-  items.sort((a,b) => b.date.localeCompare(a.date));
+  items.sort((a,b) => String(b.date||'').localeCompare(String(a.date||'')));
 
   if (!items.length) {
     el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>Aucune entrée pour ce filtre.</p></div>';
@@ -1552,10 +1992,10 @@ function renderHistory(filter) {
 
     if (item._cat === 'poids') {
       title = item.val + ' kg';
-      meta = fmtDate(item.date) + ' · ' + item.moment;
+      meta = fmtDate(item.date) + ' · ' + (item.moment||'');
     } else if (item._cat === 'test') {
       const c = CIBLES[item.type];
-      title = (c?.label||item.type) + ' — ' + item.result;
+      title = (c?.label||item.type||'Test') + ' — ' + (item.result||'');
       meta = fmtDate(item.date) + (item.comment ? ' · ' + item.comment : '');
       if (c && item.result) {
         const s = timeToSec(item.result), t2 = timeToSec(c.target);
@@ -1565,9 +2005,9 @@ function renderHistory(filter) {
         }
       }
     } else {
-      const typeLabels = {vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',compromised:'Compromised',
+      const typeLabels = {vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',bike:'Vélo',compromised:'Compromised',
         simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',ergo:'Ergo',mob:'Mobilité'};
-      title = typeLabels[item.type] || item.type;
+      title = (item.type && typeLabels[item.type]) ? typeLabels[item.type] : (item.type || 'Séance');
       if (item.duree) title += ` — ${item.duree} min`;
       meta = fmtDate(item.date);
       if (item.rpe) {
@@ -1583,43 +2023,99 @@ function renderHistory(filter) {
       if (item.allure) tags.push({txt:item.allure+'/km', cls:'etag'});
       if (getFcAvg(item)) tags.push({txt:'FC moy '+getFcAvg(item)+' bpm', cls:'etag'});
       if (getFcMax(item)) tags.push({txt:'FC max '+getFcMax(item)+' bpm', cls:'etag'});
-      if (item.squat) {
-        const rm = item.squat_reps ? Math.round(item.squat*(1+item.squat_reps/30)*4)/4 : null;
-        tags.push({txt:'Squat '+item.squat+'kg'+(rm?` → 1RM ~${rm}kg`:''), cls:'etag'});
+      if (item.exercises && item.exercises.length) {
+        item.exercises.forEach(function(exo){
+          var txt = exerciseSummaryTag(exo);
+          if(txt) tags.push({txt:txt, cls:(txt.includes('1RM')?'etag-ok':'etag')});
+        });
+      } else {
+        if(item.squat)tags.push({txt:'Squat '+item.squat+'kg',cls:'etag'});
+        if(item.bench)tags.push({txt:'Bench '+item.bench+'kg',cls:'etag'});
       }
-      if (item.bench) {
-        const rm = item.bench_reps ? Math.round(item.bench*(1+item.bench_reps/30)*4)/4 : null;
-        tags.push({txt:'Bench '+item.bench+'kg'+(rm?` → 1RM ~${rm}kg`:''), cls:'etag'});
-      }
-      if (item.sp_wb) tags.push({txt:'WB '+item.sp_wb, cls:'etag'});
+      if(item.sp_wb)tags.push({txt:'WB '+item.sp_wb,cls:'etag'});
     }
 
-    const tagsHtml = tags.map(t=>`<span class="etag ${t.cls}">${t.txt}</span>`).join('');
-    return `<div class="entry">
+    const tagsHtml = tags.map(t=>`<span class="etag ${t.cls}">${escapeHtml(t.txt)}</span>`).join('');
+    const detail = historyDetailHtml(item);
+    return `<div class="entry js-history-entry" data-cat="${escapeHtml(item._cat)}" data-id="${escapeHtml(entryDeleteKey(item))}" title="Cliquer pour afficher le détail">
       <div class="entry-icon">${icon}</div>
       <div class="entry-content">
-        <div class="entry-title">${title}</div>
-        <div class="entry-meta">${meta}${item.comment ? ' · ' + item.comment : ''}</div>
+        <div class="entry-title">${escapeHtml(title)}</div>
+        <div class="entry-meta">${escapeHtml(meta)}${item.comment ? ' · ' + escapeHtml(item.comment) : ''}</div>
         ${tags.length ? `<div class="entry-tags">${tagsHtml}</div>` : ''}
+        ${detail}
       </div>
-      <button class="del-btn" onclick="deleteEntry(${item.id}, '${item._cat}')">✕</button>
+      <button type="button" class="del-btn js-delete-entry" data-cat="${escapeHtml(item._cat)}" data-id="${escapeHtml(entryDeleteKey(item))}">✕</button>
     </div>`;
   }).join('');
+  setupHistoryDetails();
 }
 
-async function deleteEntry(id, cat) {
-  if (!confirm('Supprimer cette entrée ?')) return;
-  const db = loadDB();
-  const key = cat==='training' ? 'trainings' : cat==='test' ? 'tests' : cat==='poids' ? 'poids' : null;
-  const entry = key ? (db[key]||[]).find(t=>String(t.id)===String(id) || String(t.local_id)===String(id) || String(t.supabase_id)===String(id)) : null;
-  if (cat==='training') db.trainings = db.trainings.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
-  if (cat==='test') db.tests = db.tests.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
-  if (cat==='poids') db.poids = db.poids.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
-  const ok = await sbDel(tableForCat(cat), entry || id);
-  saveDB(db);
-  renderHistory('all');
-  if(!ok) alert('Entrée supprimée du téléphone, mais suppression Supabase non confirmée. Vérifie la table ou synchronise.');
+
+function getCurrentHistoryFilter(){
+  try { return loadUiState().histType || 'all'; } catch(e) { return 'all'; }
 }
+function rerenderAfterDelete(cat){
+  try {
+    if (cat === 'race') renderRaces();
+    else if (cat === 'charge') renderChargesHistory();
+    else if (cat === 'mensur') renderMensur();
+    else renderHistory(getCurrentHistoryFilter());
+    renderDashboard();
+  } catch(e) { console.warn('rerenderAfterDelete fail', e); }
+}
+async function hardDeleteEntry(cat, id){
+  if (!cat || !id) return;
+  const keyMap = {training:'trainings', test:'tests', poids:'poids', race:'races', charge:'charges', mensur:'mensur'};
+  const tableMap = {training:'trainings', test:'tests', poids:'poids', race:'races', charge:'charges', mensur:'mensur'};
+  const key = keyMap[cat];
+  if (!key) return;
+  const db = loadDB();
+  const list = db[key] || [];
+  const entry = list.find(x => sameEntryKey(x, id)) || {id:id, local_id:id};
+
+  // Si on supprime une séance, supprimer aussi les charges auto liées à cette séance.
+  // Sinon la table charges garde des lignes orphelines et les 1RM peuvent rester faussés.
+  if (cat === 'training') {
+    const cascadeIds = getTrainingCascadeIds(entry);
+    db.charges = (db.charges || []).filter(c => {
+      const tid = c && (c.training_id !== undefined ? c.training_id : (c.data && c.data.training_id));
+      return !cascadeIds.includes(String(tid));
+    });
+  }
+
+  db[key] = list.filter(x => !sameEntryKey(x, id));
+  saveDB(db);
+  rerenderAfterDelete(cat);
+  try {
+    if (cat === 'training') {
+      await sbDelChargesLinkedToTraining(entry);
+    }
+    const ok = await sbDel(tableMap[cat], entry);
+    if (!ok) console.warn('Suppression Supabase non confirmée', {cat,id,entry});
+    if (cat === 'training') {
+      // Recharger après cascade pour confirmer la base Supabase comme source principale.
+      syncAll().then(() => rerenderAfterDelete(cat)).catch(()=>{});
+    }
+  } catch(e) {
+    console.warn('Suppression Supabase impossible', {cat,id,e});
+  }
+}
+function setupDeleteButtons(){
+  if (window.__hyroxDeleteDelegationReady) return;
+  window.__hyroxDeleteDelegationReady = true;
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('.js-delete-entry');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const cat = btn.dataset.cat;
+    const id = btn.dataset.id;
+    hardDeleteEntry(cat, id);
+  }, true);
+}
+
+async function deleteEntry(id, cat) { return hardDeleteEntry(cat, id); }
 
 // ════════════════════════════════════
 // RACE RENDER + ANALYSIS
@@ -1660,7 +2156,7 @@ function renderRaces() {
         </div>
         ${r.comment ? `<div class="entry-meta" style="margin-top:2px;font-style:italic">${r.comment}</div>` : ''}
       </div>
-      <button class="del-btn" onclick="deleteRace(${r.id})">✕</button>
+      <button type="button" class="del-btn js-delete-entry" data-cat="race" data-id="${escapeHtml(entryDeleteKey(r))}">✕</button>
     </div>`
   ).join('');
 
@@ -1709,16 +2205,7 @@ function renderRaces() {
   }
 }
 
-async function deleteRace(id) {
-  if (!confirm('Supprimer cette course ?')) return;
-  const db = loadDB();
-  const entry = (db.races||[]).find(r=>String(r.id)===String(id) || String(r.local_id)===String(id) || String(r.supabase_id)===String(id));
-  db.races = db.races.filter(r=>String(r.id)!==String(id) && String(r.local_id)!==String(id) && String(r.supabase_id)!==String(id));
-  const ok = await sbDel('races', entry || id);
-  saveDB(db);
-  renderRaces();
-  if(!ok) alert('Course supprimée du téléphone, mais suppression Supabase non confirmée.');
-}
+async function deleteRace(id) { return hardDeleteEntry('race', id); }
 
 // ════════════════════════════════════
 // CHART (lightweight SVG)
@@ -1807,10 +2294,12 @@ function handleImport(input) {
   reader.readAsText(file);
 }
 async function clearAll() {
-  if (confirm('Effacer toutes les données du téléphone ET de Supabase pour cet appareil ? Cette action est irréversible.')) {
+  if (confirm('Effacer toutes les données Supabase du tracker ? Cette action est irréversible.')) {
     const tables=['trainings','poids','tests','races','charges','mensur'];
-    await Promise.all(tables.map(table=>fetch(SUPA_URL+'/rest/v1/'+table+'?device_id=eq.'+encodeURIComponent(DEVICE_ID),{method:'DELETE',headers:SB}).catch(e=>console.warn('clear supabase fail',table,e))));
+    // App personnelle : Supabase est la source principale, on supprime toutes les lignes connues.
+    await Promise.all(tables.map(table=>fetch(SUPA_URL+'/rest/v1/'+table+'?data=not.is.null',{method:'DELETE',headers:SB}).catch(e=>console.warn('clear supabase fail',table,e))));
     localStorage.removeItem(DB_KEY);
+    saveDB(emptyDB());
     renderDashboard();
     renderHistory('all');
     renderRaces();
@@ -1826,12 +2315,13 @@ async function clearAll() {
 // ════════════════════════════════════
 
 const EXO_LABELS = {
-  squat:'Back squat', front_squat:'Front squat', rdl:'RDL bilatéral',
+  squat:'Back squat', front_squat:'Front squat', rdl:'RDL bilatéral', deadlift:'SDT / Deadlift',
   hip_thrust:'Hip thrust', bulgarian:'Bulgarian split squat', good_morning:'Good morning',
-  bench:'Développé couché', bench_incline:'Développé incliné', pullup:'Pull-up lestés',
-  press:'Strict press', push_press:'Push press', pendlay:'Pendlay row',
+  bench:'Développé couché', db_bench:'DC haltères', bench_incline:'Développé incliné', db_incline:'DI haltères', pullup:'Pull-up lestés',
+  press:'Strict press', push_press:'Push press', pendlay:'Pendlay row', rowing:'Rowing',
   curl:'Curl barre', skull:'Skull crusher', dips:'Dips lestés',
-  farmer:'Farmer carry', kb_swing:'KB swing', nordic:'Nordic'
+  farmer:'Farmer carry', kb_swing:'KB swing', nordic:'Nordic', nordic_assiste:'Nordic assisté',
+  sled_push:'Sled push', sled_pull:'Sled pull', ski_erg:'SkiErg', row_erg:'Rameur / RowErg', wall_ball:'Wall ball', sandbag:'Sandbag lunge', bbj:'Burpee broad jump'
 };
 
 // Intensités cibles du plan par exercice
@@ -1863,7 +2353,6 @@ function epley(kg, reps) {
 function round25(kg) { return Math.round(kg / 2.5) * 2.5; }
 
 async function saveCharge() {
-  const db = loadDB();
   const exo = document.getElementById('ch-exo').value;
   const kg = parseFloat(document.getElementById('ch-kg').value);
   const reps = parseInt(document.getElementById('ch-reps').value);
@@ -1872,16 +2361,125 @@ async function saveCharge() {
   const rpe = parseFloat(document.getElementById('ch-rpe').value);
   if (!exo || !kg || !reps) { alert('Exercice, charge et reps obligatoires.'); return; }
   const rm = epley(kg, reps);
-  if (!db.charges) db.charges = [];
-  const entry={ id: Date.now(), date, exo, kg, reps, sets, rpe, rm_estimated: rm };
-  entry.local_id = String(entry.id);
-  const saved=await sbSave('charges',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
-  db.charges.push(entry); saveDB(db);
+  const entry={ id: Date.now(), local_id: String(Date.now()), date, exo, kg, reps, sets, rpe, rm_estimated: rm };
+
+  const saved = await sbSave('charges', entry);
+  if (!saved) {
+    showChargeSaveStatus(false);
+    return;
+  }
+  if(saved && saved.supabase_id) entry.supabase_id = saved.supabase_id;
+
+  showChargeSaveStatus(true);
   displayRMResult(exo, kg, reps, rm);
-  renderChargesHistory();
+  resetChargeFormAfterSave();
+
+  // Supabase est la source principale : recharge les charges depuis la base.
+  try {
+    await syncAll();
+  } catch(e) {
+    // Si le réseau tombe après une sauvegarde OK, on garde une copie locale immédiate.
+    const db = loadDB();
+    if (!db.charges) db.charges = [];
+    db.charges.push(entry);
+    saveDB(db);
+  }
+  renderChargesHistory(exo);
+  renderDashboard();
+}
+
+function showChargeSaveStatus(ok) {
   const fb = document.getElementById('ch-feedback');
+  if (!fb) return;
   fb.style.display = 'block';
-  setTimeout(() => fb.style.display = 'none', 2000);
+  fb.style.color = ok ? 'var(--gr)' : 'var(--rd)';
+  fb.textContent = ok ? '✅ Série enregistrée · Supabase OK' : '⚠️ Supabase a refusé l’enregistrement de la série';
+  if (!ok && window.__lastSupabaseError) {
+    fb.textContent += ' · ' + (window.__lastSupabaseError.status || '') + ' ' + (window.__lastSupabaseError.message || '');
+  }
+  setTimeout(() => { fb.style.display = 'none'; }, 3500);
+}
+
+function resetChargeFormAfterSave() {
+  const todayVal = today();
+  ['ch-exo','ch-kg','ch-reps'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  const sets=document.getElementById('ch-sets'); if(sets) sets.value='1';
+  const date=document.getElementById('ch-date'); if(date) date.value=todayVal;
+  const rpe=document.getElementById('ch-rpe'); if(rpe) rpe.value='7';
+  const rpeVal=document.getElementById('ch-rpe-val'); if(rpeVal) rpeVal.textContent='7';
+  clearCurrentDraft();
+}
+
+function getLatestRMForExo(exo) {
+  const db = loadDB();
+  const rows = (db.charges || []).filter(c => c.exo === exo && Number(c.rm_estimated) > 0)
+    .sort((a,b) => String(a.date||'').localeCompare(String(b.date||'')));
+  return rows.length ? Number(rows[rows.length-1].rm_estimated) : null;
+}
+
+function getBestRMForExo(exo) {
+  const db = loadDB();
+  const rows = (db.charges || []).filter(c => c.exo === exo && Number(c.rm_estimated) > 0);
+  return rows.length ? Math.max(...rows.map(r => Number(r.rm_estimated))) : null;
+}
+
+function updateChargeCalculator() {
+  const exo = document.getElementById('calc-exo')?.value || '';
+  const rmInput = document.getElementById('calc-rm');
+  const pctInput = document.getElementById('calc-pct');
+  const result = document.getElementById('calc-result');
+  if (!result || !pctInput) return;
+  const autoRM = exo ? (getLatestRMForExo(exo) || getBestRMForExo(exo)) : null;
+  if (rmInput && !rmInput.value) {
+    rmInput.placeholder = autoRM ? ('auto : ' + autoRM + ' kg') : 'aucun 1RM auto';
+  }
+  let rm = parseFloat(rmInput?.value || '');
+  const rmSource = Number.isFinite(rm) ? 'manuel' : (autoRM ? 'auto' : '');
+  if (!Number.isFinite(rm) && autoRM) rm = autoRM;
+  const pct = parseFloat(pctInput.value);
+  if (!Number.isFinite(rm) || !Number.isFinite(pct)) {
+    result.style.display = 'none';
+    return;
+  }
+  const raw = rm * pct / 100;
+  const rounded = round25(raw);
+  result.style.display = 'flex';
+  result.innerHTML = `<span class="alert-icon">🧮</span><div><b>${rounded} kg</b> à ${pct}% de ${rm} kg 1RM ${rmSource ? '('+rmSource+')' : ''}<br><span style="font-family:monospace;font-size:10px;color:var(--tx3)">calcul brut : ${raw.toFixed(1)} kg · arrondi au 2,5 kg</span></div>`;
+}
+
+function resetCalcRmOnExerciseChange() {
+  const exo = document.getElementById('calc-exo')?.value || '';
+  const rmInput = document.getElementById('calc-rm');
+  const result = document.getElementById('calc-result');
+  if (rmInput) {
+    rmInput.value = '';
+    const autoRM = exo ? (getLatestRMForExo(exo) || getBestRMForExo(exo)) : null;
+    rmInput.placeholder = autoRM ? ('auto : ' + autoRM + ' kg') : 'aucun 1RM auto';
+  }
+  if (result) result.style.display = 'none';
+  updateChargeCalculator();
+  saveCurrentDraft();
+}
+
+function applyCalcToCharge() {
+  const exo = document.getElementById('calc-exo')?.value || '';
+  const rm = parseFloat(document.getElementById('calc-rm')?.value || '') || (exo ? (getLatestRMForExo(exo) || getBestRMForExo(exo)) : null);
+  const pct = parseFloat(document.getElementById('calc-pct')?.value || '');
+  if (!Number.isFinite(rm) || !Number.isFinite(pct)) { alert('Choisis un exercice avec un 1RM connu ou saisis un 1RM et un %.'); return; }
+  const charge = round25(rm * pct / 100);
+  const chKg = document.getElementById('ch-kg'); if (chKg) chKg.value = charge;
+  const chExo = document.getElementById('ch-exo'); if (chExo && exo) chExo.value = exo;
+  saveCurrentDraft();
+}
+
+function renderChargeCalculatorOptions() {
+  const calc = document.getElementById('calc-exo');
+  if (!calc || calc.dataset.ready === '1') return;
+  calc.innerHTML = '<option value="">— Choisir —</option>' + Object.entries(EXO_LABELS).map(([key,label]) => `<option value="${escapeHtml(key)}">${escapeHtml(label)}</option>`).join('');
+  calc.dataset.ready = '1';
+  calc.addEventListener('change', resetCalcRmOnExerciseChange);
+  const rm = document.getElementById('calc-rm'); if (rm) rm.addEventListener('input', function(){ updateChargeCalculator(); saveCurrentDraft(); });
+  const pct = document.getElementById('calc-pct'); if (pct) pct.addEventListener('input', function(){ updateChargeCalculator(); saveCurrentDraft(); });
 }
 
 function displayRMResult(exo, kg, reps, rm) {
@@ -1894,7 +2492,7 @@ function displayRMResult(exo, kg, reps, rm) {
     `${kg} kg × (1 + ${reps}/30) = ${rm} kg`;
   
   // Choose intensities based on exercise type
-  const isCompound = ['squat','front_squat','rdl','bench','bench_incline','press','push_press'].includes(exo);
+  const isCompound = ['squat','front_squat','rdl','deadlift','bench','db_bench','bench_incline','db_incline','press','push_press','rowing'].includes(exo);
   const intensities = isCompound ? PLAN_INTENSITIES : HYROX_INTENSITIES;
   
   const tableEl = document.getElementById('rm-table');
@@ -1977,89 +2575,115 @@ function getPlanTargets(exo) {
 function renderChargesHistory(selectedExo) {
   const db = loadDB();
   const charges = db.charges || [];
-  
-  // Build list of exercices that have data
-  const exosWithData = [...new Set(charges.map(c => c.exo))];
-  
-  const tabsEl = document.getElementById('exo-subtabs');
-  if (!tabsEl) return;
-  
+  renderChargeCalculatorOptions();
+
+  const historyEl = document.getElementById('rm-history');
+  const selectEl = document.getElementById('rm-exo-select');
+  const chartWrap = document.getElementById('rm-chart-wrap');
+  if (chartWrap) chartWrap.style.display = 'none';
+  if (!historyEl) return;
+
+  const exosWithData = [...new Set(charges.map(c => c.exo).filter(Boolean))]
+    .sort((a,b) => String(EXO_LABELS[a] || a).localeCompare(String(EXO_LABELS[b] || b), 'fr'));
+
+  if (selectEl) {
+    const previous = selectedExo || selectEl.value || loadUiState().rmExo || '';
+    selectEl.innerHTML = '<option value="">— Choisir —</option>' + exosWithData.map(e => {
+      const label = escapeHtml(EXO_LABELS[e] || e);
+      return `<option value="${escapeHtml(e)}">${label}</option>`;
+    }).join('');
+    const nextValue = exosWithData.includes(previous) ? previous : (exosWithData[0] || '');
+    selectEl.value = nextValue;
+    selectedExo = nextValue;
+  } else if (!selectedExo) {
+    selectedExo = exosWithData[0] || '';
+  }
+
   if (!exosWithData.length) {
-    document.getElementById('rm-history').innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Enregistre des séries pour voir l&#39;historique 1RM.</p></div>';
-    tabsEl.innerHTML = '';
+    historyEl.innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Enregistre des séries pour voir la synthèse 1RM.</p></div>';
     return;
   }
-  
-  const current = selectedExo || exosWithData[0];
-  
-  // Count auto vs manual
-  const autoCount = (db.charges||[]).filter(c => c.auto).length;
-  const manualCount = (db.charges||[]).filter(c => !c.auto).length;
-  
-  tabsEl.innerHTML = exosWithData.map(e => 
-    `<button class="stab ${e===current?'on':''}" onclick="renderChargesHistory('${e}')">${EXO_LABELS[e]||e}</button>`
-  ).join('') + (autoCount > 0 ? `<div style="font-family:monospace;font-size:9px;color:var(--tx4);margin-top:.3rem;width:100%">⚡ ${autoCount} entrées auto depuis les logs · ${manualCount} manuelles</div>` : '');
-  
-  const exoCharges = charges.filter(c => c.exo === current).sort((a,b) => a.date.localeCompare(b.date));
-  
+
+  if (!selectedExo) {
+    historyEl.innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Choisis un exercice pour voir sa synthèse.</p></div>';
+    return;
+  }
+
+  saveUiState({rmExo:selectedExo});
+
+  const exoCharges = charges
+    .filter(c => c.exo === selectedExo)
+    .filter(c => Number(c.kg) > 0 || Number(c.reps) > 0 || Number(c.rm_estimated) > 0)
+    .sort((a,b) => String(a.date || '').localeCompare(String(b.date || '')));
+
   if (!exoCharges.length) {
-    document.getElementById('rm-history').innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Aucune donnée pour cet exercice.</div>';
+    historyEl.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Aucune donnée exploitable pour cet exercice.</div>';
     return;
   }
-  
-  // Latest 1RM
-  const latest = exoCharges[exoCharges.length-1];
-  const best = exoCharges.reduce((a,b) => a.rm_estimated > b.rm_estimated ? a : b);
-  
-  document.getElementById('rm-history').innerHTML = `
-    <div class="stat-grid" style="margin-bottom:.4rem">
+
+  const theoreticalRows = exoCharges.filter(c => Number(c.rm_estimated) > 0);
+  const bestTheo = theoreticalRows.length
+    ? theoreticalRows.reduce((a,b) => Number(a.rm_estimated || 0) >= Number(b.rm_estimated || 0) ? a : b)
+    : null;
+
+  const realizedRows = exoCharges.filter(c => Number(c.reps) === 1 && Number(c.kg) > 0);
+  const bestReal = realizedRows.length
+    ? realizedRows.reduce((a,b) => Number(a.kg || 0) >= Number(b.kg || 0) ? a : b)
+    : null;
+
+  const latest = exoCharges[exoCharges.length - 1];
+  const label = EXO_LABELS[selectedExo] || selectedExo;
+
+  function fmtKg(v) {
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0 ? (Math.round(n * 10) / 10) + ' kg' : '—';
+  }
+
+  const theoValue = bestTheo ? fmtKg(bestTheo.rm_estimated) : '—';
+  const realValue = bestReal ? fmtKg(bestReal.kg) : '—';
+  const theoMeta = bestTheo
+    ? `${fmtDate(bestTheo.date)} · ${fmtKg(bestTheo.kg)} × ${bestTheo.reps || '—'} reps${bestTheo.auto ? ' · auto séance' : ' · saisie charge'}`
+    : 'Aucune série exploitable pour estimation Epley';
+  const realMeta = bestReal
+    ? `${fmtDate(bestReal.date)} · 1 rep validée${bestReal.rpe ? ' · RPE ' + bestReal.rpe : ''}`
+    : 'Aucun 1RM réalisé enregistré';
+
+  const gapHtml = (bestTheo && bestReal)
+    ? `<div class="alert alert-info" style="margin-top:.45rem"><span class="alert-icon">↔</span><div>Écart théorie / réalisé : <b>${fmtKg(Number(bestTheo.rm_estimated) - Number(bestReal.kg))}</b><br><span style="font-family:monospace;font-size:10px;color:var(--tx3)">Le 1RM théorique vient des séries sous-maximales ; le 1RM réalisé correspond à une vraie rep à charge maximale.</span></div></div>`
+    : '';
+
+  const recHtml = bestTheo ? `
+    <div class="card-title" style="margin-top:.65rem">Charges utiles depuis le 1RM théorique</div>
+    <div class="entry-tags" style="margin-top:.35rem">
+      ${PLAN_INTENSITIES.map(i => {
+        const rec = round25(Number(bestTheo.rm_estimated) * i.pct);
+        return `<span class="etag">${escapeHtml(i.label)} : <b>${rec} kg</b></span>`;
+      }).join('')}
+    </div>` : '';
+
+  historyEl.innerHTML = `
+    <div class="entry" style="display:block">
+      <div class="entry-title" style="font-size:13px;margin-bottom:.35rem">${escapeHtml(label)}</div>
+      <div class="entry-meta">${exoCharges.length} série(s) enregistrée(s) · dernière donnée : ${fmtDate(latest.date)}</div>
+    </div>
+    <div class="stat-grid" style="margin-bottom:.45rem">
       <div class="stat-box">
-        <div class="val" style="color:var(--gr)">${latest.rm_estimated} kg</div>
-        <div class="lbl">1RM actuel</div>
-        <div class="delta" style="font-family:monospace;font-size:10px;color:var(--tx4)">${fmtDate(latest.date)}</div>
+        <div class="val" style="color:var(--gr)">${theoValue}</div>
+        <div class="lbl">1RM théorique</div>
+        <div class="delta" style="font-family:monospace;font-size:10px;color:var(--tx4)">${escapeHtml(theoMeta)}</div>
       </div>
       <div class="stat-box">
-        <div class="val" style="color:var(--am)">${best.rm_estimated} kg</div>
-        <div class="lbl">1RM record</div>
-        <div class="delta" style="font-family:monospace;font-size:10px;color:var(--tx4)">${fmtDate(best.date)}</div>
+        <div class="val" style="color:var(--am)">${realValue}</div>
+        <div class="lbl">1RM réalisé</div>
+        <div class="delta" style="font-family:monospace;font-size:10px;color:var(--tx4)">${escapeHtml(realMeta)}</div>
       </div>
     </div>
-    ${exoCharges.slice(-5).reverse().map(c => {
-      const isNew = c.rm_estimated >= best.rm_estimated;
-      return `<div class="entry">
-        <div class="entry-icon">${isNew ? '🏆' : '💪'}</div>
-        <div class="entry-content">
-          <div class="entry-title">${c.kg} kg × ${c.reps} reps = <b style="color:var(--gr)">${c.rm_estimated} kg 1RM</b></div>
-          <div class="entry-meta">${fmtDate(c.date)} · RPE ${c.rpe} · ${c.sets} série(s)</div>
-          <div class="entry-tags">
-            ${PLAN_INTENSITIES.map(i => {
-              const rec = round25(c.rm_estimated * i.pct);
-              return `<span class="etag">${i.label.split(' ')[0]}: <b>${rec}</b></span>`;
-            }).slice(0,4).join('')}
-          </div>
-        </div>
-        <button class="del-btn" onclick="deleteCharge(${c.id})">✕</button>
-      </div>`;
-    }).join('')}`;
-  
-  // Draw chart
-  const chartWrap = document.getElementById('rm-chart-wrap');
-  chartWrap.style.display = 'block';
-  const canvas = document.getElementById('rm-chart');
-  const data = exoCharges.map(c => ({x: fmtDate(c.date), y: c.rm_estimated}));
-  drawLineChart(canvas, data, {color:'var(--gr)', min: Math.min(...data.map(d=>d.y))-5, max: Math.max(...data.map(d=>d.y))+5});
+    ${gapHtml}
+    ${recHtml}
+  `;
 }
 
-async function deleteCharge(id) {
-  if (!confirm('Supprimer cette série ?')) return;
-  const db = loadDB();
-  const entry = (db.charges||[]).find(c=>String(c.id)===String(id) || String(c.local_id)===String(id) || String(c.supabase_id)===String(id));
-  db.charges = (db.charges||[]).filter(c => String(c.id)!==String(id) && String(c.local_id)!==String(id) && String(c.supabase_id)!==String(id));
-  const ok = await sbDel('charges', entry || id);
-  saveDB(db);
-  renderChargesHistory();
-  if(!ok) alert('Série supprimée du téléphone, mais suppression Supabase non confirmée.');
-}
+async function deleteCharge(id) { return hardDeleteEntry('charge', id); }
 
 
 
@@ -2078,20 +2702,51 @@ const MENSUR_FIELDS = [
   { key: 'biceps',   label: 'Biceps',   unit: 'cm', color: '#ffb800', icon: '💪', trend: 'up' },
 ];
 
-async function saveMensur() {
-  const db = loadDB();
-  if (!db.mensur) db.mensur = [];
 
+function resetMensurFormAfterSave() {
+  try {
+    MENSUR_FIELDS.forEach(f => {
+      const el = document.getElementById('m-' + f.key);
+      if (el) el.value = '';
+    });
+    const note = document.getElementById('m-note');
+    if (note) note.value = '';
+    const date = document.getElementById('m-date');
+    if (date) date.value = today();
+    clearCurrentDraft();
+  } catch(e) {
+    console.warn('resetMensurFormAfterSave fail', e);
+  }
+}
+
+function showMensurSaveStatus(ok, saved) {
+  const fb = document.getElementById('m-feedback');
+  if (!fb) return;
+  fb.style.display = 'block';
+  fb.style.color = ok ? 'var(--gr)' : 'var(--rd)';
+  fb.textContent = ok ? '✅ Mensurations enregistrées · Supabase OK' : '⚠️ Supabase a refusé l’enregistrement des mensurations';
+  if (!ok && window.__lastSupabaseError) {
+    fb.textContent += ' · ' + (window.__lastSupabaseError.status || '') + ' ' + (window.__lastSupabaseError.message || '');
+  }
+  setTimeout(() => { fb.style.display = 'none'; }, 3000);
+}
+
+async function saveMensur() {
   const entry = {
     id: Date.now(),
+    local_id: String(Date.now()),
     date: document.getElementById('m-date').value,
     note: document.getElementById('m-note').value,
   };
 
   let hasValue = false;
   MENSUR_FIELDS.forEach(f => {
-    const val = parseFloat(document.getElementById('m-' + f.key).value);
-    if (val > 0) { entry[f.key] = val; hasValue = true; }
+    const raw = document.getElementById('m-' + f.key).value;
+    const val = parseFloat(raw);
+    if (raw !== '' && !Number.isNaN(val)) {
+      entry[f.key] = val;
+      if (val > 0) hasValue = true;
+    }
   });
 
   if (!entry.date || !hasValue) {
@@ -2099,26 +2754,43 @@ async function saveMensur() {
     return;
   }
 
-  entry.local_id = String(entry.id);
-  const saved=await sbSave('mensur',entry); if(saved&&saved.id)entry.supabase_id=saved.id; db.mensur.push(entry); saveDB(db);
+  const saved = await sbSave('mensur', entry);
+  if (!saved) {
+    showMensurSaveStatus(false, saved);
+    return;
+  }
 
-  const fb = document.getElementById('m-feedback');
-  fb.style.display = 'block';
-  setTimeout(() => { fb.style.display = 'none'; renderMensur(); }, 1500);
+  showMensurSaveStatus(true, saved);
+  resetMensurFormAfterSave();
+
+  // Supabase est la source principale : on recharge la table puis on rerend Corps.
+  try {
+    const db = await syncAll();
+    saveDB(db);
+  } catch(e) {
+    console.warn('sync après mensuration impossible', e);
+  }
+  renderMensur();
+  renderDashboard();
 }
+
 
 function renderMensur() {
   const db = loadDB();
-  const entries = (db.mensur || []).sort((a, b) => a.date.localeCompare(b.date));
+  const entries = (db.mensur || [])
+    .filter(Boolean)
+    .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
 
   const empty = document.getElementById('m-empty');
   const charts = document.getElementById('m-charts-section');
   const card = document.getElementById('m-current-card');
+  const tableEl = document.getElementById('m-history-table');
 
   if (!entries.length) {
     empty.style.display = 'block';
     charts.style.display = 'none';
     card.style.display = 'none';
+    if (tableEl) tableEl.innerHTML = '';
     return;
   }
 
@@ -2129,26 +2801,29 @@ function renderMensur() {
   const last = entries[entries.length - 1];
   const first = entries[0];
 
-  // Last values card
+  // Dernières valeurs
   document.getElementById('m-last-date').textContent = fmtDate(last.date);
   const statsEl = document.getElementById('m-current-stats');
   statsEl.innerHTML = MENSUR_FIELDS.map(f => {
-    if (!last[f.key]) return '';
+    if (last[f.key] === undefined || last[f.key] === null || last[f.key] === '') return '';
     const firstVal = first[f.key];
-    const delta = firstVal ? (last[f.key] - firstVal).toFixed(1) : null;
+    const delta = (firstVal !== undefined && firstVal !== null && firstVal !== '') ? (last[f.key] - firstVal).toFixed(1) : null;
     const sign = delta > 0 ? '+' : '';
     const deltaColor = (f.trend === 'down' && delta < 0) || (f.trend === 'up' && delta > 0)
       ? 'color:var(--ok)' : delta != 0 ? 'color:var(--am)' : 'color:var(--tx4)';
     return `<div class="stat-box">
-      <div class="val" style="color:${f.color}">${last[f.key]}</div>
-      <div class="lbl">${f.label} cm</div>
+      <div class="val" style="color:${f.color}">${escapeHtml(last[f.key])}</div>
+      <div class="lbl">${escapeHtml(f.label)} cm</div>
       ${delta !== null ? `<div class="delta" style="${deltaColor}">${sign}${delta} cm</div>` : ''}
     </div>`;
   }).filter(Boolean).join('');
 
-  // Draw each chart
+  // Courbes
   MENSUR_FIELDS.forEach(f => {
-    const vals = entries.filter(e => e[f.key]).map(e => ({ x: fmtDate(e.date), y: e[f.key] }));
+    const vals = entries
+      .filter(e => e[f.key] !== undefined && e[f.key] !== null && e[f.key] !== '')
+      .map(e => ({ x: fmtDate(e.date), y: Number(e[f.key]) }))
+      .filter(v => Number.isFinite(v.y));
     if (!vals.length) return;
 
     const canvas = document.getElementById('chart-' + f.key);
@@ -2156,7 +2831,6 @@ function renderMensur() {
     const maxY = Math.max(...vals.map(v => v.y)) + 2;
     drawLineChart(canvas, vals, { color: f.color, min: minY, max: maxY });
 
-    // Delta label
     const deltaEl = document.getElementById('delta-' + f.key);
     if (vals.length >= 2) {
       const diff = (vals[vals.length-1].y - vals[0].y).toFixed(1);
@@ -2165,27 +2839,75 @@ function renderMensur() {
       const col = (f.trend === 'down' && diff < 0) || (f.trend === 'up' && diff > 0)
         ? 'var(--ok)' : diff != 0 ? 'var(--am)' : 'var(--tx4)';
       deltaEl.innerHTML = `<span style="color:${col}">${arrow} ${sign}${diff} cm</span> depuis le ${vals[0].x}`;
+    } else if (deltaEl) {
+      deltaEl.innerHTML = '';
     }
   });
 
-  // History table
-  const tableEl = document.getElementById('m-history-table');
-  tableEl.innerHTML = `
-    <div style="display:grid;grid-template-columns:80px repeat(4,1fr);gap:.2rem;font-family:monospace;font-size:9.5px;color:var(--tx4);padding:.2rem 0;border-bottom:1px solid var(--bo2)">
-      <span>Date</span>
-      ${MENSUR_FIELDS.map(f => `<span style="color:${f.color}">${f.label}</span>`).join('')}
-    </div>` +
-    [...entries].reverse().slice(0, 10).map(e => `
-      <div style="display:grid;grid-template-columns:80px repeat(4,1fr);gap:.2rem;font-family:monospace;font-size:10.5px;padding:.3rem 0;border-bottom:1px solid var(--bo)">
-        <span style="color:var(--tx4)">${fmtDate(e.date)}</span>
-        ${MENSUR_FIELDS.map(f => `<span style="color:${e[f.key] ? 'var(--tx2)' : 'var(--tx4)'}">${e[f.key] ? e[f.key] + ' cm' : '—'}</span>`).join('')}
-      </div>`).join('') +
-    (entries.length > 10 ? `<div style="font-family:monospace;font-size:9px;color:var(--tx4);text-align:center;padding:.3rem">${entries.length - 10} entrées plus anciennes masquées</div>` : '');
+  // Historique complet + suppression unitaire depuis l'onglet Corps
+  if (tableEl) {
+    tableEl.innerHTML = `
+      <div style="display:grid;grid-template-columns:70px repeat(4,1fr) 54px;gap:.2rem;font-family:monospace;font-size:9.5px;color:var(--tx4);padding:.2rem 0;border-bottom:1px solid var(--bo2)">
+        <span>Date</span>
+        ${MENSUR_FIELDS.map(f => `<span style="color:${f.color}">${escapeHtml(f.label)}</span>`).join('')}
+        <span></span>
+      </div>` +
+      [...entries].reverse().map(e => {
+        const delKey = entryDeleteKey(e);
+        return `<div class="entry" style="display:grid;grid-template-columns:70px repeat(4,1fr) 54px;gap:.2rem;align-items:center;font-family:monospace;font-size:10.5px;padding:.35rem 0;border-bottom:1px solid var(--bo);background:transparent;border-left:0;border-right:0;border-top:0;border-radius:0;margin:0">
+          <span style="color:var(--tx4)">${escapeHtml(fmtDate(e.date))}</span>
+          ${MENSUR_FIELDS.map(f => `<span style="color:${e[f.key] !== undefined && e[f.key] !== null && e[f.key] !== '' ? 'var(--tx2)' : 'var(--tx4)'}">${e[f.key] !== undefined && e[f.key] !== null && e[f.key] !== '' ? escapeHtml(e[f.key]) + ' cm' : '—'}</span>`).join('')}
+          <button type="button" class="del-btn js-delete-entry" data-cat="mensur" data-id="${escapeHtml(delKey)}" title="Supprimer cette mesure" style="font-family:monospace;font-size:10px;color:var(--rd);border:1px solid var(--rd2);border-radius:4px;padding:.15rem .25rem">Suppr.</button>
+          ${e.note ? `<div style="grid-column:1/-1;color:var(--tx4);font-size:9.5px;padding-top:.1rem">Note : ${escapeHtml(e.note)}</div>` : ''}
+        </div>`;
+      }).join('');
+    setupDeleteButtons();
+  }
 }
 
+
 // Init
-showTab('dashboard');
-window.addEventListener('load',()=>syncAll().then(()=>renderDashboard()));
+// Ne pas appeler showTab('dashboard') au chargement : cela écrase l'onglet mémorisé.
+// L'initialisation réelle est faite dans le listener load plus haut, qui restaure l'onglet actif.
+window.addEventListener('load',()=>{
+  syncAll().then(()=>{
+    const active = (document.querySelector('.sec.on')?.id || 'tab-dashboard').replace('tab-','');
+    // Après la synchro, on rerend l'onglet réellement affiché sans jamais forcer le dashboard.
+    if (active==='dashboard') renderDashboard();
+    else if (active==='history') renderHistory(loadUiState().histType || 'all');
+    else if (active==='race') renderRaces();
+    else if (active==='charges') renderChargesHistory();
+    else if (active==='mensur') renderMensur();
+  });
+});
+
+try { setupDeleteButtons(); } catch(e) {}
+
+// Restauration robuste de l'onglet actif après refresh mobile.
+// Certains navigateurs affichent l'état HTML initial puis écrasent l'état pendant la synchro :
+// on réapplique l'onglet sauvegardé plusieurs fois pendant le chargement, sans toucher à Supabase.
+(function(){
+  const tabs = ['dashboard','log','history','race','charges','mensur'];
+  function getSavedTab(){
+    const hashTab = (location.hash || '').replace('#','');
+    if (tabs.includes(hashTab)) return hashTab;
+    try { const ss = sessionStorage.getItem('hyrox_tracker_active_tab_v1'); if (tabs.includes(ss)) return ss; } catch(e) {}
+    try { const ls = localStorage.getItem('hyrox_tracker_active_tab_v1'); if (tabs.includes(ls)) return ls; } catch(e) {}
+    try { const ui = JSON.parse(localStorage.getItem('hyrox_tracker_ui_state_v1') || '{}'); if (tabs.includes(ui.activeTab)) return ui.activeTab; } catch(e) {}
+    try { const draft = JSON.parse(localStorage.getItem('hyrox_tracker_draft_v1') || '{}'); if (tabs.includes(draft.activeTab)) return draft.activeTab; } catch(e) {}
+    return 'dashboard';
+  }
+  function restoreSavedTab(){
+    const t = getSavedTab();
+    if (typeof showTab === 'function') showTab(t, {silentHash:false});
+  }
+  // immédiat + après les callbacks load/sync
+  try { restoreSavedTab(); } catch(e) {}
+  document.addEventListener('DOMContentLoaded', () => { try { restoreSavedTab(); } catch(e) {} });
+  window.addEventListener('load', () => {
+    [0, 100, 500, 1200].forEach(ms => setTimeout(() => { try { restoreSavedTab(); } catch(e) {} }, ms));
+  });
+})();
 </script>
 </body>
 </html>
