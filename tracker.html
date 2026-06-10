@@ -738,6 +738,20 @@ const DEVICE_ID=getDeviceId();
 const SB={'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','x-device-id':DEVICE_ID,'Prefer':'return=representation'};
 async function sbEnsureDevice(){const r=await fetch(SUPA_URL+'/rest/v1/device_users?device_id=eq.'+DEVICE_ID,{headers:SB});const d=await r.json();if(!d.length)await fetch(SUPA_URL+'/rest/v1/device_users',{method:'POST',headers:SB,body:JSON.stringify({device_id:DEVICE_ID})});}
 window.__lastSupabaseError = null;
+
+function normalizeSupabaseRow(row){
+  if(!row || typeof row !== 'object') return row;
+  // Les anciennes versions peuvent stocker le vrai contenu dans row.data.
+  // Sans cette normalisation, les tableaux reviennent vides/inexploitables côté UI.
+  if(row.data && typeof row.data === 'object' && !Array.isArray(row.data)){
+    return {...row.data, supabase_id: row.id, _supabase_row: row};
+  }
+  return {...row, supabase_id: row.id};
+}
+
+function normalizeSupabaseRows(rows){
+  return Array.isArray(rows) ? rows.map(normalizeSupabaseRow) : [];
+}
 async function sbSave(table,entry){
   window.__lastSupabaseError = null;
   try{
