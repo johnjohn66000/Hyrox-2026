@@ -94,6 +94,17 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 .sync-plan-btn:active{opacity:.75}
 .sync-plan-status{font-family:monospace;font-size:9.5px;color:var(--tx4)}
 
+
+/* DYNAMIC TRACKER VALUES */
+.dyn-summary{background:linear-gradient(135deg,rgba(0,196,167,.08),rgba(0,0,0,0));border:1px solid var(--gr2);border-radius:10px;margin:.5rem .9rem;padding:.65rem .75rem}
+.dyn-summary .dyn-title{font-family:monospace;font-size:9.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--gr);margin-bottom:.35rem}
+.dyn-summary .dyn-line{font-family:monospace;font-size:10px;color:var(--tx3);line-height:1.5}
+.dyn-panel{margin-top:.35rem;background:rgba(0,196,167,.06);border:1px solid rgba(0,196,167,.22);border-radius:6px;padding:.35rem .45rem;font-family:monospace;font-size:9.5px;line-height:1.45;color:var(--tx3)}
+.dyn-panel b{color:var(--gr)}
+.dyn-chip{display:inline-block;margin:1px 2px 1px 0;padding:1px 5px;border-radius:3px;background:var(--gr3);border:1px solid var(--gr2);color:var(--gr);white-space:nowrap}
+.dyn-chip.miss{background:var(--am3);border-color:var(--am2);color:var(--am)}
+.dyn-chip.warn{background:var(--bg3);border-color:var(--bo2);color:var(--tx3)}
+
 </style>
 </head>
 <body>
@@ -113,7 +124,11 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="leg-item"><span class="t t-sp">SP</span>Compromised</div>
 <div class="leg-item"><span class="t t-ergo">ERGO</span>Ergo</div>
 <div class="leg-item"><span class="t t-mob">MOB</span>Mobilité</div>
-</div><div class="prog-summary" style="border-color:var(--rd);background:linear-gradient(135deg,rgba(255,68,68,.10),rgba(0,0,0,0))"><div class="prog-title" style="color:var(--rd)">Règle coach pro ischios/mollets</div><div class="prog-row"><span>Si raideur ischios/mollets &gt; 3/10</span><span class="vals">supprimer RDL · nordic libre · good morning · broad jumps · remplacer par vélo Z2 + isométrie + mobilité.</span></div><div class="prog-row"><span>Sled</span><span class="vals">force → transfert → compromised → simulation → taper. Toutes les séances clés doivent être loggées dans le tracker.</span></div></div><div class="prog-summary" style="border-color:var(--am2);background:linear-gradient(135deg,rgba(255,184,0,.08),rgba(0,0,0,0));"><div class="prog-title">SPÉCIFIQUE WALL BALL — POINT FAIBLE</div><div class="prog-row"><span>Règle placement : pas de wall ball après muscu. Les blocs WB se placent après run, après mobilité ou dans WOD/simulation.</span></div><div class="prog-row"><span>Substitut créneau sans ballon : thrusters barre/DB, volume contrôlé, objectif transfert squat → poussée verticale sans casser les jambes.</span></div><div class="prog-row"><span>Progression cible : A 40–80 reps/sem · B 70–110 · C 100–140 · D 130–180 · E 180–240 · taper 20–80 reps qualité.</span></div><div class="prog-row"><span>À logger : volume total, plus grosse série unbroken, stratégie de breaks, RPE épaules/quads, qualité de profondeur.</span></div></div>
+</div><div class="dyn-summary" id="dynamic-tracker-summary">
+  <div class="dyn-title">Valeurs dynamiques tracker</div>
+  <div class="dyn-line" id="dynamic-tracker-summary-line">En attente de synchro tracker…</div>
+</div>
+<div class="prog-summary" style="border-color:var(--rd);background:linear-gradient(135deg,rgba(255,68,68,.10),rgba(0,0,0,0))"><div class="prog-title" style="color:var(--rd)">Règle coach pro ischios/mollets</div><div class="prog-row"><span>Si raideur ischios/mollets &gt; 3/10</span><span class="vals">supprimer RDL · nordic libre · good morning · broad jumps · remplacer par vélo Z2 + isométrie + mobilité.</span></div><div class="prog-row"><span>Sled</span><span class="vals">force → transfert → compromised → simulation → taper. Toutes les séances clés doivent être loggées dans le tracker.</span></div></div><div class="prog-summary" style="border-color:var(--am2);background:linear-gradient(135deg,rgba(255,184,0,.08),rgba(0,0,0,0));"><div class="prog-title">SPÉCIFIQUE WALL BALL — POINT FAIBLE</div><div class="prog-row"><span>Règle placement : pas de wall ball après muscu. Les blocs WB se placent après run, après mobilité ou dans WOD/simulation.</span></div><div class="prog-row"><span>Substitut créneau sans ballon : thrusters barre/DB, volume contrôlé, objectif transfert squat → poussée verticale sans casser les jambes.</span></div><div class="prog-row"><span>Progression cible : A 40–80 reps/sem · B 70–110 · C 100–140 · D 130–180 · E 180–240 · taper 20–80 reps qualité.</span></div><div class="prog-row"><span>À logger : volume total, plus grosse série unbroken, stratégie de breaks, RPE épaules/quads, qualité de profondeur.</span></div></div>
 <div class="prog-summary">
 <div class="prog-title">Progression charges — vue globale</div>
 <div class="prog-row"><span>Back squat</span><span class="vals">80 kg → 92.5 kg → 5-3-1 → 90 kg maint.</span></div>
@@ -2352,11 +2367,12 @@ function planSyncStatus(msg, ok){
   el.style.color=ok===true?'var(--gr)':ok===false?'var(--rd)':'var(--tx4)';
 }
 function planNormalizeSupabaseRow(row){
+  var out={}, data, k;
   if(!row || typeof row!=='object') return row;
-  if(row.data && typeof row.data==='object' && !Array.isArray(row.data)){
-    return {...row.data, supabase_id: row.id, _supabase_row: row};
-  }
-  return {...row, supabase_id: row.id};
+  data = (row.data && typeof row.data==='object' && !Array.isArray(row.data)) ? row.data : row;
+  for(k in data){ if(Object.prototype.hasOwnProperty.call(data,k)) out[k]=data[k]; }
+  if(row.id!==undefined && row.id!==null) out.supabase_id=row.id;
+  return out;
 }
 async function planLoadTable(table){
   const headers={apikey:PLAN_SUPA_KEY,Authorization:'Bearer '+PLAN_SUPA_KEY,'Content-Type':'application/json'};
@@ -2398,6 +2414,184 @@ window.addEventListener('load',()=>{
   forceTrackerSyncFromPlan();
 });
 </script>
+
+<script id="plan-dynamic-tracker-values">
+// ════════════════════════════════════
+// VALEURS DYNAMIQUES DU TRACKER → PLAN
+// Ajout non destructif : aucune séance n'est réécrite, on ajoute seulement des panneaux calculés.
+// ════════════════════════════════════
+(function(){
+  var DB_KEY = 'hyrox_tracker_v1';
+  var EXOS = [
+    {key:'squat', names:['Back squat','Squat']},
+    {key:'front_squat', names:['Front squat']},
+    {key:'rdl', names:['RDL bilatéral','RDL']},
+    {key:'hip_thrust', names:['Hip thrust']},
+    {key:'bulgarian', names:['Bulgarian split squat','Bulgarian']},
+    {key:'good_morning', names:['Good morning']},
+    {key:'kb_swing', names:['KB swing']},
+    {key:'mollets', names:['Mollets debout','Mollets']},
+    {key:'bench', names:['Développé couché','Bench']},
+    {key:'bench_incline', names:['Développé incliné']},
+    {key:'pullup', names:['Pull-up lestés','Pull-up lesté','Pull-up']},
+    {key:'press', names:['Strict press']},
+    {key:'push_press', names:['Push press']},
+    {key:'pendlay', names:['Pendlay row']},
+    {key:'yates', names:['Yates row']},
+    {key:'lat_pulldown', names:['Lat pulldown']},
+    {key:'curl', names:['Curl barre']},
+    {key:'skull', names:['Skull crusher']},
+    {key:'dips', names:['Dips lestés','Dips lesté']},
+    {key:'farmer', names:['Farmer carry']},
+    {key:'sled_push', names:['Sled push']},
+    {key:'wall_ball', names:['Wall ball','Wall balls']},
+    {key:'sandbag', names:['Sandbag lunge','Fentes sandbag']},
+    {key:'bbj', names:['Burpee broad jump','BBJ']}
+  ];
+  var LABELS = {};
+  for(var ei=0; ei<EXOS.length; ei++){ LABELS[EXOS[ei].key]=EXOS[ei].names[0]; }
+
+  function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function loadDB(){ try{ return JSON.parse(localStorage.getItem(DB_KEY) || '{}') || {}; }catch(e){ return {}; } }
+  function toNum(v){ var n=parseFloat(String(v==null?'':v).replace(',','.')); return isFinite(n)?n:null; }
+  function round25(v){ if(!isFinite(v)) return null; return Math.round(v/2.5)*2.5; }
+  function kgFmt(v){ if(v==null || !isFinite(v)) return '—'; var r=Math.round(v*10)/10; return String(r).replace('.',',')+' kg'; }
+  function parseTimeToSec(v){
+    if(!v) return null;
+    var s=String(v).trim().replace('’',':').replace("'",':').replace('min',':').replace(/\s/g,'');
+    var m=s.match(/^(\d{1,2})[:h](\d{1,2})(?::(\d{1,2}))?$/i);
+    if(m){ return (parseInt(m[1],10)*60)+parseInt(m[2],10)+(m[3]?parseInt(m[3],10):0); }
+    var n=parseFloat(s.replace(',','.'));
+    return isFinite(n)?Math.round(n*60):null;
+  }
+  function paceFromSpeedKmh(kmh){
+    if(!kmh || !isFinite(kmh) || kmh<=0) return '—';
+    var sec=Math.round(3600/kmh), m=Math.floor(sec/60), r=sec%60;
+    return m+"'"+(r<10?'0':'')+r+'/km';
+  }
+  function latestDate(a,b){ return String(a||'').localeCompare(String(b||'')); }
+  function computeRMs(db){
+    var out={}, charges=db.charges||[], trainings=db.trainings||[];
+    function add(exo,rm,date,kg,reps){
+      rm=toNum(rm); if(!exo || !rm) return;
+      if(!out[exo]) out[exo]={key:exo,label:LABELS[exo]||exo,best:0,bestDate:'',latest:0,latestDate:'',kg:null,reps:null};
+      if(rm>out[exo].best){ out[exo].best=rm; out[exo].bestDate=date||''; }
+      if(!out[exo].latestDate || latestDate(date,out[exo].latestDate)>=0){ out[exo].latest=rm; out[exo].latestDate=date||''; out[exo].kg=kg; out[exo].reps=reps; }
+    }
+    for(var i=0;i<charges.length;i++){
+      var c=charges[i]||{};
+      add(c.exo, c.rm_estimated || c.rm || (toNum(c.kg)&&toNum(c.reps)?toNum(c.kg)*(1+toNum(c.reps)/30):null), c.date || c.created_at || '', c.kg, c.reps);
+    }
+    for(var t=0;t<trainings.length;t++){
+      var tr=trainings[t]||{}, exs=tr.exercises||[];
+      for(var j=0;j<exs.length;j++){
+        var ex=exs[j]||{}, ser=ex.series||[];
+        for(var k=0;k<ser.length;k++){
+          var se=ser[k]||{}, kg=toNum(se.kg), reps=toNum(se.reps), rm=toNum(se.rm);
+          if(!rm && kg && reps) rm=kg*(1+reps/30);
+          add(ex.key || ex.exo, rm, tr.date || tr.created_at || '', kg, reps);
+        }
+      }
+    }
+    return out;
+  }
+  function computeVMA(db){
+    var tests=(db.tests||[]).filter(function(t){return t && t.type==='5km' && t.result;}).sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''));});
+    if(!tests.length) return null;
+    var t=tests[tests.length-1], sec=parseTimeToSec(t.result);
+    if(!sec) return null;
+    var kmh=18000/sec; // 5 km / temps en secondes × 3600
+    return {kmh:kmh,date:t.date||'',result:t.result};
+  }
+  function pickExoKeys(text){
+    var found=[];
+    for(var i=0;i<EXOS.length;i++){
+      var names=EXOS[i].names;
+      for(var j=0;j<names.length;j++){
+        if(text.toLowerCase().indexOf(names[j].toLowerCase())!==-1){ found.push(EXOS[i].key); break; }
+      }
+    }
+    return found;
+  }
+  function extractStrengthPrescriptions(text){
+    var pcts=[], kgVals=[], m, re;
+    re=/(\d{2,3}(?:[\.,]\d+)?)\s*%/g;
+    while((m=re.exec(text))){ var v=toNum(m[1]); if(v && v>=40 && v<=110) pcts.push(v/100); }
+    re=/@\s*\+?\s*(\d{1,3}(?:[\.,]\d+)?)\s*kg/gi;
+    while((m=re.exec(text))){ var kg=toNum(m[1]); if(kg && kg>=5) kgVals.push(kg); }
+    return {pcts:pcts, kgVals:kgVals};
+  }
+  function unique(arr){ var out=[], seen={}; for(var i=0;i<arr.length;i++){ var k=String(arr[i]); if(!seen[k]){seen[k]=1; out.push(arr[i]);} } return out; }
+  function makePanel(el, rms, vma){
+    var txt=el.textContent || '';
+    var bits=[];
+    var vm=[];
+    var m, re=/(\d{2,3})\s*%\s*VMA/gi;
+    while((m=re.exec(txt))){ var pct=parseInt(m[1],10); if(pct>=50&&pct<=130) vm.push(pct); }
+    vm=unique(vm);
+    if(vm.length){
+      var chips=[];
+      for(var i=0;i<vm.length;i++){
+        if(vma){ chips.push('<span class="dyn-chip">'+vm[i]+'% VMA → <b>'+paceFromSpeedKmh(vma.kmh*(vm[i]/100))+'</b></span>'); }
+        else { chips.push('<span class="dyn-chip miss">'+vm[i]+'% VMA → test 5 km manquant</span>'); }
+      }
+      bits.push('Run : '+chips.join(' '));
+    }
+    var keys=pickExoKeys(txt);
+    var lines=(el.innerHTML||'').split(/<br\s*\/?>|<div class="recup"/i);
+    var st=[];
+    for(var ki=0;ki<keys.length;ki++){
+      var key=keys[ki], rm=rms[key], lineText='';
+      for(var li=0;li<lines.length;li++){
+        var plain=lines[li].replace(/<[^>]*>/g,' ');
+        if(pickExoKeys(plain).indexOf(key)!==-1){ lineText += ' '+plain; }
+      }
+      var pres=extractStrengthPrescriptions(lineText || txt), chips2=[];
+      pres.pcts=unique(pres.pcts); pres.kgVals=unique(pres.kgVals);
+      if(pres.pcts.length){
+        for(var pi=0;pi<pres.pcts.length;pi++){
+          if(rm && rm.best){ chips2.push(Math.round(pres.pcts[pi]*100)+'% 1RM → <b>'+kgFmt(round25(rm.best*pres.pcts[pi]))+'</b>'); }
+          else { chips2.push(Math.round(pres.pcts[pi]*100)+'% 1RM → 1RM manquant'); }
+        }
+      } else if(pres.kgVals.length){
+        for(var gi=0;gi<pres.kgVals.length;gi++){
+          if(rm && rm.best){ chips2.push(kgFmt(pres.kgVals[gi])+' prévu ≈ <b>'+Math.round((pres.kgVals[gi]/rm.best)*100)+'% 1RM</b>'); }
+          else { chips2.push(kgFmt(pres.kgVals[gi])+' prévu → 1RM manquant'); }
+        }
+      }
+      if(chips2.length){ st.push('<span class="dyn-chip '+((rm&&rm.best)?'':'miss')+'">'+esc(LABELS[key]||key)+' : '+chips2.join(' · ')+'</span>'); }
+    }
+    if(st.length) bits.push('Force : '+st.join(' '));
+    if(!bits.length) return '';
+    return '<div class="dyn-panel" data-dyn-panel="1">'+bits.join('<br>')+'</div>';
+  }
+  function updateSummary(rms, vma){
+    var el=document.getElementById('dynamic-tracker-summary-line'); if(!el) return;
+    var names=['squat','front_squat','rdl','hip_thrust','bench','pullup','press','pendlay'];
+    var parts=[];
+    if(vma){ parts.push('VMA tracker 5 km : <b style="color:var(--gr)">'+(Math.round(vma.kmh*10)/10).toString().replace('.',',')+' km/h</b> ('+esc(vma.result)+')'); }
+    else { parts.push('<span style="color:var(--am)">VMA : test 5 km manquant</span>'); }
+    var rmParts=[];
+    for(var i=0;i<names.length;i++){ var r=rms[names[i]]; if(r&&r.best){ rmParts.push((LABELS[names[i]]||names[i])+' '+kgFmt(r.best)); } }
+    parts.push(rmParts.length ? '1RM tracker : '+esc(rmParts.join(' · ')) : '<span style="color:var(--am)">1RM : aucune charge exploitable dans le tracker</span>');
+    el.innerHTML=parts.join('<br>');
+  }
+  window.updateDynamicPlanValues=function(){
+    var db=loadDB(), rms=computeRMs(db), vma=computeVMA(db);
+    updateSummary(rms,vma);
+    var bodies=document.querySelectorAll('.ss-body');
+    for(var i=0;i<bodies.length;i++){
+      var b=bodies[i];
+      var old=b.querySelector('[data-dyn-panel="1"]'); if(old) old.parentNode.removeChild(old);
+      var panel=makePanel(b,rms,vma);
+      if(panel){ b.insertAdjacentHTML('beforeend', panel); }
+    }
+  };
+  window.addEventListener('load', function(){ setTimeout(function(){ if(window.updateDynamicPlanValues) window.updateDynamicPlanValues(); }, 300); });
+  window.addEventListener('storage', function(e){ if(e && e.key===DB_KEY && window.updateDynamicPlanValues) window.updateDynamicPlanValues(); });
+})();
+</script>
+
 <script>
 function showPhase(ph) {
   document.querySelectorAll('.phase-section').forEach(s => s.classList.remove('on'));
