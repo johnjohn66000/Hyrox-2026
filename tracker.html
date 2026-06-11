@@ -1601,31 +1601,27 @@ function renderRPEAnalysis(db) {
 // ════════════════════════════════════
 function historyDetailHtml(item){
   var rows=[];
+  function parseMaybeArray(v){
+    if(Array.isArray(v)) return v;
+    if(typeof v==='string' && v.trim()){ try{ var p=JSON.parse(v); return Array.isArray(p)?p:[]; }catch(e){ return []; } }
+    return [];
+  }
+  function calcRmSafe(kg,reps,rm){
+    var r=parseFloat(String(rm).replace(',','.'));
+    if(isFinite(r)&&r>0) return Math.round(r*10)/10;
+    var k=parseFloat(String(kg).replace(',','.')), rp=parseFloat(String(reps).replace(',','.'));
+    if(isFinite(k)&&k>0&&isFinite(rp)&&rp>0) return Math.round((k*(1+rp/30))*10)/10;
+    return null;
+  }
   function row(label,value){
     if(value!==undefined && value!==null && value!=='') rows.push('<div class="history-detail-row"><span>'+escapeHtml(label)+'</span><b>'+escapeHtml(value)+'</b></div>');
   }
-  function parseMaybeJson(v){
-    if(typeof v==='string'){
-      try{return JSON.parse(v);}catch(e){return null;}
-    }
-    return v;
-  }
-  function trainingExercises(it){
-    var exos = parseMaybeJson(it && it.exercises);
-    if(!Array.isArray(exos) && it && it.data) exos = parseMaybeJson(it.data.exercises);
-    return Array.isArray(exos) ? exos : [];
-  }
-  function exoSeries(exo){
-    var series = parseMaybeJson(exo && exo.series);
-    return Array.isArray(series) ? series : [];
-  }
-
   if(item._cat==='training'){
     row('Date', fmtDate(item.date));
     row('Durée', item.duree ? item.duree+' min' : '');
     row('RPE', item.rpe);
     row('Qualité', item.qualite);
-    row('Distance', item.dist ? item.dist+' km' : (item.distance ? item.distance+' km' : ''));
+    row('Distance', item.dist ? item.dist+' km' : '');
     row('Allure', item.allure ? item.allure+'/km' : '');
     row('Intervalles', item.intervals);
     row('FC moyenne', getFcAvg(item) ? getFcAvg(item)+' bpm' : '');
@@ -1634,53 +1630,37 @@ function historyDetailHtml(item){
     row('Rounds', item.sp_rounds);
     row('BBJ', item.sp_bbj ? item.sp_bbj+' m' : '');
     row('WB 100', item.sp_wb);
-    row('Commentaire', item.comment);
-
-    var exercises = trainingExercises(item);
-    if(exercises.length){
-      rows.push('<div class="history-detail-title">Exercices / séries</div>');
-      var html='<div class="history-exercises-list">';
-      exercises.forEach(function(exo, exoIndex){
-        var key = exo && (exo.key || exo.exo || exo.name || exo.label);
-        var exoName = (typeof EXO_LABELS!=='undefined' && EXO_LABELS[key]) || (typeof EXO_NAMES!=='undefined' && EXO_NAMES[key]) || exo.label || key || ('Exercice '+(exoIndex+1));
-        html += '<div class="history-exercise-card"><div class="history-exercise-name">'+(exoIndex+1)+'. '+escapeHtml(exoName)+'</div>';
-        var series = exoSeries(exo);
+    if(item.comment) row('Commentaire', item.comment);
+    var detailExercises=parseMaybeArray(item.exercises);
+    if(detailExercises.length){
+      rows.push('<div class="history-detail-title">Détail complet des exercices</div>');
+      var exoHtml='<div class="history-exercises-list">';
+      detailExercises.forEach(function(exo, exoIndex){
+        var exoName=escapeHtml((typeof EXO_LABELS!=='undefined' && EXO_LABELS[exo.key]) || exo.label || exo.key || ('Exercice '+(exoIndex+1)));
+        exoHtml+='<div class="history-exercise-card"><div class="history-exercise-name">'+(exoIndex+1)+'. '+exoName+'</div>';
+        var series=parseMaybeArray(exo.series || exo.sets || exo.rows);
+        if(!series.length && (exo.kg || exo.reps)) series=[exo];
         if(!series.length){
-          html += '<div class="history-exercise-empty">Aucune série renseignée</div>';
+          exoHtml+='<div class="history-exercise-empty">Aucune série renseignée</div>';
         }else{
-          series.forEach(function(s,i){
-            var kg = Number(s && (s.kg!==undefined?s.kg:s.weight));
-            var reps = Number(s && s.reps);
-            var rm = Number(s && (s.rm!==undefined?s.rm:s.rm_estimated));
-            if((!Number.isFinite(rm) || rm<=0) && kg>0 && reps>0) rm = Math.round(kg*(1+reps/30)*4)/4;
-            var kgTxt = (Number.isFinite(kg) && kg>0) ? kg : '—';
-            var repsTxt = (Number.isFinite(reps) && reps>0) ? reps : '—';
-            var rmTxt = (Number.isFinite(rm) && rm>0) ? ' · 1RM estimé ~'+rm+' kg' : '';
-            html += '<div class="history-exercise-series">Série '+(i+1)+' : '+escapeHtml(kgTxt)+' kg × '+escapeHtml(repsTxt)+escapeHtml(rmTxt)+'</div>';
+          series.forEach(function(ser,i){
+            var kgTxt=(ser.kg!==undefined && ser.kg!==null && ser.kg!=='') ? ser.kg : '—';
+            var repsTxt=(ser.reps!==undefined && ser.reps!==null && ser.reps!=='') ? ser.reps : '—';
+            var rmVal=calcRmSafe(kgTxt,repsTxt,ser.rm || ser.rm_estimated || ser.one_rm);
+            var rmTxt=rmVal ? ' · 1RM estimé ~'+rmVal+' kg' : '';
+            var rpeTxt=(ser.rpe!==undefined && ser.rpe!==null && ser.rpe!=='') ? ' · RPE '+escapeHtml(ser.rpe) : '';
+            exoHtml+='<div class="history-exercise-series"><b>Série '+(i+1)+'</b> : '+escapeHtml(kgTxt)+' kg × '+escapeHtml(repsTxt)+' reps'+rpeTxt+escapeHtml(rmTxt)+'</div>';
           });
         }
-        html += '</div>';
+        exoHtml+='</div>';
       });
-      html += '</div>';
-      rows.push(html);
-    }else{
-      var legacy=[];
-      if(item.squat) legacy.push('Squat '+item.squat+' kg'+(item.squat_reps?' × '+item.squat_reps:''));
-      if(item.bench) legacy.push('Bench '+item.bench+' kg'+(item.bench_reps?' × '+item.bench_reps:''));
-      if(item.rdl) legacy.push('RDL '+item.rdl+' kg'+(item.rdl_reps?' × '+item.rdl_reps:''));
-      if(item.hip) legacy.push('Hip thrust '+item.hip+' kg'+(item.hip_reps?' × '+item.hip_reps:''));
-      if(legacy.length) rows.push('<div class="history-detail-title">Exercices</div><div class="history-exercises-list"><div class="history-exercise-card"><div class="history-exercise-series">'+legacy.map(escapeHtml).join('<br>')+'</div></div></div>');
+      exoHtml+='</div>';
+      rows.push(exoHtml);
     }
   }else if(item._cat==='test'){
-    row('Date', fmtDate(item.date));
-    row('Test', (CIBLES[item.type]&&CIBLES[item.type].label) || item.type);
-    row('Résultat', item.result);
-    row('Cible', item.cible || (CIBLES[item.type]&&CIBLES[item.type].target));
-    row('Commentaire', item.comment);
+    row('Date', fmtDate(item.date)); row('Type', item.type); row('Résultat', item.result); row('Cible', item.cible); row('Commentaire', item.comment);
   }else if(item._cat==='poids'){
-    row('Date', fmtDate(item.date));
-    row('Poids', item.val ? item.val+' kg' : '');
-    row('Moment', item.moment);
+    row('Date', fmtDate(item.date)); row('Poids', item.val ? item.val+' kg' : ''); row('Moment', item.moment);
   }
   return '<div class="history-detail">'+(rows.join('') || '<span>Aucun détail disponible.</span>')+'</div>';
 }
@@ -1692,29 +1672,17 @@ function toggleHistoryEntry(card,event){
 }
 function entryDeleteKey(entry){
   if(!entry) return '';
-  return String(entry.local_id || entry.id || entry.supabase_id || '');
+  return String(entry.local_id || entry.supabase_id || entry.id || '');
 }
 function sameEntryKey(entry,key){
   if(!entry) return false;
   const k=String(key);
   return String(entry.id)===k || String(entry.local_id)===k || String(entry.supabase_id)===k;
 }
-function findEntryByKey(list,key){
-  return (list||[]).find(function(entry){return sameEntryKey(entry,key);});
-}
-function isChargeLinkedToTraining(charge,training){
-  if(!charge || !training) return false;
-  var ids=[training.id, training.local_id, training.supabase_id].filter(function(v){return v!==undefined && v!==null && v!=='';}).map(String);
-  var vals=[charge.training_id, charge.training_local_id, charge.training_supabase_id];
-  if(charge.data && typeof charge.data==='object') vals.push(charge.data.training_id, charge.data.training_local_id, charge.data.training_supabase_id);
-  vals=vals.filter(function(v){return v!==undefined && v!==null && v!=='';}).map(String);
-  return vals.some(function(v){return ids.indexOf(v)>=0;});
-}
 
 function renderHistory(filter) {
   const db = loadDB();
   const el = document.getElementById('history-list');
-  if(!el) return;
   let items = [...(db.trainings||[]).map(t=>({...t,_cat:'training'})),
                ...(db.tests||[]).map(t=>({...t,_cat:'test'})),
                ...(db.poids||[]).map(t=>({...t,_cat:'poids'}))];
@@ -1770,13 +1738,16 @@ function renderHistory(filter) {
       if (item.allure) tags.push({txt:item.allure+'/km', cls:'etag'});
       if (getFcAvg(item)) tags.push({txt:'FC moy '+getFcAvg(item)+' bpm', cls:'etag'});
       if (getFcMax(item)) tags.push({txt:'FC max '+getFcMax(item)+' bpm', cls:'etag'});
-      var histExos = item.exercises;
-      if(typeof histExos === 'string'){ try{ histExos=JSON.parse(histExos); }catch(e){ histExos=[]; } }
-      if (histExos && histExos.length) {
-        histExos.forEach(function(exo){
-          var name=(typeof EXO_LABELS!=='undefined' && EXO_LABELS[exo.key]) || exo.label || exo.key;
+      var itemExos = Array.isArray(item.exercises) ? item.exercises : [];
+      if(!itemExos.length && typeof item.exercises==='string' && item.exercises.trim()){ try{ itemExos=JSON.parse(item.exercises); if(!Array.isArray(itemExos)) itemExos=[]; }catch(e){ itemExos=[]; } }
+      if (itemExos.length) {
+        itemExos.forEach(function(exo){
+          var name=(typeof EXO_LABELS!=='undefined' && EXO_LABELS[exo.key]) || exo.label || exo.name || exo.exo || exo.key;
+          if(!name || String(name).toLowerCase()==='undefined') return;
           var best=null;
-          (exo.series||[]).forEach(function(s){ if(s && s.rm && (!best || s.rm>best.rm)) best=s; });
+          var exSeries = Array.isArray(exo.series) ? exo.series : [];
+          if(!exSeries.length && typeof exo.series==='string' && exo.series.trim()){ try{ exSeries=JSON.parse(exo.series); if(!Array.isArray(exSeries)) exSeries=[]; }catch(e){ exSeries=[]; } }
+          exSeries.forEach(function(s){ if(s && s.rm && (!best || s.rm>best.rm)) best=s; });
           if(name && best) tags.push({txt:name+' '+best.kg+'kg × '+best.reps+' → 1RM ~'+best.rm+'kg', cls:'etag-ok'});
           else if(name) tags.push({txt:name, cls:'etag'});
         });
@@ -1789,7 +1760,7 @@ function renderHistory(filter) {
 
     const tagsHtml = tags.map(t=>`<span class="etag ${t.cls}">${escapeHtml(t.txt)}</span>`).join('');
     const id = entryDeleteKey(item);
-    return `<div class="entry js-history-entry" data-cat="${escapeHtml(item._cat)}" data-id="${escapeHtml(id)}" title="Cliquer pour afficher le détail">
+    return `<div class="entry js-history-entry" data-cat="${escapeHtml(item._cat)}" data-id="${escapeHtml(id)}" onclick="toggleHistoryEntry(this,event)" title="Cliquer pour afficher le détail">
       <div class="entry-icon">${icon}</div>
       <div class="entry-content">
         <div class="entry-title">${escapeHtml(title)}</div>
@@ -1797,43 +1768,27 @@ function renderHistory(filter) {
         ${tags.length ? `<div class="entry-tags">${tagsHtml}</div>` : ''}
         ${historyDetailHtml(item)}
       </div>
-      <button type="button" class="del-btn js-delete-entry" data-cat="${escapeHtml(item._cat)}" data-id="${escapeHtml(id)}" aria-label="Supprimer cette entrée">✕</button>
+      <button type="button" class="del-btn js-delete-entry" onclick="event.preventDefault();event.stopPropagation();deleteEntry(${JSON.stringify(String(id))}, '${item._cat}')">✕</button>
     </div>`;
   }).join('');
 }
 
 async function deleteEntry(id, cat) {
-  if (!id) { alert('Impossible de supprimer : identifiant introuvable.'); return; }
   if (!confirm('Supprimer cette entrée ?')) return;
   const db = loadDB();
   const key = cat==='training' ? 'trainings' : cat==='test' ? 'tests' : cat==='poids' ? 'poids' : null;
   if(!key) return;
-  const entry = findEntryByKey(db[key]||[], id);
-  if(!entry){ alert('Entrée introuvable dans le cache local. Clique sur Sync puis réessaie.'); return; }
-
+  const entry = (db[key]||[]).find(t=>sameEntryKey(t,id)) || {id:id, local_id:id};
   db[key] = (db[key]||[]).filter(t=>!sameEntryKey(t,id));
-
-  var linkedCharges=[];
-  if(cat==='training'){
-    linkedCharges=(db.charges||[]).filter(function(c){return isChargeLinkedToTraining(c,entry);});
-    if(linkedCharges.length){ db.charges=(db.charges||[]).filter(function(c){return !isChargeLinkedToTraining(c,entry);}); }
-  }
-
   saveDB(db);
   renderHistory(loadUiState().histType || 'all');
-  if(typeof renderDashboard==='function') renderDashboard();
-
-  let ok=false;
-  try{ ok = await sbDel(tableForCat(cat), entry); }
-  catch(e){ console.warn('deleteEntry Supabase fail', e); }
-
-  if(linkedCharges.length){
-    for(const ch of linkedCharges){
-      try{ await sbDel('charges', ch); }catch(e){ console.warn('delete linked charge fail', e); }
-    }
+  try{
+    const ok = await sbDel(tableForCat(cat), entry);
+    if(!ok) alert('Entrée supprimée du téléphone, mais suppression Supabase non confirmée. Vérifie la table ou synchronise.');
+  }catch(e){
+    console.warn('deleteEntry Supabase fail', e);
+    alert('Entrée supprimée du téléphone, mais erreur pendant la suppression Supabase.');
   }
-
-  if(!ok) alert('Entrée supprimée du téléphone, mais suppression Supabase non confirmée. Si elle revient après Sync, vérifie les policies DELETE.');
 }
 
 // ════════════════════════════════════
@@ -2403,26 +2358,11 @@ function renderMensur() {
     (entries.length > 10 ? `<div style="font-family:monospace;font-size:9px;color:var(--tx4);text-align:center;padding:.3rem">${entries.length - 10} entrées plus anciennes masquées</div>` : '');
 }
 
-
-// Histo: gestion déléguée robuste. Une erreur de clic ne touche pas à la synchro Supabase.
-document.addEventListener('click', function(e){
-  var del = e.target && e.target.closest ? e.target.closest('.js-delete-entry') : null;
-  if(del){
-    e.preventDefault();
-    e.stopPropagation();
-    deleteEntry(del.getAttribute('data-id'), del.getAttribute('data-cat'));
-    return;
-  }
-  var card = e.target && e.target.closest ? e.target.closest('.js-history-entry') : null;
-  var list = document.getElementById('history-list');
-  if(card && list && list.contains(card)){
-    card.classList.toggle('open');
-  }
-});
-
 // Init
 showTab('dashboard');
 window.addEventListener('load',()=>syncAll().then(()=>renderDashboard()));
+
+try{ window.toggleHistoryEntry = toggleHistoryEntry; window.deleteEntry = deleteEntry; }catch(e){}
 </script>
 </body>
 </html>
