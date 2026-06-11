@@ -134,6 +134,22 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 .dock-btn.on{color:var(--gr)}
 .dock-icon{font-size:1rem}
 @media(min-width:431px){body{border-left:1px solid var(--bo);border-right:1px solid var(--bo)}}
+
+/* History detail clickable cards */
+.entry.js-history-entry{cursor:pointer;transition:border-color .15s, background .15s}
+.entry.js-history-entry:active{border-color:var(--gr);background:var(--bg4)}
+.history-detail{display:none;margin-top:.45rem;padding:.55rem .6rem;background:var(--bg2);border:1px solid var(--bo2);border-radius:7px;font-family:monospace;font-size:10.5px;color:var(--tx3);line-height:1.55;overflow-wrap:anywhere;word-break:break-word}
+.entry.open .history-detail{display:block}
+.history-detail-title{color:var(--tx2);font-weight:700;margin:.25rem 0 .15rem;text-transform:uppercase;font-size:9px;letter-spacing:.06em}
+.history-detail-row{display:flex;justify-content:space-between;gap:.6rem;border-bottom:1px solid var(--bo);padding:2px 0;flex-wrap:wrap}
+.history-detail-row:last-child{border-bottom:0}
+.history-detail-row b{color:var(--tx2)}
+.history-exercises-list{display:flex;flex-direction:column;gap:.35rem;margin-top:.25rem}
+.history-exercise-card{border:1px solid var(--bo);border-radius:6px;padding:.4rem;background:var(--bg3)}
+.history-exercise-name{font-weight:700;color:var(--tx2);margin-bottom:.2rem}
+.history-exercise-series{color:var(--tx3);font-size:10px}
+.history-exercise-empty{color:var(--tx4);font-size:10px}
+
 </style>
 </head>
 <body>
@@ -1583,101 +1599,128 @@ function renderRPEAnalysis(db) {
 // ════════════════════════════════════
 // HISTORY RENDER
 // ════════════════════════════════════
-function historyEntryId(item){
-  if(!item) return '';
-  return String(item.id || item.local_id || item.supabase_id || '');
-}
-function hxEsc(v){
-  return String(v===undefined||v===null?'':v)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-function findHistoryEntry(id, cat){
-  const d=loadDB();
-  const key=cat==='training'?'trainings':cat==='test'?'tests':cat==='poids'?'poids':null;
-  if(!key) return null;
-  return (d[key]||[]).find(function(t){
-    return String(t.id)===String(id) || String(t.local_id)===String(id) || String(t.supabase_id)===String(id);
-  }) || null;
-}
-function renderExerciseSeriesDetail(entry){
-  const exos=Array.isArray(entry.exercises)?entry.exercises:[];
-  if(!exos.length){
-    const legacy=[];
-    [['squat','Back squat'],['bench','Développé couché'],['rdl','RDL'],['hip','Hip thrust'],['pullup','Pull-up lesté'],['farmer','Farmer carry']].forEach(function(p){
-      const kg=entry[p[0]], reps=entry[p[0]+'_reps'];
-      if(kg&&reps){
-        const rm=Math.round((parseFloat(kg)*(1+parseFloat(reps)/30))*4)/4;
-        legacy.push('<div class="entry" style="cursor:default"><div class="entry-icon">💪</div><div class="entry-content"><div class="entry-title">'+hxEsc(p[1])+'</div><div class="entry-meta">1 série · '+hxEsc(kg)+' kg × '+hxEsc(reps)+' reps · 1RM estimé '+hxEsc(rm)+' kg</div></div></div>');
-      }
-    });
-    return legacy.length?legacy.join(''):'<div class="entry" style="cursor:default"><div class="entry-icon">ℹ️</div><div class="entry-content"><div class="entry-title">Aucun détail série enregistré</div><div class="entry-meta">Cette séance ne contient pas de tableau exercices/séries exploitable.</div></div></div>';
+function historyDetailHtml(item){
+  var rows=[];
+  function row(label,value){
+    if(value!==undefined && value!==null && value!=='') rows.push('<div class="history-detail-row"><span>'+escapeHtml(label)+'</span><b>'+escapeHtml(value)+'</b></div>');
   }
-  return exos.map(function(exo){
-    const label=hxEsc(exo.label || EXO_NAMES[exo.key] || EXO_LABELS[exo.key] || exo.key || 'Exercice');
-    const series=Array.isArray(exo.series)?exo.series:[];
-    const rows=series.length?series.map(function(s,i){
-      const kg=s.kg!==undefined&&s.kg!==null?s.kg:'—';
-      const reps=s.reps!==undefined&&s.reps!==null?s.reps:'—';
-      const rm=s.rm!==undefined&&s.rm!==null?s.rm:(kg!=='—'&&reps!=='—'?Math.round((parseFloat(kg)*(1+parseFloat(reps)/30))*4)/4:null);
-      return '<div style="display:flex;justify-content:space-between;gap:.5rem;border-top:1px solid var(--bo);padding:.32rem 0;font-family:monospace;font-size:11px;color:var(--tx3)"><span>Série '+(i+1)+'</span><span><b style="color:var(--tx)">'+hxEsc(kg)+' kg × '+hxEsc(reps)+' reps</b>'+(rm?' · 1RM ~'+hxEsc(rm)+' kg':'')+'</span></div>';
-    }).join(''):'<div style="font-family:monospace;font-size:11px;color:var(--tx4);padding:.3rem 0">Aucune série détaillée.</div>';
-    return '<div class="card" style="margin:.45rem 0;background:var(--bg2)"><div class="card-title">'+label+'</div>'+rows+'</div>';
-  }).join('');
-}
-function openHistoryDetail(id, cat){
-  const entry=findHistoryEntry(id,cat);
-  if(!entry){ alert('Séance introuvable dans le cache local. Lance une synchro puis réessaie.'); return; }
-  const typeLabels={vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',compromised:'Compromised',simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',ergo:'Ergo',mob:'Mobilité'};
-  let title=cat==='training'?(typeLabels[entry.type]||entry.type||'Séance'):cat==='test'?'Test':'Poids';
-  let body='';
-  if(cat==='training'){
-    const meta=[];
-    if(entry.duree) meta.push(entry.duree+' min');
-    if(entry.distance) meta.push(entry.distance+' km');
-    if(entry.allure) meta.push(entry.allure+'/km');
-    if(entry.rpe) meta.push('RPE '+entry.rpe);
-    if(getFcAvg(entry)) meta.push('FC moy '+getFcAvg(entry));
-    if(getFcMax(entry)) meta.push('FC max '+getFcMax(entry));
-    body+='<div class="entry" style="cursor:default"><div class="entry-icon">📅</div><div class="entry-content"><div class="entry-title">'+hxEsc(fmtDate(entry.date))+'</div><div class="entry-meta">'+hxEsc(meta.join(' · ')||'Séance enregistrée')+'</div>'+(entry.comment?'<div class="entry-tags"><span class="etag">'+hxEsc(entry.comment)+'</span></div>':'')+'</div></div>';
-    if(['str_bas','str_haut','str_full'].includes(entry.type)){
-      body+='<div class="card-title" style="margin-top:.7rem">Détail exercices / séries</div>'+renderExerciseSeriesDetail(entry);
-    }else{
-      const bits=[];
-      ['intervals','sp_allure','sp_total','sp_rounds','sp_bbj','sp_wb','qualite'].forEach(function(k){ if(entry[k]) bits.push('<div><b>'+hxEsc(k)+'</b> : '+hxEsc(entry[k])+'</div>'); });
-      body+=bits.length?'<div class="card" style="margin-top:.5rem;background:var(--bg2);font-family:monospace;font-size:11px;color:var(--tx3);line-height:1.7">'+bits.join('')+'</div>':'<div class="empty"><p>Aucun détail supplémentaire pour cette séance.</p></div>';
+  function parseMaybeJson(v){
+    if(typeof v==='string'){
+      try{return JSON.parse(v);}catch(e){return null;}
     }
-  }else if(cat==='test'){
-    body='<div class="entry" style="cursor:default"><div class="entry-icon">🎯</div><div class="entry-content"><div class="entry-title">'+hxEsc(entry.type)+' — '+hxEsc(entry.result)+'</div><div class="entry-meta">'+hxEsc(fmtDate(entry.date))+(entry.comment?' · '+hxEsc(entry.comment):'')+'</div></div></div>';
-  }else{
-    body='<div class="entry" style="cursor:default"><div class="entry-icon">⚖️</div><div class="entry-content"><div class="entry-title">'+hxEsc(entry.val)+' kg</div><div class="entry-meta">'+hxEsc(fmtDate(entry.date))+' · '+hxEsc(entry.moment||'')+'</div></div></div>';
+    return v;
   }
-  let modal=document.getElementById('history-detail-modal');
-  if(!modal){
-    modal=document.createElement('div');
-    modal.id='history-detail-modal';
-    modal.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;padding:0;-webkit-tap-highlight-color:transparent';
-    modal.innerHTML='<div id="history-detail-panel" style="width:100%;max-width:560px;max-height:88vh;overflow:auto;background:var(--bg);border:1px solid var(--bo2);border-radius:18px 18px 0 0;padding:1rem;box-shadow:0 -20px 60px rgba(0,0,0,.45)"></div>';
-    modal.addEventListener('click',function(e){ if(e.target===modal) closeHistoryDetail(); });
-    document.body.appendChild(modal);
+  function trainingExercises(it){
+    var exos = parseMaybeJson(it && it.exercises);
+    if(!Array.isArray(exos) && it && it.data) exos = parseMaybeJson(it.data.exercises);
+    return Array.isArray(exos) ? exos : [];
   }
-  document.getElementById('history-detail-panel').innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin-bottom:.7rem"><div class="card-title" style="margin:0">'+hxEsc(title)+'</div><button class="del-btn" onclick="closeHistoryDetail()">✕</button></div>'+body;
-  modal.style.display='flex';
+  function exoSeries(exo){
+    var series = parseMaybeJson(exo && exo.series);
+    return Array.isArray(series) ? series : [];
+  }
+
+  if(item._cat==='training'){
+    row('Date', fmtDate(item.date));
+    row('Durée', item.duree ? item.duree+' min' : '');
+    row('RPE', item.rpe);
+    row('Qualité', item.qualite);
+    row('Distance', item.dist ? item.dist+' km' : (item.distance ? item.distance+' km' : ''));
+    row('Allure', item.allure ? item.allure+'/km' : '');
+    row('Intervalles', item.intervals);
+    row('FC moyenne', getFcAvg(item) ? getFcAvg(item)+' bpm' : '');
+    row('FC max', getFcMax(item) ? getFcMax(item)+' bpm' : '');
+    row('Temps total SP', item.sp_total ? item.sp_total+' min' : '');
+    row('Rounds', item.sp_rounds);
+    row('BBJ', item.sp_bbj ? item.sp_bbj+' m' : '');
+    row('WB 100', item.sp_wb);
+    row('Commentaire', item.comment);
+
+    var exercises = trainingExercises(item);
+    if(exercises.length){
+      rows.push('<div class="history-detail-title">Exercices / séries</div>');
+      var html='<div class="history-exercises-list">';
+      exercises.forEach(function(exo, exoIndex){
+        var key = exo && (exo.key || exo.exo || exo.name || exo.label);
+        var exoName = (typeof EXO_LABELS!=='undefined' && EXO_LABELS[key]) || (typeof EXO_NAMES!=='undefined' && EXO_NAMES[key]) || exo.label || key || ('Exercice '+(exoIndex+1));
+        html += '<div class="history-exercise-card"><div class="history-exercise-name">'+(exoIndex+1)+'. '+escapeHtml(exoName)+'</div>';
+        var series = exoSeries(exo);
+        if(!series.length){
+          html += '<div class="history-exercise-empty">Aucune série renseignée</div>';
+        }else{
+          series.forEach(function(s,i){
+            var kg = Number(s && (s.kg!==undefined?s.kg:s.weight));
+            var reps = Number(s && s.reps);
+            var rm = Number(s && (s.rm!==undefined?s.rm:s.rm_estimated));
+            if((!Number.isFinite(rm) || rm<=0) && kg>0 && reps>0) rm = Math.round(kg*(1+reps/30)*4)/4;
+            var kgTxt = (Number.isFinite(kg) && kg>0) ? kg : '—';
+            var repsTxt = (Number.isFinite(reps) && reps>0) ? reps : '—';
+            var rmTxt = (Number.isFinite(rm) && rm>0) ? ' · 1RM estimé ~'+rm+' kg' : '';
+            html += '<div class="history-exercise-series">Série '+(i+1)+' : '+escapeHtml(kgTxt)+' kg × '+escapeHtml(repsTxt)+escapeHtml(rmTxt)+'</div>';
+          });
+        }
+        html += '</div>';
+      });
+      html += '</div>';
+      rows.push(html);
+    }else{
+      var legacy=[];
+      if(item.squat) legacy.push('Squat '+item.squat+' kg'+(item.squat_reps?' × '+item.squat_reps:''));
+      if(item.bench) legacy.push('Bench '+item.bench+' kg'+(item.bench_reps?' × '+item.bench_reps:''));
+      if(item.rdl) legacy.push('RDL '+item.rdl+' kg'+(item.rdl_reps?' × '+item.rdl_reps:''));
+      if(item.hip) legacy.push('Hip thrust '+item.hip+' kg'+(item.hip_reps?' × '+item.hip_reps:''));
+      if(legacy.length) rows.push('<div class="history-detail-title">Exercices</div><div class="history-exercises-list"><div class="history-exercise-card"><div class="history-exercise-series">'+legacy.map(escapeHtml).join('<br>')+'</div></div></div>');
+    }
+  }else if(item._cat==='test'){
+    row('Date', fmtDate(item.date));
+    row('Test', (CIBLES[item.type]&&CIBLES[item.type].label) || item.type);
+    row('Résultat', item.result);
+    row('Cible', item.cible || (CIBLES[item.type]&&CIBLES[item.type].target));
+    row('Commentaire', item.comment);
+  }else if(item._cat==='poids'){
+    row('Date', fmtDate(item.date));
+    row('Poids', item.val ? item.val+' kg' : '');
+    row('Moment', item.moment);
+  }
+  return '<div class="history-detail">'+(rows.join('') || '<span>Aucun détail disponible.</span>')+'</div>';
 }
-function closeHistoryDetail(){
-  const modal=document.getElementById('history-detail-modal');
-  if(modal) modal.style.display='none';
+function toggleHistoryEntry(card,event){
+  try{
+    if(event && event.target && event.target.closest && event.target.closest('.js-delete-entry')) return;
+    if(card && card.classList) card.classList.toggle('open');
+  }catch(e){console.warn('toggle history fail',e);}
+}
+function entryDeleteKey(entry){
+  if(!entry) return '';
+  return String(entry.local_id || entry.id || entry.supabase_id || '');
+}
+function sameEntryKey(entry,key){
+  if(!entry) return false;
+  const k=String(key);
+  return String(entry.id)===k || String(entry.local_id)===k || String(entry.supabase_id)===k;
+}
+function findEntryByKey(list,key){
+  return (list||[]).find(function(entry){return sameEntryKey(entry,key);});
+}
+function isChargeLinkedToTraining(charge,training){
+  if(!charge || !training) return false;
+  var ids=[training.id, training.local_id, training.supabase_id].filter(function(v){return v!==undefined && v!==null && v!=='';}).map(String);
+  var vals=[charge.training_id, charge.training_local_id, charge.training_supabase_id];
+  if(charge.data && typeof charge.data==='object') vals.push(charge.data.training_id, charge.data.training_local_id, charge.data.training_supabase_id);
+  vals=vals.filter(function(v){return v!==undefined && v!==null && v!=='';}).map(String);
+  return vals.some(function(v){return ids.indexOf(v)>=0;});
 }
 
 function renderHistory(filter) {
   const db = loadDB();
   const el = document.getElementById('history-list');
+  if(!el) return;
   let items = [...(db.trainings||[]).map(t=>({...t,_cat:'training'})),
                ...(db.tests||[]).map(t=>({...t,_cat:'test'})),
                ...(db.poids||[]).map(t=>({...t,_cat:'poids'}))];
 
   if (filter !== 'all') {
-    const map = {run:['vma','tempo','z2','long'], str:['str_bas','str_haut','str_full'],
+    const map = {run:['vma','tempo','z2','long','bike','ergo'], str:['str_bas','str_haut','str_full'],
       sp:['compromised','simulation'], test:['_cat=test']};
     if (filter === 'test') items = items.filter(t=>t._cat==='test');
     else items = items.filter(t => (map[filter]||[]).includes(t.type));
@@ -1691,16 +1734,15 @@ function renderHistory(filter) {
   }
 
   el.innerHTML = items.map(item => {
-    const itemId=historyEntryId(item);
     const icon = TYPE_ICONS[item._cat==='test'?'test':item._cat==='poids'?'poids':item.type] || '📋';
     let title = '', meta = '', tags = [];
 
     if (item._cat === 'poids') {
       title = item.val + ' kg';
-      meta = fmtDate(item.date) + ' · ' + (item.moment||'');
+      meta = fmtDate(item.date) + (item.moment ? ' · ' + item.moment : '');
     } else if (item._cat === 'test') {
       const c = CIBLES[item.type];
-      title = (c?.label||item.type) + ' — ' + item.result;
+      title = (c?.label||item.type||'Test') + ' — ' + (item.result||'');
       meta = fmtDate(item.date) + (item.comment ? ' · ' + item.comment : '');
       if (c && item.result) {
         const s = timeToSec(item.result), t2 = timeToSec(c.target);
@@ -1710,9 +1752,9 @@ function renderHistory(filter) {
         }
       }
     } else {
-      const typeLabels = {vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',compromised:'Compromised',
+      const typeLabels = {vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',bike:'Vélo',compromised:'Compromised',
         simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',ergo:'Ergo',mob:'Mobilité'};
-      title = typeLabels[item.type] || item.type || 'Séance';
+      title = (item.type && typeLabels[item.type]) ? typeLabels[item.type] : (item.type || 'Séance');
       if (item.duree) title += ` — ${item.duree} min`;
       meta = fmtDate(item.date);
       if (item.rpe) {
@@ -1728,38 +1770,70 @@ function renderHistory(filter) {
       if (item.allure) tags.push({txt:item.allure+'/km', cls:'etag'});
       if (getFcAvg(item)) tags.push({txt:'FC moy '+getFcAvg(item)+' bpm', cls:'etag'});
       if (getFcMax(item)) tags.push({txt:'FC max '+getFcMax(item)+' bpm', cls:'etag'});
-      const exCount=Array.isArray(item.exercises)?item.exercises.length:0;
-      if(exCount) tags.push({txt:exCount+' exos détaillés',cls:'etag-ok'});
-      if (item.sp_wb) tags.push({txt:'WB '+item.sp_wb, cls:'etag'});
+      var histExos = item.exercises;
+      if(typeof histExos === 'string'){ try{ histExos=JSON.parse(histExos); }catch(e){ histExos=[]; } }
+      if (histExos && histExos.length) {
+        histExos.forEach(function(exo){
+          var name=(typeof EXO_LABELS!=='undefined' && EXO_LABELS[exo.key]) || exo.label || exo.key;
+          var best=null;
+          (exo.series||[]).forEach(function(s){ if(s && s.rm && (!best || s.rm>best.rm)) best=s; });
+          if(name && best) tags.push({txt:name+' '+best.kg+'kg × '+best.reps+' → 1RM ~'+best.rm+'kg', cls:'etag-ok'});
+          else if(name) tags.push({txt:name, cls:'etag'});
+        });
+      } else {
+        if(item.squat)tags.push({txt:'Squat '+item.squat+'kg',cls:'etag'});
+        if(item.bench)tags.push({txt:'Bench '+item.bench+'kg',cls:'etag'});
+      }
+      if(item.sp_wb)tags.push({txt:'WB '+item.sp_wb,cls:'etag'});
     }
 
-    const tagsHtml = tags.map(t=>`<span class="etag ${t.cls}">${hxEsc(t.txt)}</span>`).join('');
-    return `<div class="entry" onclick="openHistoryDetail(${JSON.stringify(itemId)}, ${JSON.stringify(item._cat)})" style="cursor:pointer">
+    const tagsHtml = tags.map(t=>`<span class="etag ${t.cls}">${escapeHtml(t.txt)}</span>`).join('');
+    const id = entryDeleteKey(item);
+    return `<div class="entry js-history-entry" data-cat="${escapeHtml(item._cat)}" data-id="${escapeHtml(id)}" title="Cliquer pour afficher le détail">
       <div class="entry-icon">${icon}</div>
       <div class="entry-content">
-        <div class="entry-title">${hxEsc(title)}</div>
-        <div class="entry-meta">${hxEsc(meta)}${item.comment && item._cat!=='test' ? ' · ' + hxEsc(item.comment) : ''}</div>
+        <div class="entry-title">${escapeHtml(title)}</div>
+        <div class="entry-meta">${escapeHtml(meta)}${item.comment ? ' · ' + escapeHtml(item.comment) : ''}</div>
         ${tags.length ? `<div class="entry-tags">${tagsHtml}</div>` : ''}
+        ${historyDetailHtml(item)}
       </div>
-      <button class="del-btn" onclick="event.stopPropagation(); deleteEntry(${JSON.stringify(itemId)}, ${JSON.stringify(item._cat)})">✕</button>
+      <button type="button" class="del-btn js-delete-entry" data-cat="${escapeHtml(item._cat)}" data-id="${escapeHtml(id)}" aria-label="Supprimer cette entrée">✕</button>
     </div>`;
   }).join('');
 }
 
 async function deleteEntry(id, cat) {
+  if (!id) { alert('Impossible de supprimer : identifiant introuvable.'); return; }
   if (!confirm('Supprimer cette entrée ?')) return;
   const db = loadDB();
   const key = cat==='training' ? 'trainings' : cat==='test' ? 'tests' : cat==='poids' ? 'poids' : null;
-  const entry = key ? (db[key]||[]).find(t=>String(t.id)===String(id) || String(t.local_id)===String(id) || String(t.supabase_id)===String(id)) : null;
-  if (cat==='training') db.trainings = (db.trainings||[]).filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
-  if (cat==='test') db.tests = (db.tests||[]).filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
-  if (cat==='poids') db.poids = (db.poids||[]).filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
-  const ok = await sbDel(tableForCat(cat), entry || id);
+  if(!key) return;
+  const entry = findEntryByKey(db[key]||[], id);
+  if(!entry){ alert('Entrée introuvable dans le cache local. Clique sur Sync puis réessaie.'); return; }
+
+  db[key] = (db[key]||[]).filter(t=>!sameEntryKey(t,id));
+
+  var linkedCharges=[];
+  if(cat==='training'){
+    linkedCharges=(db.charges||[]).filter(function(c){return isChargeLinkedToTraining(c,entry);});
+    if(linkedCharges.length){ db.charges=(db.charges||[]).filter(function(c){return !isChargeLinkedToTraining(c,entry);}); }
+  }
+
   saveDB(db);
-  closeHistoryDetail();
-  renderHistory('all');
-  renderDashboard();
-  if(!ok) alert('Entrée supprimée du téléphone, mais suppression Supabase non confirmée. Vérifie la table ou synchronise.');
+  renderHistory(loadUiState().histType || 'all');
+  if(typeof renderDashboard==='function') renderDashboard();
+
+  let ok=false;
+  try{ ok = await sbDel(tableForCat(cat), entry); }
+  catch(e){ console.warn('deleteEntry Supabase fail', e); }
+
+  if(linkedCharges.length){
+    for(const ch of linkedCharges){
+      try{ await sbDel('charges', ch); }catch(e){ console.warn('delete linked charge fail', e); }
+    }
+  }
+
+  if(!ok) alert('Entrée supprimée du téléphone, mais suppression Supabase non confirmée. Si elle revient après Sync, vérifie les policies DELETE.');
 }
 
 // ════════════════════════════════════
@@ -2115,77 +2189,85 @@ function getPlanTargets(exo) {
   return targets[exo] || [];
 }
 
-function validChargeEntry(c){
-  if(!c) return false;
-  const exo=String(c.exo||'').trim();
-  return !!exo && exo!=='undefined' && exo!=='null' && isFinite(parseFloat(c.kg)) && isFinite(parseFloat(c.reps)) && isFinite(parseFloat(c.rm_estimated));
-}
 function renderChargesHistory(selectedExo) {
   const db = loadDB();
-  const charges = (db.charges || []).filter(validChargeEntry);
+  const charges = db.charges || [];
+  
+  // Build list of exercices that have valid 1RM data
+  const exosWithData = [...new Set(charges
+    .filter(c => c && c.exo && String(c.exo).trim() && String(c.exo).trim().toLowerCase() !== 'undefined' && Number(c.kg)>0 && Number(c.reps)>0 && Number(c.rm_estimated)>0)
+    .map(c => String(c.exo).trim()))].sort((a,b)=>(EXO_LABELS[a]||a).localeCompare(EXO_LABELS[b]||b));
+  
   const tabsEl = document.getElementById('exo-subtabs');
-  const histEl = document.getElementById('rm-history');
-  if (!tabsEl || !histEl) return;
-  const chartWrap = document.getElementById('rm-chart-wrap');
-  if (!charges.length) {
-    histEl.innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Enregistre des séries pour voir l&#39;historique 1RM.</p></div>';
+  if (!tabsEl) return;
+  
+  if (!exosWithData.length) {
+    document.getElementById('rm-history').innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Enregistre des séries pour voir l&#39;historique 1RM.</p></div>';
     tabsEl.innerHTML = '';
-    if(chartWrap) chartWrap.style.display='none';
     return;
   }
-  const exosWithData = [...new Set(charges.map(c => String(c.exo).trim()))].sort((a,b)=>(EXO_LABELS[a]||a).localeCompare(EXO_LABELS[b]||b));
-  const current = selectedExo && exosWithData.includes(selectedExo) ? selectedExo : exosWithData[0];
-  const autoCount = charges.filter(c => c.auto).length;
-  const manualCount = charges.filter(c => !c.auto).length;
+  
+  const current = (selectedExo && exosWithData.includes(selectedExo)) ? selectedExo : exosWithData[0];
+  
+  // Count auto vs manual
+  const autoCount = (db.charges||[]).filter(c => c.auto).length;
+  const manualCount = (db.charges||[]).filter(c => !c.auto).length;
+  
   tabsEl.innerHTML = `
-    <select id="rm-exo-select" onchange="renderChargesHistory(this.value)" style="width:100%;background:var(--bg3);border:1px solid var(--bo2);border-radius:8px;padding:.55rem .65rem;color:var(--tx);font-family:monospace;font-size:12px;outline:none">
-      ${exosWithData.map(e=>`<option value="${hxEsc(e)}" ${e===current?'selected':''}>${hxEsc(EXO_LABELS[e]||e)}</option>`).join('')}
+    <label style="display:block;font-family:monospace;font-size:10px;color:var(--tx4);margin-bottom:.25rem">Exercice</label>
+    <select id="rm-exo-select" onchange="renderChargesHistory(this.value)" style="width:100%;background:var(--bg3);border:1px solid var(--bo2);border-radius:8px;color:var(--tx);padding:.55rem;font-size:12px">
+      ${exosWithData.map(e => `<option value="${escapeHtml(e)}" ${e===current?'selected':''}>${escapeHtml(EXO_LABELS[e]||e)}</option>`).join('')}
     </select>
-    <div style="font-family:monospace;font-size:9px;color:var(--tx4);margin-top:.35rem;width:100%">⚡ ${autoCount} entrées auto depuis les logs · ${manualCount} manuelles · ${exosWithData.length} exercices</div>`;
-  const exoCharges = charges.filter(c => String(c.exo).trim() === current).sort((a,b) => String(a.date||'').localeCompare(String(b.date||'')));
+  ` + (autoCount > 0 ? `<div style="font-family:monospace;font-size:9px;color:var(--tx4);margin-top:.3rem;width:100%">⚡ ${autoCount} entrées auto depuis les logs · ${manualCount} manuelles</div>` : '');
+  
+  const exoCharges = charges.filter(c => c && c.exo === current && Number(c.kg)>0 && Number(c.reps)>0 && Number(c.rm_estimated)>0).sort((a,b) => String(a.date||'').localeCompare(String(b.date||'')));
+  
   if (!exoCharges.length) {
-    histEl.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Aucune donnée pour cet exercice.</div>';
-    if(chartWrap) chartWrap.style.display='none';
+    document.getElementById('rm-history').innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Aucune donnée pour cet exercice.</div>';
     return;
   }
+  
+  // Latest 1RM
   const latest = exoCharges[exoCharges.length-1];
-  const best = exoCharges.reduce((a,b) => parseFloat(a.rm_estimated) > parseFloat(b.rm_estimated) ? a : b);
-  histEl.innerHTML = `
+  const best = exoCharges.reduce((a,b) => a.rm_estimated > b.rm_estimated ? a : b);
+  
+  document.getElementById('rm-history').innerHTML = `
     <div class="stat-grid" style="margin-bottom:.4rem">
       <div class="stat-box">
-        <div class="val" style="color:var(--gr)">${hxEsc(latest.rm_estimated)} kg</div>
+        <div class="val" style="color:var(--gr)">${latest.rm_estimated} kg</div>
         <div class="lbl">1RM actuel</div>
         <div class="delta" style="font-family:monospace;font-size:10px;color:var(--tx4)">${fmtDate(latest.date)}</div>
       </div>
       <div class="stat-box">
-        <div class="val" style="color:var(--am)">${hxEsc(best.rm_estimated)} kg</div>
+        <div class="val" style="color:var(--am)">${best.rm_estimated} kg</div>
         <div class="lbl">1RM record</div>
         <div class="delta" style="font-family:monospace;font-size:10px;color:var(--tx4)">${fmtDate(best.date)}</div>
       </div>
     </div>
     ${exoCharges.slice(-5).reverse().map(c => {
-      const isNew = parseFloat(c.rm_estimated) >= parseFloat(best.rm_estimated);
+      const isNew = c.rm_estimated >= best.rm_estimated;
       return `<div class="entry">
         <div class="entry-icon">${isNew ? '🏆' : '💪'}</div>
         <div class="entry-content">
-          <div class="entry-title">${hxEsc(c.kg)} kg × ${hxEsc(c.reps)} reps = <b style="color:var(--gr)">${hxEsc(c.rm_estimated)} kg 1RM</b></div>
-          <div class="entry-meta">${fmtDate(c.date)} · RPE ${hxEsc(c.rpe||'—')} · ${hxEsc(c.sets||1)} série(s)</div>
+          <div class="entry-title">${c.kg} kg × ${c.reps} reps = <b style="color:var(--gr)">${c.rm_estimated} kg 1RM</b></div>
+          <div class="entry-meta">${fmtDate(c.date)} · RPE ${c.rpe} · ${c.sets} série(s)</div>
           <div class="entry-tags">
             ${PLAN_INTENSITIES.map(i => {
-              const rec = round25(parseFloat(c.rm_estimated) * i.pct);
-              return `<span class="etag">${hxEsc(i.label.split(' ')[0])}: <b>${rec}</b></span>`;
+              const rec = round25(c.rm_estimated * i.pct);
+              return `<span class="etag">${i.label.split(' ')[0]}: <b>${rec}</b></span>`;
             }).slice(0,4).join('')}
           </div>
         </div>
-        <button class="del-btn" onclick="deleteCharge(${JSON.stringify(String(c.id||c.local_id||c.supabase_id||''))})">✕</button>
+        <button class="del-btn" onclick="deleteCharge(${JSON.stringify(String(c.id))})">✕</button>
       </div>`;
     }).join('')}`;
-  if(chartWrap) chartWrap.style.display = 'block';
+  
+  // Draw chart
+  const chartWrap = document.getElementById('rm-chart-wrap');
+  chartWrap.style.display = 'block';
   const canvas = document.getElementById('rm-chart');
-  const data = exoCharges.map(c => ({x: fmtDate(c.date), y: parseFloat(c.rm_estimated)})).filter(d=>isFinite(d.y));
-  if(canvas && data.length){
-    drawLineChart(canvas, data, {color:'var(--gr)', min: Math.min(...data.map(d=>d.y))-5, max: Math.max(...data.map(d=>d.y))+5});
-  }
+  const data = exoCharges.map(c => ({x: fmtDate(c.date), y: c.rm_estimated}));
+  drawLineChart(canvas, data, {color:'var(--gr)', min: Math.min(...data.map(d=>d.y))-5, max: Math.max(...data.map(d=>d.y))+5});
 }
 
 async function deleteCharge(id) {
@@ -2320,6 +2402,23 @@ function renderMensur() {
       </div>`).join('') +
     (entries.length > 10 ? `<div style="font-family:monospace;font-size:9px;color:var(--tx4);text-align:center;padding:.3rem">${entries.length - 10} entrées plus anciennes masquées</div>` : '');
 }
+
+
+// Histo: gestion déléguée robuste. Une erreur de clic ne touche pas à la synchro Supabase.
+document.addEventListener('click', function(e){
+  var del = e.target && e.target.closest ? e.target.closest('.js-delete-entry') : null;
+  if(del){
+    e.preventDefault();
+    e.stopPropagation();
+    deleteEntry(del.getAttribute('data-id'), del.getAttribute('data-cat'));
+    return;
+  }
+  var card = e.target && e.target.closest ? e.target.closest('.js-history-entry') : null;
+  var list = document.getElementById('history-list');
+  if(card && list && list.contains(card)){
+    card.classList.toggle('open');
+  }
+});
 
 // Init
 showTab('dashboard');
