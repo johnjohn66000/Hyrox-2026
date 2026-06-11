@@ -134,22 +134,6 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 .dock-btn.on{color:var(--gr)}
 .dock-icon{font-size:1rem}
 @media(min-width:431px){body{border-left:1px solid var(--bo);border-right:1px solid var(--bo)}}
-
-/* History detail clickable cards */
-.entry.js-history-entry{cursor:pointer;transition:border-color .15s, background .15s}
-.entry.js-history-entry:active{border-color:var(--gr);background:var(--bg4)}
-.history-detail{display:none;margin-top:.45rem;padding:.55rem .6rem;background:var(--bg2);border:1px solid var(--bo2);border-radius:7px;font-family:monospace;font-size:10.5px;color:var(--tx3);line-height:1.55;overflow-wrap:anywhere;word-break:break-word}
-.entry.open .history-detail{display:block}
-.history-detail-title{color:var(--tx2);font-weight:700;margin:.25rem 0 .15rem;text-transform:uppercase;font-size:9px;letter-spacing:.06em}
-.history-detail-row{display:flex;justify-content:space-between;gap:.6rem;border-bottom:1px solid var(--bo);padding:2px 0;flex-wrap:wrap}
-.history-detail-row:last-child{border-bottom:0}
-.history-detail-row b{color:var(--tx2)}
-.history-exercises-list{display:flex;flex-direction:column;gap:.35rem;margin-top:.25rem}
-.history-exercise-card{border:1px solid var(--bo);border-radius:6px;padding:.4rem;background:var(--bg3)}
-.history-exercise-name{font-weight:700;color:var(--tx2);margin-bottom:.2rem}
-.history-exercise-series{color:var(--tx3);font-size:10px}
-.history-exercise-empty{color:var(--tx4);font-size:10px}
-
 </style>
 </head>
 <body>
@@ -1599,69 +1583,130 @@ function renderRPEAnalysis(db) {
 // ════════════════════════════════════
 // HISTORY RENDER
 // ════════════════════════════════════
-function historyDetailHtml(item){
-  var rows=[];
-  function row(label,value){
-    if(value!==undefined && value!==null && value!=='') rows.push('<div class="history-detail-row"><span>'+escapeHtml(label)+'</span><b>'+escapeHtml(value)+'</b></div>');
+function getHistoryIdentity(item) {
+  return String((item && (item.id || item.local_id || item.supabase_id)) || '');
+}
+
+function findHistoryEntry(id, cat) {
+  const db = loadDB();
+  const key = cat==='training' ? 'trainings' : cat==='test' ? 'tests' : cat==='poids' ? 'poids' : null;
+  if (!key) return null;
+  return (db[key]||[]).find(t =>
+    String(t.id)===String(id) ||
+    String(t.local_id)===String(id) ||
+    String(t.supabase_id)===String(id)
+  ) || null;
+}
+
+function detailField(label, value) {
+  if (value === undefined || value === null || value === '') return '';
+  return `<div style="display:flex;justify-content:space-between;gap:.8rem;border-bottom:1px solid var(--bo);padding:.32rem 0;font-family:monospace;font-size:11px">
+    <span style="color:var(--tx4)">${escapeHtml(label)}</span>
+    <b style="color:var(--tx);text-align:right;word-break:break-word">${escapeHtml(value)}</b>
+  </div>`;
+}
+
+function renderTrainingExercisesDetail(t) {
+  const exercises = Array.isArray(t.exercises) ? t.exercises.filter(e => e && Array.isArray(e.series) && e.series.length) : [];
+  if (!exercises.length) {
+    const legacy = [];
+    [['Back squat','squat','squat_reps'],['Bench press','bench','bench_reps'],['RDL','rdl','rdl_reps'],['Hip thrust','hip','hip_reps'],['Pull-up','pullup','pullup_reps'],['Farmer','farmer','farmer_reps']].forEach(([label,kgKey,repsKey])=>{
+      if (t[kgKey]) legacy.push({label, kg:t[kgKey], reps:t[repsKey]||'—'});
+    });
+    if (!legacy.length) return '<div style="font-size:11px;color:var(--tx4);padding:.6rem 0">Aucun détail de série enregistré pour cette séance.</div>';
+    return legacy.map(x=>`<div class="entry" style="margin:.35rem 0">
+      <div class="entry-icon">💪</div><div class="entry-content">
+        <div class="entry-title">${escapeHtml(x.label)}</div>
+        <div class="entry-meta">${escapeHtml(x.kg)} kg × ${escapeHtml(x.reps)} reps</div>
+      </div></div>`).join('');
   }
-  if(item._cat==='training'){
-    row('Date', fmtDate(item.date));
-    row('Durée', item.duree ? item.duree+' min' : '');
-    row('RPE', item.rpe);
-    row('Qualité', item.qualite);
-    row('Distance', item.dist ? item.dist+' km' : '');
-    row('Allure', item.allure ? item.allure+'/km' : '');
-    row('Intervalles', item.intervals);
-    row('FC moyenne', getFcAvg(item) ? getFcAvg(item)+' bpm' : '');
-    row('FC max', getFcMax(item) ? getFcMax(item)+' bpm' : '');
-    row('Temps total SP', item.sp_total ? item.sp_total+' min' : '');
-    row('Rounds', item.sp_rounds);
-    row('BBJ', item.sp_bbj ? item.sp_bbj+' m' : '');
-    row('WB 100', item.sp_wb);
-    if(item.comment) row('Commentaire', item.comment);
-    if(item.exercises && item.exercises.length){
-      rows.push('<div class="history-detail-title">Exercices</div>');
-      var exoHtml='<div class="history-exercises-list">';
-      item.exercises.forEach(function(exo, exoIndex){
-        var exoName=escapeHtml((typeof EXO_LABELS!=='undefined' && EXO_LABELS[exo.key]) || exo.label || exo.key || ('Exercice '+(exoIndex+1)));
-        exoHtml+='<div class="history-exercise-card"><div class="history-exercise-name">'+(exoIndex+1)+'. '+exoName+'</div>';
-        var series=Array.isArray(exo.series)?exo.series:[];
-        if(!series.length){
-          exoHtml+='<div class="history-exercise-empty">Aucune série renseignée</div>';
-        }else{
-          series.forEach(function(ser,i){
-            var kgTxt=(ser.kg!==undefined && ser.kg!==null && ser.kg!=='') ? ser.kg : '—';
-            var repsTxt=(ser.reps!==undefined && ser.reps!==null && ser.reps!=='') ? ser.reps : '—';
-            var rmTxt=ser.rm ? ' · ~'+ser.rm+' kg 1RM' : '';
-            exoHtml+='<div class="history-exercise-series">Série '+(i+1)+' : '+escapeHtml(kgTxt)+' kg × '+escapeHtml(repsTxt)+escapeHtml(rmTxt)+'</div>';
-          });
-        }
-        exoHtml+='</div>';
-      });
-      exoHtml+='</div>';
-      rows.push(exoHtml);
-    }
-  }else if(item._cat==='test'){
-    row('Date', fmtDate(item.date)); row('Type', item.type); row('Résultat', item.result); row('Cible', item.cible); row('Commentaire', item.comment);
-  }else if(item._cat==='poids'){
-    row('Date', fmtDate(item.date)); row('Poids', item.val ? item.val+' kg' : ''); row('Moment', item.moment);
+  return exercises.map(exo => {
+    const label = exo.label || EXO_NAMES[exo.key] || EXO_LABELS[exo.key] || exo.key || 'Exercice';
+    const rows = exo.series.map((s, i) => {
+      const kg = s.kg ?? '—';
+      const reps = s.reps ?? '—';
+      const rm = s.rm || (parseFloat(kg)&&parseInt(reps,10) ? Math.round(parseFloat(kg)*(1+parseInt(reps,10)/30)*4)/4 : null);
+      return `<tr>
+        <td style="padding:.35rem .25rem;color:var(--tx4)">${i+1}</td>
+        <td style="padding:.35rem .25rem;text-align:right;color:var(--tx)">${escapeHtml(kg)} kg</td>
+        <td style="padding:.35rem .25rem;text-align:right;color:var(--tx)">${escapeHtml(reps)}</td>
+        <td style="padding:.35rem .25rem;text-align:right;color:var(--gr);font-weight:700">${rm ? escapeHtml(rm)+' kg' : '—'}</td>
+      </tr>`;
+    }).join('');
+    return `<div style="background:var(--bg2);border:1px solid var(--bo2);border-radius:10px;padding:.65rem;margin:.55rem 0">
+      <div style="font-size:13px;font-weight:800;color:var(--tx);margin-bottom:.4rem">${escapeHtml(label)}</div>
+      <table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:11px">
+        <thead><tr style="color:var(--tx4);border-bottom:1px solid var(--bo)"><th style="text-align:left;padding:.3rem .25rem">Série</th><th style="text-align:right;padding:.3rem .25rem">Charge</th><th style="text-align:right;padding:.3rem .25rem">Reps</th><th style="text-align:right;padding:.3rem .25rem">1RM estimé</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+}
+
+function openHistoryDetail(id, cat) {
+  const item = findHistoryEntry(id, cat);
+  if (!item) { alert('Séance introuvable. Synchronise puis réessaie.'); return; }
+  let title = 'Détail';
+  let body = '';
+  if (cat === 'training') {
+    const typeLabels = {vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',bike:'Vélo',ergo:'Ergo',compromised:'Compromised',simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',mob:'Mobilité'};
+    title = `${typeLabels[item.type] || item.type || 'Séance'} — ${fmtDate(item.date)}`;
+    body += detailField('Date', item.date);
+    body += detailField('Durée', item.duree ? item.duree + ' min' : '');
+    body += detailField('RPE', item.rpe);
+    body += detailField('Qualité', item.qualite);
+    body += detailField('Distance', item.dist ? item.dist + ' km' : '');
+    body += detailField('Allure', item.allure ? item.allure + '/km' : '');
+    body += detailField('Intervalles', item.intervals);
+    body += detailField('FC moyenne', getFcAvg(item) ? getFcAvg(item) + ' bpm' : '');
+    body += detailField('FC max', getFcMax(item) ? getFcMax(item) + ' bpm' : '');
+    body += detailField('Run SP', item.sp_allure ? item.sp_allure + '/km' : '');
+    body += detailField('Temps total SP', item.sp_total ? item.sp_total + ' min' : '');
+    body += detailField('Rounds', item.sp_rounds);
+    body += detailField('BBJ', item.sp_bbj);
+    body += detailField('WB 100', item.sp_wb);
+    body += item.comment ? `<div style="margin-top:.6rem;background:var(--bg2);border:1px solid var(--bo2);border-radius:8px;padding:.55rem;font-size:12px;color:var(--tx3);line-height:1.4"><b style="color:var(--tx)">Commentaire</b><br>${escapeHtml(item.comment)}</div>` : '';
+    body += `<div style="margin-top:.75rem"><div style="font-size:12px;font-weight:800;color:var(--tx);margin-bottom:.35rem">Exercices & séries</div>${renderTrainingExercisesDetail(item)}</div>`;
+  } else if (cat === 'test') {
+    const c = CIBLES[item.type];
+    title = `Test — ${c?.label || item.type || ''}`;
+    body += detailField('Date', item.date);
+    body += detailField('Résultat', item.result);
+    body += detailField('Cible', item.cible || c?.target);
+    body += detailField('Commentaire', item.comment);
+  } else if (cat === 'poids') {
+    title = `Poids — ${item.val} kg`;
+    body += detailField('Date', item.date);
+    body += detailField('Poids', item.val ? item.val + ' kg' : '');
+    body += detailField('Moment', item.moment);
   }
-  return '<div class="history-detail">'+(rows.join('') || '<span>Aucun détail disponible.</span>')+'</div>';
+  showHistoryModal(title, body || '<div style="font-size:12px;color:var(--tx4)">Aucun détail disponible.</div>');
 }
-function toggleHistoryEntry(card,event){
-  try{
-    if(event && event.target && event.target.closest && event.target.closest('.js-delete-entry')) return;
-    if(card && card.classList) card.classList.toggle('open');
-  }catch(e){console.warn('toggle history fail',e);}
+
+function showHistoryModal(title, body) {
+  let modal = document.getElementById('history-detail-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'history-detail-modal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;padding:0 .75rem .75rem .75rem;box-sizing:border-box';
+    modal.innerHTML = `<div style="width:100%;max-width:560px;max-height:86vh;overflow:auto;background:var(--bg);border:1px solid var(--bo2);border-radius:18px;padding:1rem;box-shadow:0 18px 60px rgba(0,0,0,.45)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;margin-bottom:.75rem;position:sticky;top:0;background:var(--bg);padding-bottom:.55rem;border-bottom:1px solid var(--bo);z-index:1">
+        <div id="history-detail-title" style="font-size:15px;font-weight:900;color:var(--tx);line-height:1.25"></div>
+        <button onclick="closeHistoryDetail()" style="background:var(--bg2);border:1px solid var(--bo2);border-radius:10px;color:var(--tx);font-size:18px;line-height:1;padding:.35rem .55rem;cursor:pointer">×</button>
+      </div>
+      <div id="history-detail-body"></div>
+    </div>`;
+    modal.addEventListener('click', function(e){ if(e.target === modal) closeHistoryDetail(); });
+    document.body.appendChild(modal);
+  }
+  document.getElementById('history-detail-title').innerHTML = escapeHtml(title);
+  document.getElementById('history-detail-body').innerHTML = body;
+  modal.style.display = 'flex';
 }
-function entryDeleteKey(entry){
-  if(!entry) return '';
-  return String(entry.local_id || entry.supabase_id || entry.id || '');
-}
-function sameEntryKey(entry,key){
-  if(!entry) return false;
-  const k=String(key);
-  return String(entry.id)===k || String(entry.local_id)===k || String(entry.supabase_id)===k;
+
+function closeHistoryDetail() {
+  const modal = document.getElementById('history-detail-modal');
+  if (modal) modal.style.display = 'none';
 }
 
 function renderHistory(filter) {
@@ -1687,14 +1732,15 @@ function renderHistory(filter) {
 
   el.innerHTML = items.map(item => {
     const icon = TYPE_ICONS[item._cat==='test'?'test':item._cat==='poids'?'poids':item.type] || '📋';
+    const id = getHistoryIdentity(item);
     let title = '', meta = '', tags = [];
 
     if (item._cat === 'poids') {
       title = item.val + ' kg';
-      meta = fmtDate(item.date) + (item.moment ? ' · ' + item.moment : '');
+      meta = fmtDate(item.date) + ' · ' + (item.moment || '');
     } else if (item._cat === 'test') {
       const c = CIBLES[item.type];
-      title = (c?.label||item.type||'Test') + ' — ' + (item.result||'');
+      title = (c?.label||item.type) + ' — ' + item.result;
       meta = fmtDate(item.date) + (item.comment ? ' · ' + item.comment : '');
       if (c && item.result) {
         const s = timeToSec(item.result), t2 = timeToSec(c.target);
@@ -1704,9 +1750,9 @@ function renderHistory(filter) {
         }
       }
     } else {
-      const typeLabels = {vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',bike:'Vélo',compromised:'Compromised',
-        simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',ergo:'Ergo',mob:'Mobilité'};
-      title = (item.type && typeLabels[item.type]) ? typeLabels[item.type] : (item.type || 'Séance');
+      const typeLabels = {vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',bike:'Vélo',ergo:'Ergo',compromised:'Compromised',
+        simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',mob:'Mobilité'};
+      title = typeLabels[item.type] || item.type || 'Séance';
       if (item.duree) title += ` — ${item.duree} min`;
       meta = fmtDate(item.date);
       if (item.rpe) {
@@ -1722,52 +1768,40 @@ function renderHistory(filter) {
       if (item.allure) tags.push({txt:item.allure+'/km', cls:'etag'});
       if (getFcAvg(item)) tags.push({txt:'FC moy '+getFcAvg(item)+' bpm', cls:'etag'});
       if (getFcMax(item)) tags.push({txt:'FC max '+getFcMax(item)+' bpm', cls:'etag'});
-      if (item.exercises && item.exercises.length) {
-        item.exercises.forEach(function(exo){
-          var name=(typeof EXO_LABELS!=='undefined' && EXO_LABELS[exo.key]) || exo.label || exo.key;
-          var best=null;
-          (exo.series||[]).forEach(function(s){ if(s && s.rm && (!best || s.rm>best.rm)) best=s; });
-          if(name && best) tags.push({txt:name+' '+best.kg+'kg × '+best.reps+' → 1RM ~'+best.rm+'kg', cls:'etag-ok'});
-          else if(name) tags.push({txt:name, cls:'etag'});
-        });
-      } else {
-        if(item.squat)tags.push({txt:'Squat '+item.squat+'kg',cls:'etag'});
-        if(item.bench)tags.push({txt:'Bench '+item.bench+'kg',cls:'etag'});
-      }
-      if(item.sp_wb)tags.push({txt:'WB '+item.sp_wb,cls:'etag'});
+      const exCount = Array.isArray(item.exercises) ? item.exercises.length : 0;
+      const setCount = Array.isArray(item.exercises) ? item.exercises.reduce((s,e)=>s+((e.series||[]).length),0) : 0;
+      if (exCount) tags.push({txt:`${exCount} exos · ${setCount} séries`, cls:'etag-ok'});
+      if (item.sp_wb) tags.push({txt:'WB '+item.sp_wb, cls:'etag'});
     }
 
     const tagsHtml = tags.map(t=>`<span class="etag ${t.cls}">${escapeHtml(t.txt)}</span>`).join('');
-    const id = entryDeleteKey(item);
-    return `<div class="entry js-history-entry" data-cat="${escapeHtml(item._cat)}" data-id="${escapeHtml(id)}" onclick="toggleHistoryEntry(this,event)" title="Cliquer pour afficher le détail">
+    return `<div class="entry" onclick="openHistoryDetail(${JSON.stringify(id)}, '${item._cat}')" style="cursor:pointer;-webkit-tap-highlight-color:transparent">
       <div class="entry-icon">${icon}</div>
       <div class="entry-content">
         <div class="entry-title">${escapeHtml(title)}</div>
-        <div class="entry-meta">${escapeHtml(meta)}${item.comment ? ' · ' + escapeHtml(item.comment) : ''}</div>
+        <div class="entry-meta">${escapeHtml(meta)}${item.comment && item._cat==='training' ? ' · ' + escapeHtml(item.comment) : ''}</div>
         ${tags.length ? `<div class="entry-tags">${tagsHtml}</div>` : ''}
-        ${historyDetailHtml(item)}
       </div>
-      <button type="button" class="del-btn js-delete-entry" onclick="event.preventDefault();event.stopPropagation();deleteEntry(${JSON.stringify(String(id))}, '${item._cat}')">✕</button>
+      <button class="del-btn" onclick="deleteEntry(event, ${JSON.stringify(id)}, '${item._cat}')">✕</button>
     </div>`;
   }).join('');
 }
 
-async function deleteEntry(id, cat) {
+async function deleteEntry(evt, id, cat) {
+  if (evt && evt.stopPropagation) evt.stopPropagation();
   if (!confirm('Supprimer cette entrée ?')) return;
   const db = loadDB();
   const key = cat==='training' ? 'trainings' : cat==='test' ? 'tests' : cat==='poids' ? 'poids' : null;
-  if(!key) return;
-  const entry = (db[key]||[]).find(t=>sameEntryKey(t,id)) || {id:id, local_id:id};
-  db[key] = (db[key]||[]).filter(t=>!sameEntryKey(t,id));
+  const entry = key ? (db[key]||[]).find(t=>String(t.id)===String(id) || String(t.local_id)===String(id) || String(t.supabase_id)===String(id)) : null;
+  if (!entry) { alert('Entrée introuvable. Synchronise puis réessaie.'); return; }
+  if (cat==='training') db.trainings = (db.trainings||[]).filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
+  if (cat==='test') db.tests = (db.tests||[]).filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
+  if (cat==='poids') db.poids = (db.poids||[]).filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
+  const ok = await sbDel(tableForCat(cat), entry);
   saveDB(db);
-  renderHistory(loadUiState().histType || 'all');
-  try{
-    const ok = await sbDel(tableForCat(cat), entry);
-    if(!ok) alert('Entrée supprimée du téléphone, mais suppression Supabase non confirmée. Vérifie la table ou synchronise.');
-  }catch(e){
-    console.warn('deleteEntry Supabase fail', e);
-    alert('Entrée supprimée du téléphone, mais erreur pendant la suppression Supabase.');
-  }
+  renderHistory('all');
+  if (cat==='training') renderDashboard();
+  if(!ok) alert('Entrée supprimée du téléphone, mais suppression Supabase non confirmée. Vérifie la table ou synchronise.');
 }
 
 // ════════════════════════════════════
@@ -2125,47 +2159,60 @@ function getPlanTargets(exo) {
 
 function renderChargesHistory(selectedExo) {
   const db = loadDB();
-  const charges = db.charges || [];
-  
-  // Build list of exercices that have valid 1RM data
-  const exosWithData = [...new Set(charges
-    .filter(c => c && c.exo && String(c.exo).trim() && String(c.exo).trim().toLowerCase() !== 'undefined' && Number(c.kg)>0 && Number(c.reps)>0 && Number(c.rm_estimated)>0)
-    .map(c => String(c.exo).trim()))].sort((a,b)=>(EXO_LABELS[a]||a).localeCompare(EXO_LABELS[b]||b));
+  const charges = (db.charges || []).filter(c => {
+    if (!c) return false;
+    const exo = String(c.exo || '').trim();
+    const kg = parseFloat(c.kg);
+    const reps = parseInt(c.reps, 10);
+    const rm = parseFloat(c.rm_estimated);
+    return exo && exo !== 'undefined' && exo !== 'null' && Number.isFinite(kg) && kg > 0 && Number.isFinite(reps) && reps > 0 && Number.isFinite(rm) && rm > 0;
+  });
   
   const tabsEl = document.getElementById('exo-subtabs');
-  if (!tabsEl) return;
+  const histEl = document.getElementById('rm-history');
+  const chartWrap = document.getElementById('rm-chart-wrap');
+  if (!tabsEl || !histEl) return;
+  
+  // Build clean exercise list for a single dropdown, not a long button list.
+  const exosWithData = [...new Set(charges.map(c => String(c.exo || '').trim()))]
+    .filter(e => e && e !== 'undefined' && e !== 'null')
+    .sort((a,b) => (EXO_LABELS[a] || a).localeCompare(EXO_LABELS[b] || b));
   
   if (!exosWithData.length) {
-    document.getElementById('rm-history').innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Enregistre des séries pour voir l&#39;historique 1RM.</p></div>';
+    histEl.innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Enregistre des séries pour voir l&#39;historique 1RM.</p></div>';
     tabsEl.innerHTML = '';
+    if (chartWrap) chartWrap.style.display = 'none';
     return;
   }
   
-  const current = (selectedExo && exosWithData.includes(selectedExo)) ? selectedExo : exosWithData[0];
+  const current = (selectedExo && exosWithData.includes(String(selectedExo))) ? String(selectedExo) : exosWithData[0];
   
-  // Count auto vs manual
-  const autoCount = (db.charges||[]).filter(c => c.auto).length;
-  const manualCount = (db.charges||[]).filter(c => !c.auto).length;
+  // Count auto vs manual on valid charges only.
+  const autoCount = charges.filter(c => c.auto).length;
+  const manualCount = charges.filter(c => !c.auto).length;
   
   tabsEl.innerHTML = `
-    <label style="display:block;font-family:monospace;font-size:10px;color:var(--tx4);margin-bottom:.25rem">Exercice</label>
-    <select id="rm-exo-select" onchange="renderChargesHistory(this.value)" style="width:100%;background:var(--bg3);border:1px solid var(--bo2);border-radius:8px;color:var(--tx);padding:.55rem;font-size:12px">
-      ${exosWithData.map(e => `<option value="${escapeHtml(e)}" ${e===current?'selected':''}>${escapeHtml(EXO_LABELS[e]||e)}</option>`).join('')}
+    <select id="rm-exo-select" onchange="renderChargesHistory(this.value)" style="width:100%;background:var(--bg2);border:1px solid var(--bo2);border-radius:10px;color:var(--tx);font-family:monospace;font-size:12px;padding:.65rem .7rem;outline:none">
+      ${exosWithData.map(e => `<option value="${String(e).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}" ${e===current?'selected':''}>${EXO_LABELS[e]||e}</option>`).join('')}
     </select>
-  ` + (autoCount > 0 ? `<div style="font-family:monospace;font-size:9px;color:var(--tx4);margin-top:.3rem;width:100%">⚡ ${autoCount} entrées auto depuis les logs · ${manualCount} manuelles</div>` : '');
+    ${autoCount > 0 ? `<div style="font-family:monospace;font-size:9px;color:var(--tx4);margin-top:.35rem">⚡ ${autoCount} entrées auto depuis les logs · ${manualCount} manuelles</div>` : ''}
+  `;
   
-  const exoCharges = charges.filter(c => c && c.exo === current && Number(c.kg)>0 && Number(c.reps)>0 && Number(c.rm_estimated)>0).sort((a,b) => String(a.date||'').localeCompare(String(b.date||'')));
+  const exoCharges = charges
+    .filter(c => String(c.exo || '').trim() === current)
+    .sort((a,b) => String(a.date || '').localeCompare(String(b.date || '')));
   
   if (!exoCharges.length) {
-    document.getElementById('rm-history').innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Aucune donnée pour cet exercice.</div>';
+    histEl.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Aucune donnée pour cet exercice.</div>';
+    if (chartWrap) chartWrap.style.display = 'none';
     return;
   }
   
   // Latest 1RM
   const latest = exoCharges[exoCharges.length-1];
-  const best = exoCharges.reduce((a,b) => a.rm_estimated > b.rm_estimated ? a : b);
+  const best = exoCharges.reduce((a,b) => parseFloat(a.rm_estimated) > parseFloat(b.rm_estimated) ? a : b);
   
-  document.getElementById('rm-history').innerHTML = `
+  histEl.innerHTML = `
     <div class="stat-grid" style="margin-bottom:.4rem">
       <div class="stat-box">
         <div class="val" style="color:var(--gr)">${latest.rm_estimated} kg</div>
@@ -2179,31 +2226,31 @@ function renderChargesHistory(selectedExo) {
       </div>
     </div>
     ${exoCharges.slice(-5).reverse().map(c => {
-      const isNew = c.rm_estimated >= best.rm_estimated;
+      const isNew = parseFloat(c.rm_estimated) >= parseFloat(best.rm_estimated);
       return `<div class="entry">
         <div class="entry-icon">${isNew ? '🏆' : '💪'}</div>
         <div class="entry-content">
           <div class="entry-title">${c.kg} kg × ${c.reps} reps = <b style="color:var(--gr)">${c.rm_estimated} kg 1RM</b></div>
-          <div class="entry-meta">${fmtDate(c.date)} · RPE ${c.rpe} · ${c.sets} série(s)</div>
+          <div class="entry-meta">${fmtDate(c.date)} · RPE ${c.rpe || '—'} · ${c.sets || 1} série(s)</div>
           <div class="entry-tags">
             ${PLAN_INTENSITIES.map(i => {
-              const rec = round25(c.rm_estimated * i.pct);
+              const rec = round25(parseFloat(c.rm_estimated) * i.pct);
               return `<span class="etag">${i.label.split(' ')[0]}: <b>${rec}</b></span>`;
             }).slice(0,4).join('')}
           </div>
         </div>
-        <button class="del-btn" onclick="deleteCharge(${JSON.stringify(String(c.id))})">✕</button>
+        <button class="del-btn" onclick="deleteCharge(${JSON.stringify(String(c.id || c.local_id || c.supabase_id || ''))})">✕</button>
       </div>`;
     }).join('')}`;
   
-  // Draw chart
-  const chartWrap = document.getElementById('rm-chart-wrap');
-  chartWrap.style.display = 'block';
+  // Draw chart for selected exercise only.
+  if (chartWrap) chartWrap.style.display = 'block';
   const canvas = document.getElementById('rm-chart');
-  const data = exoCharges.map(c => ({x: fmtDate(c.date), y: c.rm_estimated}));
-  drawLineChart(canvas, data, {color:'var(--gr)', min: Math.min(...data.map(d=>d.y))-5, max: Math.max(...data.map(d=>d.y))+5});
+  const data = exoCharges.map(c => ({x: fmtDate(c.date), y: parseFloat(c.rm_estimated)}));
+  if (canvas && data.length) {
+    drawLineChart(canvas, data, {color:'var(--gr)', min: Math.min(...data.map(d=>d.y))-5, max: Math.max(...data.map(d=>d.y))+5});
+  }
 }
-
 async function deleteCharge(id) {
   if (!confirm('Supprimer cette série ?')) return;
   const db = loadDB();
