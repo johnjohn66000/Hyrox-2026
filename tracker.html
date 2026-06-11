@@ -1540,7 +1540,8 @@ function renderHistory(filter) {
     else items = items.filter(t => (map[filter]||[]).includes(t.type));
   }
 
-  items.sort((a,b) => b.date.localeCompare(a.date));
+  items = items.filter(t => t.date);
+  items.sort((a,b) => (b.date||'').localeCompare(a.date||''));
 
   if (!items.length) {
     el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>Aucune entrée pour ce filtre.</p></div>';
