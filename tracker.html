@@ -755,12 +755,9 @@ function normalizeSupabaseRow(row){
   var out={}, k, data;
   if(!row || typeof row!=='object') return row;
   // Les anciennes versions peuvent stocker les vraies données dans row.data.
-  data=(row.data && typeof row.data==='object' && !Array.isArray(row.data)) ? row.data : row;
-  for(k in data){ if(Object.prototype.hasOwnProperty.call(data,k)) out[k]=data[k]; }
-  // On conserve aussi quelques colonnes top-level si elles existent.
-  ['date','type','duree','distance','allure','rpe','qualite','exo','kg','reps','sets','rm_estimated','created_at','local_id','device_id'].forEach(function(key){
-    if(row[key]!==undefined && out[key]===undefined) out[key]=row[key];
-  });
+  for(k in row){ if(Object.prototype.hasOwnProperty.call(row,k)) out[k]=row[k]; }
+  var data2=(row.data && typeof row.data==='object' && !Array.isArray(row.data)) ? row.data : null;
+  if(data2){ for(k in data2){ if(Object.prototype.hasOwnProperty.call(data2,k) && out[k]===undefined) out[k]=data2[k]; } }
   if(row.id!==undefined && row.id!==null) out.supabase_id=row.id;
   return out;
 }
