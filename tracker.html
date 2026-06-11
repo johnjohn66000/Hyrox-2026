@@ -755,9 +755,12 @@ function normalizeSupabaseRow(row){
   var out={}, k, data;
   if(!row || typeof row!=='object') return row;
   // Les anciennes versions peuvent stocker les vraies données dans row.data.
-  for(k in row){ if(Object.prototype.hasOwnProperty.call(row,k)) out[k]=row[k]; }
-  var data2=(row.data && typeof row.data==='object' && !Array.isArray(row.data)) ? row.data : null;
-  if(data2){ for(k in data2){ if(Object.prototype.hasOwnProperty.call(data2,k) && out[k]===undefined) out[k]=data2[k]; } }
+  data=(row.data && typeof row.data==='object' && !Array.isArray(row.data)) ? row.data : row;
+  for(k in data){ if(Object.prototype.hasOwnProperty.call(data,k)) out[k]=data[k]; }
+  // On conserve aussi quelques colonnes top-level si elles existent.
+  ['date','type','duree','distance','dist','allure','intervals','fc_avg','fc_max','rpe','qualite','comment','exercises','sp_allure','sp_total','sp_rounds','sp_bbj','sp_wb','exo','kg','reps','sets','rm_estimated','created_at','local_id','device_id'].forEach(function(key){
+    if(row[key]!==undefined && out[key]===undefined) out[key]=row[key];
+  });
   if(row.id!==undefined && row.id!==null) out.supabase_id=row.id;
   return out;
 }
@@ -1619,100 +1622,93 @@ function safeJsonMaybe(v, fallback) {
   return fallback;
 }
 
-function asArrayMaybe(v) {
+function asArrayStrict(v) {
   v = safeJsonMaybe(v, v);
+  if (!v) return [];
   if (Array.isArray(v)) return v;
-  if (v && typeof v === 'object') return Object.values(v);
+  if (typeof v === 'object') {
+    if (Array.isArray(v.exercises)) return v.exercises;
+    if (Array.isArray(v.series)) return [v];
+    if (v.kg !== undefined || v.charge !== undefined || v.weight !== undefined || v.poids !== undefined || v.reps !== undefined || v.rep !== undefined || v.repetitions !== undefined) return [v];
+    const vals = Object.values(v).filter(x => x && typeof x === 'object');
+    if (vals.length) return vals;
+  }
   return [];
 }
 
-function cleanExerciseName(v) {
-  const s = String(v === undefined || v === null ? '' : v).trim();
-  if (!s || s.toLowerCase() === 'undefined' || s.toLowerCase() === 'null') return '';
+function cleanExoLabel(v) {
+  const s = String(v == null ? '' : v).trim();
+  if (!s || /^undefined|null|nan$/i.test(s)) return '';
   return s;
 }
 
 function normalizeExerciseSeries(exo) {
   exo = safeJsonMaybe(exo, exo) || {};
-  let series = exo.series ?? exo.sets ?? exo.rows ?? exo.lignes ?? exo.seriesList ?? exo.setList;
-  series = asArrayMaybe(series);
+  let rawSeries = exo.series;
+  if (rawSeries === undefined) rawSeries = exo.sets;
+  if (rawSeries === undefined) rawSeries = exo.rows;
+  if (rawSeries === undefined) rawSeries = exo.lignes;
+  let series = asArrayStrict(rawSeries);
 
-  // Certaines anciennes sauvegardes stockent directement kg/reps sur l'exercice.
-  if (!series.length && (exo.kg || exo.charge || exo.weight || exo.poids || exo.reps || exo.rep || exo.repetitions)) {
+  // Cas où l'exercice lui-même est une série unique.
+  if (!series.length && (exo.kg !== undefined || exo.charge !== undefined || exo.weight !== undefined || exo.poids !== undefined || exo.reps !== undefined || exo.rep !== undefined || exo.repetitions !== undefined)) {
     series = [exo];
   }
 
-  return series.map(raw => {
-    const s = safeJsonMaybe(raw, raw) || {};
-    const kgRaw = s.kg ?? s.charge ?? s.weight ?? s.poids ?? s.load;
-    const repsRaw = s.reps ?? s.rep ?? s.repetitions ?? s.nb_reps;
+  return series.map(s => {
+    s = safeJsonMaybe(s, s) || {};
+    const kgRaw = s.kg ?? s.charge ?? s.weight ?? s.poids;
+    const repsRaw = s.reps ?? s.rep ?? s.repetitions;
     const kg = Number(kgRaw);
     const reps = Number(repsRaw);
     const rpe = s.rpe ?? s.RPE ?? '';
-    const rmRaw = s.rm ?? s.rm_estimated ?? s.one_rm ?? s.e1rm;
-    const rm = Number(rmRaw);
-    const computedRm = (Number.isFinite(kg) && Number.isFinite(reps) && kg > 0 && reps > 0)
-      ? Math.round(kg * (1 + reps / 30) * 4) / 4
-      : NaN;
-
-    if (!Number.isFinite(kg) && !Number.isFinite(reps) && !Number.isFinite(rm) && !Number.isFinite(computedRm)) return null;
+    const rmRaw = s.rm ?? s.rm_estimated ?? s.one_rm;
+    const rm = Number(rmRaw !== undefined && rmRaw !== null && rmRaw !== '' ? rmRaw : (Number.isFinite(kg)&&Number.isFinite(reps)&&kg>0&&reps>0 ? Math.round(kg*(1+reps/30)*4)/4 : NaN));
+    // On refuse les fausses lignes : il faut au minimum une charge ou des reps réelles.
+    if (!Number.isFinite(kg) && !Number.isFinite(reps)) return null;
     return {
       kg: Number.isFinite(kg) ? kg : null,
       reps: Number.isFinite(reps) ? reps : null,
-      rpe: rpe,
-      rm: Number.isFinite(rm) ? rm : (Number.isFinite(computedRm) ? computedRm : null)
+      rpe,
+      rm: Number.isFinite(rm) ? rm : null
     };
   }).filter(Boolean);
 }
 
 function normalizeTrainingExercises(t) {
-  const db = loadDB();
-  const dataObj = safeJsonMaybe(t && t.data, {});
-  let candidates = [];
+  const dataObj = safeJsonMaybe(t && t.data, {}) || {};
+  const nestedData = safeJsonMaybe(dataObj && dataObj.data, {}) || {};
+  let sources = [];
 
-  // 1) Structure normale : training.exercises
-  candidates = candidates.concat(asArrayMaybe(t && t.exercises));
+  // Sources fiables uniquement : la séance elle-même ou son data Supabase.
+  // On ne reconstruit plus depuis la table charges ici : charges = synthèse 1RM, pas détail de séance.
+  sources = sources.concat(asArrayStrict(t && t.exercises));
+  sources = sources.concat(asArrayStrict(dataObj.exercises));
+  sources = sources.concat(asArrayStrict(dataObj.str_exercises));
+  sources = sources.concat(asArrayStrict(dataObj.strExos));
+  sources = sources.concat(asArrayStrict(nestedData.exercises));
+  sources = sources.concat(asArrayStrict(nestedData.str_exercises));
+  sources = sources.concat(asArrayStrict(nestedData.strExos));
 
-  // 2) Structure Supabase fallback : training.data.exercises, parfois data est une chaîne JSON.
-  if (dataObj && typeof dataObj === 'object') {
-    candidates = candidates.concat(asArrayMaybe(dataObj.exercises));
-    candidates = candidates.concat(asArrayMaybe(dataObj.str_exercises));
-    candidates = candidates.concat(asArrayMaybe(dataObj.strExos));
-  }
-
-  // 3) Fallback robuste : reconstruction depuis la table charges liée à cette séance.
-  // Cela récupère les séries auto même si le détail d'exercices n'a pas été stocké dans trainings.
-  const ids = entryIds(t);
-  const linkedCharges = (db.charges || []).filter(ch => {
-    const tid = ch.training_id || (ch.data && ch.data.training_id) || (safeJsonMaybe(ch.data, {}) || {}).training_id;
-    return tid !== undefined && tid !== null && ids.includes(String(tid));
-  });
-  if (linkedCharges.length) {
-    const byExo = {};
-    linkedCharges.forEach(ch => {
-      const key = cleanExerciseName(ch.exo || (ch.data && ch.data.exo) || (safeJsonMaybe(ch.data, {}) || {}).exo);
-      if (!key) return;
-      if (!byExo[key]) byExo[key] = {key:key, series:[]};
-      byExo[key].series.push({kg:ch.kg, reps:ch.reps, rpe:ch.rpe, rm:ch.rm_estimated});
-    });
-    candidates = candidates.concat(Object.values(byExo));
-  }
-
-  const normalized = candidates.map(exo => {
+  const normalized = sources.map(exo => {
     exo = safeJsonMaybe(exo, exo) || {};
-    const key = cleanExerciseName(exo.key || exo.exo || exo.exercise || exo.name || exo.label);
-    const labelRaw = cleanExerciseName(exo.label || exo.name || (key ? (EXO_NAMES[key] || (typeof EXO_LABELS !== 'undefined' ? EXO_LABELS[key] : '') || key) : ''));
-    const label = labelRaw || 'Exercice';
+    const key = cleanExoLabel(exo.key || exo.exo || exo.exercise || exo.name || exo.label);
+    const mapped = key ? (EXO_NAMES[key] || (typeof EXO_LABELS !== 'undefined' ? EXO_LABELS[key] : '') || key) : '';
+    const label = cleanExoLabel(exo.label || exo.name || mapped);
     const series = normalizeExerciseSeries(exo);
-    return {key, label, series};
-  }).filter(e => e.series && e.series.length && cleanExerciseName(e.label));
+    return {key, label: label || mapped || key, series};
+  }).filter(e => e.series && e.series.length && cleanExoLabel(e.label));
 
-  // Fusionne les doublons d'exercice pour éviter d'afficher deux cartes si training.exercises + charges existent.
+  // Fusion légère des doublons exacts, sans inventer de séries.
   const merged = {};
   normalized.forEach(e => {
-    const k = cleanExerciseName(e.key || e.label).toLowerCase();
+    const k = cleanExoLabel(e.key || e.label).toLowerCase();
+    if (!k) return;
     if (!merged[k]) merged[k] = {key:e.key, label:e.label, series:[]};
-    e.series.forEach(s => merged[k].series.push(s));
+    e.series.forEach(s => {
+      const sig = [s.kg, s.reps, s.rpe, s.rm].join('|');
+      if (!merged[k].series.some(x => [x.kg,x.reps,x.rpe,x.rm].join('|') === sig)) merged[k].series.push(s);
+    });
   });
   return Object.values(merged);
 }
@@ -1724,7 +1720,7 @@ function renderTrainingExercisesDetail(t) {
     [['Back squat','squat','squat_reps'],['Bench press','bench','bench_reps'],['RDL','rdl','rdl_reps'],['Hip thrust','hip','hip_reps'],['Pull-up','pullup','pullup_reps'],['Farmer','farmer','farmer_reps']].forEach(([label,kgKey,repsKey])=>{
       if (t && t[kgKey]) legacy.push({label, kg:t[kgKey], reps:t[repsKey]||'—'});
     });
-    if (!legacy.length) return '<div style="font-size:11px;color:var(--tx4);padding:.6rem 0">Aucun détail de série enregistré pour cette séance.</div>';
+    if (!legacy.length) return '<div style="font-size:11px;color:var(--tx4);padding:.6rem 0;line-height:1.35">Détail des séries non disponible pour cette séance.<br>La séance est bien enregistrée, mais elle ne contient pas de tableau <b>exercises/series</b> exploitable.</div>';
     return legacy.map(x=>`<div class="entry" style="margin:.35rem 0">
       <div class="entry-icon">💪</div><div class="entry-content">
         <div class="entry-title">${escapeHtml(x.label)}</div>
@@ -1741,9 +1737,9 @@ function renderTrainingExercisesDetail(t) {
         <td style="padding:.35rem .25rem;text-align:right;color:var(--gr);font-weight:700">${s.rm !== null ? escapeHtml(s.rm)+' kg' : '—'}</td>
       </tr>`;
     }).join('');
-    return `<div style="background:var(--bg2);border:1px solid var(--bo2);border-radius:10px;padding:.65rem;margin:.55rem 0">
+    return `<div style="background:var(--bg2);border:1px solid var(--bo2);border-radius:10px;padding:.65rem;margin:.55rem 0;overflow-x:auto">
       <div style="font-size:13px;font-weight:800;color:var(--tx);margin-bottom:.4rem">${escapeHtml(exo.label || 'Exercice')}</div>
-      <table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:11px">
+      <table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:11px;min-width:420px">
         <thead><tr style="color:var(--tx4);border-bottom:1px solid var(--bo)"><th style="text-align:left;padding:.3rem .25rem">Série</th><th style="text-align:right;padding:.3rem .25rem">Charge</th><th style="text-align:right;padding:.3rem .25rem">Reps</th><th style="text-align:right;padding:.3rem .25rem">RPE</th><th style="text-align:right;padding:.3rem .25rem">1RM estimé</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
