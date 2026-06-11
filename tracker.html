@@ -1583,19 +1583,27 @@ function renderRPEAnalysis(db) {
 // ════════════════════════════════════
 // HISTORY RENDER
 // ════════════════════════════════════
+
 function getHistoryIdentity(item) {
-  return String((item && (item.id || item.local_id || item.supabase_id)) || '');
+  return String((item && (item.id || item.local_id || item.supabase_id || item.localId)) || '');
+}
+
+function entryIds(item) {
+  if (!item) return [];
+  return [item.id, item.local_id, item.supabase_id, item.localId].filter(v => v !== undefined && v !== null && String(v) !== '').map(v => String(v));
+}
+
+function sameHistoryEntry(a, bOrId) {
+  const aIds = entryIds(a);
+  const bIds = (bOrId && typeof bOrId === 'object') ? entryIds(bOrId) : [String(bOrId)];
+  return aIds.some(x => bIds.includes(String(x)));
 }
 
 function findHistoryEntry(id, cat) {
   const db = loadDB();
   const key = cat==='training' ? 'trainings' : cat==='test' ? 'tests' : cat==='poids' ? 'poids' : null;
   if (!key) return null;
-  return (db[key]||[]).find(t =>
-    String(t.id)===String(id) ||
-    String(t.local_id)===String(id) ||
-    String(t.supabase_id)===String(id)
-  ) || null;
+  return (db[key]||[]).find(t => sameHistoryEntry(t, id)) || null;
 }
 
 function detailField(label, value) {
@@ -1606,12 +1614,48 @@ function detailField(label, value) {
   </div>`;
 }
 
+function safeJsonMaybe(v, fallback) {
+  if (Array.isArray(v) || (v && typeof v === 'object')) return v;
+  if (typeof v === 'string' && v.trim()) {
+    try { return JSON.parse(v); } catch(e) { return fallback; }
+  }
+  return fallback;
+}
+
+function normalizeExerciseSeries(exo) {
+  let series = safeJsonMaybe(exo && (exo.series || exo.sets || exo.rows), []);
+  if (!Array.isArray(series)) series = [];
+  return series.map(s => {
+    s = safeJsonMaybe(s, s) || {};
+    const kg = Number(s.kg ?? s.charge ?? s.weight ?? s.poids);
+    const reps = Number(s.reps ?? s.rep ?? s.repetitions);
+    const rpe = s.rpe ?? s.RPE ?? '';
+    const rm = Number(s.rm ?? s.rm_estimated ?? s.one_rm ?? (Number.isFinite(kg)&&Number.isFinite(reps)&&kg>0&&reps>0 ? Math.round(kg*(1+reps/30)*4)/4 : NaN));
+    if (!Number.isFinite(kg) && !Number.isFinite(reps)) return null;
+    return {kg:Number.isFinite(kg)?kg:null, reps:Number.isFinite(reps)?reps:null, rpe, rm:Number.isFinite(rm)?rm:null};
+  }).filter(Boolean);
+}
+
+function normalizeTrainingExercises(t) {
+  let exercises = safeJsonMaybe(t && t.exercises, null);
+  if (!Array.isArray(exercises) && t && t.data) exercises = safeJsonMaybe(t.data.exercises, null);
+  if (!Array.isArray(exercises)) exercises = [];
+  const normalized = exercises.map(exo => {
+    exo = safeJsonMaybe(exo, exo) || {};
+    const key = exo.key || exo.exo || exo.exercise || exo.name || '';
+    const label = exo.label || exo.name || (key ? (EXO_NAMES[key] || (typeof EXO_LABELS !== 'undefined' ? EXO_LABELS[key] : '') || key) : 'Exercice');
+    const series = normalizeExerciseSeries(exo);
+    return {key, label, series};
+  }).filter(e => e.series && e.series.length && String(e.label||'').toLowerCase() !== 'undefined');
+  return normalized;
+}
+
 function renderTrainingExercisesDetail(t) {
-  const exercises = Array.isArray(t.exercises) ? t.exercises.filter(e => e && Array.isArray(e.series) && e.series.length) : [];
+  const exercises = normalizeTrainingExercises(t);
   if (!exercises.length) {
     const legacy = [];
     [['Back squat','squat','squat_reps'],['Bench press','bench','bench_reps'],['RDL','rdl','rdl_reps'],['Hip thrust','hip','hip_reps'],['Pull-up','pullup','pullup_reps'],['Farmer','farmer','farmer_reps']].forEach(([label,kgKey,repsKey])=>{
-      if (t[kgKey]) legacy.push({label, kg:t[kgKey], reps:t[repsKey]||'—'});
+      if (t && t[kgKey]) legacy.push({label, kg:t[kgKey], reps:t[repsKey]||'—'});
     });
     if (!legacy.length) return '<div style="font-size:11px;color:var(--tx4);padding:.6rem 0">Aucun détail de série enregistré pour cette séance.</div>';
     return legacy.map(x=>`<div class="entry" style="margin:.35rem 0">
@@ -1621,31 +1665,31 @@ function renderTrainingExercisesDetail(t) {
       </div></div>`).join('');
   }
   return exercises.map(exo => {
-    const label = exo.label || EXO_NAMES[exo.key] || EXO_LABELS[exo.key] || exo.key || 'Exercice';
     const rows = exo.series.map((s, i) => {
-      const kg = s.kg ?? '—';
-      const reps = s.reps ?? '—';
-      const rm = s.rm || (parseFloat(kg)&&parseInt(reps,10) ? Math.round(parseFloat(kg)*(1+parseInt(reps,10)/30)*4)/4 : null);
       return `<tr>
         <td style="padding:.35rem .25rem;color:var(--tx4)">${i+1}</td>
-        <td style="padding:.35rem .25rem;text-align:right;color:var(--tx)">${escapeHtml(kg)} kg</td>
-        <td style="padding:.35rem .25rem;text-align:right;color:var(--tx)">${escapeHtml(reps)}</td>
-        <td style="padding:.35rem .25rem;text-align:right;color:var(--gr);font-weight:700">${rm ? escapeHtml(rm)+' kg' : '—'}</td>
+        <td style="padding:.35rem .25rem;text-align:right;color:var(--tx)">${s.kg !== null ? escapeHtml(s.kg)+' kg' : '—'}</td>
+        <td style="padding:.35rem .25rem;text-align:right;color:var(--tx)">${s.reps !== null ? escapeHtml(s.reps) : '—'}</td>
+        <td style="padding:.35rem .25rem;text-align:right;color:var(--tx)">${s.rpe !== '' ? escapeHtml(s.rpe) : '—'}</td>
+        <td style="padding:.35rem .25rem;text-align:right;color:var(--gr);font-weight:700">${s.rm !== null ? escapeHtml(s.rm)+' kg' : '—'}</td>
       </tr>`;
     }).join('');
     return `<div style="background:var(--bg2);border:1px solid var(--bo2);border-radius:10px;padding:.65rem;margin:.55rem 0">
-      <div style="font-size:13px;font-weight:800;color:var(--tx);margin-bottom:.4rem">${escapeHtml(label)}</div>
+      <div style="font-size:13px;font-weight:800;color:var(--tx);margin-bottom:.4rem">${escapeHtml(exo.label || 'Exercice')}</div>
       <table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:11px">
-        <thead><tr style="color:var(--tx4);border-bottom:1px solid var(--bo)"><th style="text-align:left;padding:.3rem .25rem">Série</th><th style="text-align:right;padding:.3rem .25rem">Charge</th><th style="text-align:right;padding:.3rem .25rem">Reps</th><th style="text-align:right;padding:.3rem .25rem">1RM estimé</th></tr></thead>
+        <thead><tr style="color:var(--tx4);border-bottom:1px solid var(--bo)"><th style="text-align:left;padding:.3rem .25rem">Série</th><th style="text-align:right;padding:.3rem .25rem">Charge</th><th style="text-align:right;padding:.3rem .25rem">Reps</th><th style="text-align:right;padding:.3rem .25rem">RPE</th><th style="text-align:right;padding:.3rem .25rem">1RM estimé</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>`;
   }).join('');
 }
 
-function openHistoryDetail(id, cat) {
-  const item = findHistoryEntry(id, cat);
+function openHistoryDetail(idOrIndex, cat) {
+  let item = null;
+  if (cat === '__index' && window._historyRenderedItems) item = window._historyRenderedItems[Number(idOrIndex)] || null;
+  else item = findHistoryEntry(idOrIndex, cat);
   if (!item) { alert('Séance introuvable. Synchronise puis réessaie.'); return; }
+  cat = item._cat || cat;
   let title = 'Détail';
   let body = '';
   if (cat === 'training') {
@@ -1724,15 +1768,15 @@ function renderHistory(filter) {
   }
 
   items.sort((a,b) => String(b.date||'').localeCompare(String(a.date||'')));
+  window._historyRenderedItems = items;
 
   if (!items.length) {
     el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>Aucune entrée pour ce filtre.</p></div>';
     return;
   }
 
-  el.innerHTML = items.map(item => {
+  el.innerHTML = items.map((item, idx) => {
     const icon = TYPE_ICONS[item._cat==='test'?'test':item._cat==='poids'?'poids':item.type] || '📋';
-    const id = getHistoryIdentity(item);
     let title = '', meta = '', tags = [];
 
     if (item._cat === 'poids') {
@@ -1768,39 +1812,50 @@ function renderHistory(filter) {
       if (item.allure) tags.push({txt:item.allure+'/km', cls:'etag'});
       if (getFcAvg(item)) tags.push({txt:'FC moy '+getFcAvg(item)+' bpm', cls:'etag'});
       if (getFcMax(item)) tags.push({txt:'FC max '+getFcMax(item)+' bpm', cls:'etag'});
-      const exCount = Array.isArray(item.exercises) ? item.exercises.length : 0;
-      const setCount = Array.isArray(item.exercises) ? item.exercises.reduce((s,e)=>s+((e.series||[]).length),0) : 0;
+      const exercises = normalizeTrainingExercises(item);
+      const exCount = exercises.length;
+      const setCount = exercises.reduce((s,e)=>s+(e.series||[]).length,0);
       if (exCount) tags.push({txt:`${exCount} exos · ${setCount} séries`, cls:'etag-ok'});
       if (item.sp_wb) tags.push({txt:'WB '+item.sp_wb, cls:'etag'});
     }
 
     const tagsHtml = tags.map(t=>`<span class="etag ${t.cls}">${escapeHtml(t.txt)}</span>`).join('');
-    return `<div class="entry" onclick="openHistoryDetail(${JSON.stringify(id)}, '${item._cat}')" style="cursor:pointer;-webkit-tap-highlight-color:transparent">
+    return `<div class="entry" onclick="openHistoryDetail(${idx}, '__index')" style="cursor:pointer;-webkit-tap-highlight-color:transparent">
       <div class="entry-icon">${icon}</div>
       <div class="entry-content">
         <div class="entry-title">${escapeHtml(title)}</div>
         <div class="entry-meta">${escapeHtml(meta)}${item.comment && item._cat==='training' ? ' · ' + escapeHtml(item.comment) : ''}</div>
         ${tags.length ? `<div class="entry-tags">${tagsHtml}</div>` : ''}
       </div>
-      <button class="del-btn" onclick="deleteEntry(event, ${JSON.stringify(id)}, '${item._cat}')">✕</button>
+      <button class="del-btn" onclick="deleteEntry(event, ${idx}, '__index')">✕</button>
     </div>`;
   }).join('');
 }
 
-async function deleteEntry(evt, id, cat) {
+async function deleteEntry(evt, idOrIndex, cat) {
   if (evt && evt.stopPropagation) evt.stopPropagation();
+  let entry = null;
+  if (cat === '__index' && window._historyRenderedItems) entry = window._historyRenderedItems[Number(idOrIndex)] || null;
+  else entry = findHistoryEntry(idOrIndex, cat);
+  if (!entry) { alert('Entrée introuvable. Synchronise puis réessaie.'); return; }
+  cat = entry._cat || cat;
   if (!confirm('Supprimer cette entrée ?')) return;
   const db = loadDB();
   const key = cat==='training' ? 'trainings' : cat==='test' ? 'tests' : cat==='poids' ? 'poids' : null;
-  const entry = key ? (db[key]||[]).find(t=>String(t.id)===String(id) || String(t.local_id)===String(id) || String(t.supabase_id)===String(id)) : null;
-  if (!entry) { alert('Entrée introuvable. Synchronise puis réessaie.'); return; }
-  if (cat==='training') db.trainings = (db.trainings||[]).filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
-  if (cat==='test') db.tests = (db.tests||[]).filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
-  if (cat==='poids') db.poids = (db.poids||[]).filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
+  if (!key) return;
+
+  db[key] = (db[key]||[]).filter(t => !sameHistoryEntry(t, entry));
   const ok = await sbDel(tableForCat(cat), entry);
+
+  if (cat === 'training' && Array.isArray(db.charges)) {
+    const linked = db.charges.filter(ch => String(ch.training_id||'') && entryIds(entry).includes(String(ch.training_id)));
+    db.charges = db.charges.filter(ch => !linked.some(x => sameHistoryEntry(ch, x)));
+    for (const ch of linked) { await sbDel('charges', ch); }
+  }
+
   saveDB(db);
   renderHistory('all');
-  if (cat==='training') renderDashboard();
+  if (cat==='training') { renderDashboard(); if (typeof renderCharges === 'function') renderCharges(); }
   if(!ok) alert('Entrée supprimée du téléphone, mais suppression Supabase non confirmée. Vérifie la table ou synchronise.');
 }
 
