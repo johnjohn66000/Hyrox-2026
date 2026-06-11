@@ -736,202 +736,174 @@ const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 function getDeviceId(){let id=localStorage.getItem('hyrox_device_id');if(!id){id='dev_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);localStorage.setItem('hyrox_device_id',id);}return id;}
 const DEVICE_ID=getDeviceId();
 const SB={'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','x-device-id':DEVICE_ID,'Prefer':'return=representation'};
+window.__lastSupabaseError=null;
+window.__lastSyncDetails=null;
+
 async function sbEnsureDevice(){
   try{
     const r=await fetch(SUPA_URL+'/rest/v1/device_users?device_id=eq.'+encodeURIComponent(DEVICE_ID),{headers:SB});
     if(!r.ok) return false;
     const d=await r.json().catch(()=>[]);
-    if(!Array.isArray(d) || !d.length){
+    if(!Array.isArray(d)||!d.length){
       await fetch(SUPA_URL+'/rest/v1/device_users',{method:'POST',headers:SB,body:JSON.stringify({device_id:DEVICE_ID})}).catch(()=>null);
     }
     return true;
-  }catch(e){
-    console.warn('device_users ignoré', e);
-    return false;
-  }
+  }catch(e){console.warn('device_users ignoré',e);return false;}
 }
-window.__lastSupabaseError = null;
-window.__lastSupabaseLoadStats = {};
+
 function normalizeSupabaseRow(row){
-  if(!row || typeof row !== 'object') return row;
-  const out = {};
-  if(row.data && typeof row.data === 'object' && !Array.isArray(row.data)){
-    Object.keys(row.data).forEach(k=>{ out[k]=row.data[k]; });
-  }else{
-    Object.keys(row).forEach(k=>{ out[k]=row[k]; });
-  }
-  if(row.id !== undefined && row.id !== null) out.supabase_id = row.id;
-  if(!out.local_id && row.local_id) out.local_id = row.local_id;
-  if(!out.device_id && row.device_id) out.device_id = row.device_id;
+  var out={}, k, data;
+  if(!row || typeof row!=='object') return row;
+  // Les anciennes versions peuvent stocker les vraies données dans row.data.
+  data=(row.data && typeof row.data==='object' && !Array.isArray(row.data)) ? row.data : row;
+  for(k in data){ if(Object.prototype.hasOwnProperty.call(data,k)) out[k]=data[k]; }
+  // On conserve aussi quelques colonnes top-level si elles existent.
+  ['date','type','duree','distance','allure','rpe','qualite','exo','kg','reps','sets','rm_estimated','created_at','local_id','device_id'].forEach(function(key){
+    if(row[key]!==undefined && out[key]===undefined) out[key]=row[key];
+  });
+  if(row.id!==undefined && row.id!==null) out.supabase_id=row.id;
   return out;
 }
-function normalizeSupabaseRows(rows){return Array.isArray(rows)?rows.map(normalizeSupabaseRow).filter(Boolean):[];}
-function buildSupabasePayload(table,entry,mode){
-  const localId=entry.local_id||entry.id||(Date.now()+'_'+Math.random().toString(36).slice(2));
-  const data=Object.assign({},entry,{local_id:String(localId)});
-  delete data.supabase_id; delete data._supabase_row;
-  const p=Object.assign({},entry,{device_id:DEVICE_ID,local_id:String(localId),data:data});
-  delete p.id; delete p.supabase_id; delete p._supabase_row;
-  if(table==='trainings') delete p.fc;
-  if(table==='charges'){ delete p.auto; delete p.training_id; }
-  if(mode==='safe_local_id') return {device_id:DEVICE_ID,local_id:String(localId),data:data};
-  if(mode==='safe_no_local_id') return {device_id:DEVICE_ID,data:data};
-  return p;
+function normalizeSupabaseRows(rows){return Array.isArray(rows)?rows.map(normalizeSupabaseRow):[];}
+
+function buildSupabasePayload(table, entry, mode){
+  var localId=entry.local_id || entry.id || (Date.now()+'_'+Math.random().toString(36).slice(2));
+  var full={}, k;
+  for(k in entry){ if(Object.prototype.hasOwnProperty.call(entry,k)) full[k]=entry[k]; }
+  delete full.id; delete full.supabase_id; delete full._supabase_row;
+  full.device_id=DEVICE_ID;
+  full.local_id=String(localId);
+  if(table==='trainings') delete full.fc;
+
+  if(mode==='data'){
+    return {device_id:DEVICE_ID,local_id:String(localId),data:entry};
+  }
+  if(mode==='minimal'){
+    var m={device_id:DEVICE_ID,local_id:String(localId)};
+    var allow={
+      trainings:['date','type','duree','distance','allure','intervals','fc_avg','fc_max','rpe','qualite','comment','exercises','data'],
+      poids:['date','val','poids','moment','comment','data'],
+      tests:['date','type','result','cible','comment','data'],
+      races:['date','event','total','overall','age_group','total_fin','ski','sled_p','sled_pu','bbj','row','farmers','fentes','wb','rox','run','fonc','comment','data'],
+      charges:['date','exo','kg','reps','sets','rpe','rm_estimated','data'],
+      mensur:['date','taille','poitrine','cuisse','biceps','note','data']
+    }[table] || [];
+    allow.forEach(function(key){ if(entry[key]!==undefined) m[key]=entry[key]; });
+    if(m.data===undefined) m.data=entry;
+    return m;
+  }
+  return full;
 }
+
 async function sbSave(table,entry){
-  window.__lastSupabaseError = null;
-  const attempts=[
-    {label:'full+data',payload:buildSupabasePayload(table,entry,'full')},
-    {label:'safe local_id+data',payload:buildSupabasePayload(table,entry,'safe_local_id')},
-    {label:'safe data only',payload:buildSupabasePayload(table,entry,'safe_no_local_id')}
-  ];
-  for(const attempt of attempts){
+  window.__lastSupabaseError=null;
+  var attempts=['full','data','minimal'];
+  for(var i=0;i<attempts.length;i++){
+    var mode=attempts[i];
+    var payload=buildSupabasePayload(table,entry,mode);
     try{
-      const r=await fetch(SUPA_URL+'/rest/v1/'+table,{method:'POST',headers:SB,body:JSON.stringify(attempt.payload)});
-      const txt=await r.text().catch(()=> '');
+      var r=await fetch(SUPA_URL+'/rest/v1/'+table,{method:'POST',headers:SB,body:JSON.stringify(payload)});
       if(r.ok){
-        let raw=[]; try{raw=txt?JSON.parse(txt):[];}catch(e){raw=[];}
-        const row=Array.isArray(raw)?(raw[0]||null):raw;
+        var data=await r.json().catch(()=>[]);
         window.__lastSupabaseError=null;
-        return normalizeSupabaseRow(row)||{supabase_id:null};
+        return Array.isArray(data)?(data[0]||null):data;
       }
-      window.__lastSupabaseError={table,status:r.status,message:txt,payload:attempt.payload,attempt:attempt.label};
-      console.warn('sb save fail',table,attempt.label,r.status,txt,attempt.payload);
-      if(r.status===401 || r.status===403) return null;
+      var txt=await r.text().catch(()=> '');
+      window.__lastSupabaseError={table:table,status:r.status,message:txt,mode:mode,payload:payload};
+      console.warn('sb save fail',table,mode,r.status,txt,payload);
+      // Si ce n'est pas un problème de colonne/schema, inutile d'essayer les autres payloads.
+      if(!(txt.includes('schema cache')||txt.includes('column')||txt.includes('Could not find')||txt.includes('PGRST204'))) break;
     }catch(e){
-      window.__lastSupabaseError={table,status:'offline/fetch',message:String(e),payload:attempt.payload,attempt:attempt.label};
-      console.warn('sb save offline/fail',table,e);
-      return null;
+      window.__lastSupabaseError={table:table,status:'offline/fetch',message:String(e),mode:mode,payload:payload};
+      console.warn('sb save offline/fail',table,mode,e);
+      break;
     }
   }
   return null;
 }
+
 function showSupabaseSaveStatus(ok, table){
   const fb=document.getElementById('save-feedback');
   if(!fb)return;
   fb.style.display='block';
-  fb.style.color = ok ? 'var(--gr)' : 'var(--am)';
+  fb.style.color=ok?'var(--gr)':'var(--am)';
   if(ok){
-    fb.innerHTML='✅ Séance enregistrée localement + Supabase OK';
+    fb.innerHTML='✅ Enregistrement local + Supabase OK';
   }else{
     const err=window.__lastSupabaseError;
-    const msg=err ? (err.status+' · '+String(err.message).slice(0,220)) : 'erreur inconnue';
-    fb.innerHTML='⚠️ Séance enregistrée sur le téléphone, mais Supabase a refusé l’enregistrement.<br><span style="color:var(--tx3)">'+msg+'</span>';
+    const msg=err ? (err.table+' · '+err.status+' · '+String(err.message).slice(0,260)) : 'erreur inconnue';
+    fb.innerHTML='⚠️ Enregistré sur le téléphone, mais Supabase a refusé.<br><span style="color:var(--tx3)">'+msg+'</span>';
   }
-  setTimeout(()=>{fb.style.display='none';}, ok ? 2500 : 9000);
+  setTimeout(()=>{fb.style.display='none';},ok?2500:12000);
 }
+
 async function sbLoad(table){
-  // Lecture globale, sans filtre device_id : sinon les données du téléphone ne remontent pas sur ordinateur.
-  const urls=[
+  var urls=[
     SUPA_URL+'/rest/v1/'+table+'?select=*&order=created_at.desc',
     SUPA_URL+'/rest/v1/'+table+'?select=*'
   ];
-  let lastStatus=null, lastMsg='';
-  for(const url of urls){
+  var lastErr='';
+  for(var i=0;i<urls.length;i++){
     try{
-      const r=await fetch(url,{headers:SB});
-      lastStatus=r.status;
-      const txt=await r.text().catch(()=> '');
-      if(!r.ok){lastMsg=txt;continue;}
-      let rows=[]; try{rows=txt?JSON.parse(txt):[];}catch(e){rows=[];lastMsg=String(e);}
-      const normalized=normalizeSupabaseRows(rows);
-      window.__lastSupabaseLoadStats[table]={ok:true,status:r.status,count:normalized.length,url:url};
-      return normalized;
-    }catch(e){lastStatus='network';lastMsg=String(e);}
-  }
-  window.__lastSupabaseLoadStats[table]={ok:false,status:lastStatus,count:0,error:lastMsg};
-  console.warn('sbLoad fail',table,lastStatus,lastMsg);
-  return [];
-}
-async function pushPendingLocalToSupabase(db){
-  db=normalizeDB(db||loadDB());
-  const tables=['trainings','poids','tests','races','charges','mensur'];
-  let pushed=0;
-  for(const table of tables){
-    const arr=Array.isArray(db[table])?db[table]:[];
-    for(const entry of arr){
-      if(!entry || entry.supabase_id) continue;
-      const saved=await sbSave(table,entry);
-      if(saved&&(saved.supabase_id||saved.id)){
-        entry.supabase_id=saved.supabase_id||saved.id;
-        pushed++;
+      var r=await fetch(urls[i],{headers:SB});
+      if(r.ok){
+        var rows=await r.json().catch(()=>[]);
+        var norm=normalizeSupabaseRows(rows);
+        return {ok:true,table:table,count:norm.length,rows:norm,url:urls[i]};
       }
-    }
+      lastErr=r.status+' '+(await r.text().catch(()=>''));
+      console.warn('sb load fail',table,lastErr);
+    }catch(e){lastErr=String(e);console.warn('sb load exception',table,e);}
   }
-  if(pushed) saveDB(db);
-  return pushed;
+  return {ok:false,table:table,count:0,rows:[],error:lastErr};
 }
+
 async function sbDel(table,entryOrId){
-  const entry = (entryOrId && typeof entryOrId === 'object') ? entryOrId : {id:entryOrId};
-  const remoteId = entry.supabase_id;
-  // Important : ne pas utiliser entry.id comme local_id.
-  // Après synchronisation, entry.id est souvent l'id Supabase ; si on le teste comme local_id,
-  // PostgREST peut répondre OK avec 0 ligne supprimée et empêcher le fallback par id.
-  const localId = entry.local_id;
-  try{
-    // 1) Suppression fiable pour les entrées créées avec local_id : local_id + device_id.
-    if(localId!==undefined && localId!==null && localId!==''){
-      const url=SUPA_URL+'/rest/v1/'+table+'?local_id=eq.'+encodeURIComponent(String(localId))+'&device_id=eq.'+encodeURIComponent(DEVICE_ID);
-      let r=await fetch(url,{method:'DELETE',headers:SB});
-      let txt=await r.text().catch(()=> '');
-      if(r.ok){
-        try{ const rows = txt ? JSON.parse(txt) : []; if(Array.isArray(rows) && rows.length>0) return true; }catch(e){}
-      }else{
-        console.warn('sb delete by local_id fail',table,localId,txt);
-      }
-      // Fallback si le device_id a changé après effacement des données du téléphone :
-      // on supprime par local_id seul, ce qui permet de nettoyer les anciennes lignes du même tracker.
-      const url2=SUPA_URL+'/rest/v1/'+table+'?local_id=eq.'+encodeURIComponent(String(localId));
-      r=await fetch(url2,{method:'DELETE',headers:SB});
-      txt=await r.text().catch(()=> '');
-      if(r.ok){
-        try{ const rows = txt ? JSON.parse(txt) : []; if(Array.isArray(rows) && rows.length>0) return true; }catch(e){ return true; }
-      }else{
-        console.warn('sb delete by local_id only fail',table,localId,txt);
-      }
-    }
-    // 2) Fallback pour les anciennes entrées / entrées synchronisées : id Supabase.
-    const idToDelete = remoteId || entry.id || entryOrId;
-    if(idToDelete!==undefined && idToDelete!==null && idToDelete!==''){
-      const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+encodeURIComponent(String(idToDelete))+'&device_id=eq.'+encodeURIComponent(DEVICE_ID),{method:'DELETE',headers:SB});
-      const txt=await r.text().catch(()=> '');
-      if(!r.ok)console.warn('sb delete by id fail',table,idToDelete,txt);
-      if(r.ok){
-        try{ const rows = txt ? JSON.parse(txt) : []; return !Array.isArray(rows) || rows.length>0; }catch(e){ return true; }
-      }
-    }
-    return false;
-  }catch(e){console.warn('sb delete offline/fail',table,entryOrId,e);return false;}
+  const entry=(entryOrId && typeof entryOrId==='object')?entryOrId:{id:entryOrId};
+  const ids=[];
+  if(entry.supabase_id) ids.push({col:'id',val:entry.supabase_id});
+  if(entry.local_id) ids.push({col:'local_id',val:entry.local_id});
+  if(entry.id) ids.push({col:'id',val:entry.id});
+  for(const q of ids){
+    try{
+      const r=await fetch(SUPA_URL+'/rest/v1/'+table+'?'+q.col+'=eq.'+encodeURIComponent(String(q.val)),{method:'DELETE',headers:SB});
+      if(r.ok)return true;
+      console.warn('sb delete fail',table,q,await r.text().catch(()=>''));
+    }catch(e){console.warn('sb delete offline/fail',table,q,e);}
+  }
+  return false;
 }
+
+function dbHasData(db){return ['trainings','poids','tests','races','charges','mensur'].some(k=>(db[k]||[]).length>0);}
+function dbCount(db){return ['trainings','poids','tests','races','charges','mensur'].reduce((s,k)=>s+((db[k]||[]).length),0);}
 async function syncAll(){
   const el=document.getElementById('sync-status');
-  if(el){el.textContent='Sync...';el.style.color='var(--tx4)';}
-  const localBefore=loadDB();
+  const stamp=()=>new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  if(el){el.textContent='Sync...';el.style.color='var(--tx3)';}
   try{
-    await sbEnsureDevice();
-    await pushPendingLocalToSupabase(localBefore).catch(e=>console.warn('push pending local ignoré',e));
-    const[tr,po,te,ra,ch,me]=await Promise.all([sbLoad('trainings'),sbLoad('poids'),sbLoad('tests'),sbLoad('races'),sbLoad('charges'),sbLoad('mensur')]);
-    const db={trainings:tr,poids:po,tests:te,races:ra,charges:ch,mensur:me};
-    const remoteCount=tr.length+po.length+te.length+ra.length+ch.length+me.length;
-    const localCount=(localBefore.trainings||[]).length+(localBefore.poids||[]).length+(localBefore.tests||[]).length+(localBefore.races||[]).length+(localBefore.charges||[]).length+(localBefore.mensur||[]).length;
-    if(remoteCount>0){
+    sbEnsureDevice().catch(e=>console.warn('device_users ignoré',e));
+    const results=await Promise.all(['trainings','poids','tests','races','charges','mensur'].map(sbLoad));
+    const details={};
+    results.forEach(r=>{details[r.table]={ok:r.ok,count:r.count,error:r.error||''};});
+    window.__lastSyncDetails=details;
+    const db={trainings:results[0].rows,poids:results[1].rows,tests:results[2].rows,races:results[3].rows,charges:results[4].rows,mensur:results[5].rows};
+    const total=dbCount(db);
+    const cache=loadDB();
+    const cacheTotal=dbCount(cache);
+    if(total>0 || cacheTotal===0){
       saveDB(db);
-      if(el){el.textContent='✅ Sync OK '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+' · '+remoteCount+' lignes';el.style.color='var(--gr)';}
+      if(el){el.textContent='✅ Sync OK '+stamp()+' · '+total+' lignes';el.style.color='var(--gr)';el.title=JSON.stringify(details);}
       return db;
     }
-    if(localCount>0){
-      saveDB(localBefore);
-      if(el){el.textContent='⚠️ Sync OK mais 0 ligne Supabase · cache conservé';el.style.color='var(--am)';}
-      console.warn('Supabase a renvoyé 0 ligne. Cache local conservé.',window.__lastSupabaseLoadStats);
-      return localBefore;
-    }
-    saveDB(db);
-    if(el){el.textContent='✅ Sync OK 0 donnée';el.style.color='var(--am)';}
-    return db;
+    // Supabase répond mais renvoie 0. On ne détruit pas le cache local.
+    if(el){el.textContent='⚠️ Sync 0 ligne · cache conservé '+stamp();el.style.color='var(--am)';el.title=JSON.stringify(details);}
+    return cache;
   }catch(e){
-    console.error('syncAll fail',e,window.__lastSupabaseLoadStats,window.__lastSupabaseError);
-    if(el){el.textContent='❌ Offline';el.style.color='var(--rd)';}
-    return loadDB();
+    console.warn('syncAll fallback cache',e);
+    const cached=loadDB();
+    const hasCache=dbHasData(cached);
+    if(el){el.textContent=(hasCache?'⚠️ Cache local ':'❌ Offline ')+stamp();el.style.color=hasCache?'var(--am)':'var(--rd)';el.title=String(e);}
+    return cached;
   }
 }
 // ═══════════════
@@ -940,84 +912,6 @@ async function syncAll(){
 // DATA LAYER
 // ════════════════════════════════════
 const DB_KEY = 'hyrox_tracker_v1';
-const UI_STATE_KEY = 'hyrox_tracker_ui_state_v1';
-const DRAFT_KEY = 'hyrox_tracker_draft_v1';
-
-function loadUiState() {
-  try { return JSON.parse(localStorage.getItem(UI_STATE_KEY)) || {}; }
-  catch { return {}; }
-}
-function saveUiState(patch) {
-  try {
-    const current = loadUiState();
-    localStorage.setItem(UI_STATE_KEY, JSON.stringify({...current, ...patch}));
-  } catch(e) {}
-}
-
-function saveCurrentDraft() {
-  try {
-    const ids = [
-      't-date','t-type','t-duree','t-dist','t-allure','t-intervals','t-fc-avg','t-fc-max','t-fc','t-sp-allure','t-sp-total','t-sp-rounds','t-sp-bbj','t-sp-wb','t-sp-fc-avg','t-sp-fc-max','t-rpe','t-qualite','t-comment',
-      'p-date','p-val','p-moment',
-      'ts-date','ts-type','ts-result','ts-cible','ts-comment',
-      'r-date','r-event','r-total','r-ov','r-ag','r-total-fin','r-ski','r-sled-p','r-sled-pu','r-bbj','r-row','r-farmers','r-fentes','r-wb','r-rox','r-run','r-fonc','r-comment',
-      'ch-exo','ch-kg','ch-reps','ch-sets','ch-date','ch-rpe',
-      'm-date','m-taille','m-poitrine','m-cuisse','m-biceps','m-note'
-    ];
-    const fields = {};
-    ids.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) fields[id] = el.value;
-    });
-    const activeTab = (document.querySelector('.sec.on')?.id || 'tab-dashboard').replace('tab-','');
-    const visibleLog = ['training','poids','test'].find(t => document.getElementById('log-'+t)?.style.display !== 'none') || 'training';
-    localStorage.setItem(DRAFT_KEY, JSON.stringify({fields, strExos: window._strExos || [], activeTab, logType: visibleLog, savedAt: Date.now()}));
-  } catch(e) {}
-}
-
-function clearCurrentDraft() {
-  try { localStorage.removeItem(DRAFT_KEY); } catch(e) {}
-}
-
-function restoreCurrentDraft() {
-  try {
-    const raw = localStorage.getItem(DRAFT_KEY);
-    if (!raw) return;
-    const draft = JSON.parse(raw);
-    Object.entries(draft.fields || {}).forEach(([id, value]) => {
-      const el = document.getElementById(id);
-      if (el && value !== undefined && value !== null && value !== '') el.value = value;
-    });
-    if (Array.isArray(draft.strExos)) {
-      window._strExos = draft.strExos;
-      if (typeof renderStrExercises === 'function') renderStrExercises();
-    }
-    if (draft.logType && typeof showLogType === 'function') showLogType(draft.logType);
-    if (document.getElementById('t-type')) document.getElementById('t-type').dispatchEvent(new Event('change'));
-    if (document.getElementById('ts-type')) document.getElementById('ts-type').dispatchEvent(new Event('change'));
-    if (document.getElementById('t-rpe')) updateRpe(document.getElementById('t-rpe').value);
-  } catch(e) {}
-}
-
-function setupDraftAutosave() {
-  document.addEventListener('input', e => {
-    if (e.target && (e.target.matches('input') || e.target.matches('select') || e.target.matches('textarea'))) saveCurrentDraft();
-  });
-  document.addEventListener('change', e => {
-    if (e.target && (e.target.matches('input') || e.target.matches('select') || e.target.matches('textarea'))) saveCurrentDraft();
-  });
-  window.addEventListener('beforeunload', e => {
-    const raw = localStorage.getItem(DRAFT_KEY);
-    if (!raw) return;
-    const draft = JSON.parse(raw);
-    const f = draft.fields || {};
-    const hasMeaningful = Object.entries(f).some(([k,v]) => v && !['t-rpe','ch-rpe'].includes(k));
-    if (hasMeaningful) {
-      e.preventDefault();
-      e.returnValue = '';
-    }
-  });
-}
 
 function emptyDB(){return {trainings:[],poids:[],tests:[],races:[],charges:[],mensur:[]};}
 function normalizeDB(db){return {...emptyDB(), ...(db||{})};}
@@ -1029,15 +923,6 @@ function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;',
 function parsePaceToSec(p){return timeToSec(p);}
 function isRecentDate(date,days){if(!date)return false;const d=new Date(date);const now=new Date();return (now-d)/(1000*60*60*24)<=days;}
 function tableForCat(cat){return {training:'trainings',test:'tests',poids:'poids',race:'races',charge:'charges',mensur:'mensur'}[cat]||cat;}
-function entryDeleteKey(entry){
-  if(!entry) return '';
-  return String(entry.local_id || entry.supabase_id || entry.id || '');
-}
-function sameEntryKey(entry,key){
-  if(!entry) return false;
-  const k=String(key);
-  return String(entry.id)===k || String(entry.local_id)===k || String(entry.supabase_id)===k;
-}
 function getFcAvg(t){const v=Number(t&&t.fc_avg);return Number.isFinite(v)&&v>0?v:null;}
 function getFcMax(t){const v=Number(t&&t.fc_max);if(Number.isFinite(v)&&v>0)return v;const legacy=Number(t&&t.fc);return Number.isFinite(legacy)&&legacy>0?legacy:null;}
 function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
@@ -1088,31 +973,23 @@ function today() { return new Date().toISOString().split('T')[0]; }
 // ════════════════════════════════════
 // NAVIGATION
 // ════════════════════════════════════
-function showTab(t, opts={}) {
-  const tabs = ['dashboard','log','history','race','charges','mensur'];
-  if (!tabs.includes(t) || !document.getElementById('tab-'+t)) t = 'dashboard';
-  saveUiState({activeTab:t});
-  if (!opts.silentHash) {
-    try { history.replaceState(null, '', '#'+t); } catch(e) {}
-  }
+function showTab(t) {
   document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
   document.getElementById('tab-'+t).classList.add('on');
   document.querySelectorAll('.tab').forEach((b,i) => {
-    b.classList.toggle('on', tabs[i]===t);
+    b.classList.toggle('on', ['dashboard','log','history','race','charges','mensur'][i]===t);
   });
   document.querySelectorAll('.dock-btn').forEach((b,i) => {
-    b.classList.toggle('on', tabs[i]===t);
+    b.classList.toggle('on', ['dashboard','log','history','race','charges','mensur'][i]===t);
   });
   if (t==='dashboard') renderDashboard();
-  if (t==='history') renderHistory(loadUiState().histType || 'all');
+  if (t==='history') renderHistory('all');
   if (t==='race') renderRaces();
   if (t==='charges') renderChargesHistory();
   if (t==='mensur') renderMensur();
 }
 
 function showLogType(type) {
-  if (!['training','poids','test'].includes(type)) type = 'training';
-  saveUiState({logType:type});
   ['training','poids','test'].forEach(t => {
     document.getElementById('log-'+t).style.display = t===type ? 'block' : 'none';
   });
@@ -1122,9 +999,8 @@ function showLogType(type) {
 }
 
 function showHistType(type) {
-  saveUiState({histType:type});
   document.querySelectorAll('#tab-history .stab').forEach(b => b.classList.remove('on'));
-  if (typeof event !== 'undefined' && event.target) event.target.classList.add('on');
+  event.target.classList.add('on');
   renderHistory(type);
 }
 
@@ -1159,21 +1035,9 @@ window.addEventListener('load', () => {
   const t = today();
   ['t-date','p-date','ts-date','r-date','ch-date','m-date'].forEach(id => {
     const el = document.getElementById(id);
-    if (el && !el.value) el.value = t;
+    if (el) el.value = t;
   });
-  setupDraftAutosave();
-  restoreCurrentDraft();
-  const tabs = ['dashboard','log','history','race','charges','mensur'];
-  const hashTab = (location.hash || '').replace('#','');
-  const ui = loadUiState();
-  const draft = (() => { try { return JSON.parse(localStorage.getItem(DRAFT_KEY)) || {}; } catch { return {}; } })();
-  const targetTab = tabs.includes(hashTab) ? hashTab : (draft.activeTab || ui.activeTab || 'dashboard');
-  showTab(targetTab, {silentHash: tabs.includes(hashTab)});
-});
-
-window.addEventListener('hashchange', () => {
-  const t = (location.hash || '').replace('#','');
-  if (['dashboard','log','history','race','charges','mensur'].includes(t)) showTab(t, {silentHash:true});
+  renderDashboard();
 });
 
 // ════════════════════════════════════
@@ -1204,30 +1068,27 @@ function strAddExercise() {
   window._strExos.push({key, series:[{kg:'',reps:''}]});
   sel.value = '';
   renderStrExercises();
-  saveCurrentDraft();
 }
 
 function strAddSerie(key) {
   const e = window._strExos.find(e=>e.key===key);
-  if(e){e.series.push({kg:'',reps:''});renderStrExercises();saveCurrentDraft();}
+  if(e){e.series.push({kg:'',reps:''});renderStrExercises();}
 }
 
 function strRemoveSerie(key,idx) {
   const e = window._strExos.find(e=>e.key===key);
-  if(e){e.series.splice(idx,1);if(!e.series.length)e.series.push({kg:'',reps:''});renderStrExercises();saveCurrentDraft();}
+  if(e){e.series.splice(idx,1);if(!e.series.length)e.series.push({kg:'',reps:''});renderStrExercises();}
 }
 
 function strRemoveExo(key) {
   window._strExos = window._strExos.filter(e=>e.key!==key);
   renderStrExercises();
-  saveCurrentDraft();
 }
 
 function strUpdate(key,idx,field,val) {
   const e = window._strExos.find(e=>e.key===key);
   if(!e||!e.series[idx])return;
   e.series[idx][field]=val;
-  saveCurrentDraft();
   const kg=parseFloat(e.series[idx].kg), reps=parseInt(e.series[idx].reps);
   const el=document.getElementById('rm-prev-'+key+'-'+idx);
   if(el&&kg&&reps){el.textContent='~'+(Math.round(kg*(1+reps/30)*4)/4)+' kg 1RM';el.style.color='var(--gr)';}
@@ -1321,7 +1182,7 @@ async function saveTraining() {
     entry.fc = entry.fc_max; // compatibilité locale avec anciennes données
   }
   entry.local_id = String(entry.id);
-  const savedTraining=await sbSave('trainings',entry); if(savedTraining&&(savedTraining.supabase_id||savedTraining.id))entry.supabase_id=savedTraining.supabase_id||savedTraining.id; db.trainings.push(entry);
+  const savedTraining=await sbSave('trainings',entry); if(savedTraining&&savedTraining.id)entry.supabase_id=savedTraining.id; db.trainings.push(entry);
   
   // Auto-extract charges for 1RM calculation
   if (['str_bas','str_haut','str_full'].includes(type)) {
@@ -1334,13 +1195,12 @@ async function saveTraining() {
           const chargeId=Date.now()+Math.random();
           const ch={id:chargeId,local_id:String(chargeId),date:entry.date,exo:exo.key,kg:s.kg,reps:s.reps,sets:1,rpe:entry.rpe||7,rm_estimated:s.rm,auto:true,training_id:entry.id};
           db.charges.push(ch);
-          sbSave('charges',ch).then(saved=>{ if(saved&&(saved.supabase_id||saved.id)){ ch.supabase_id=saved.supabase_id||saved.id; saveDB(db); } });
+          sbSave('charges',ch).then(saved=>{ if(saved&&saved.id){ ch.supabase_id=saved.id; saveDB(db); } });
         });
       });
     }  }
   
   saveDB(db);
-  clearCurrentDraft();
   showSupabaseSaveStatus(!!savedTraining, 'trainings');
 }
 
@@ -1349,8 +1209,8 @@ async function savePoids() {
   const entry={id: Date.now(),date: document.getElementById('p-date').value,val: +document.getElementById('p-val').value,moment: document.getElementById('p-moment').value};
   if(!entry.date || !entry.val){ alert('Date et poids obligatoires.'); return; }
   entry.local_id = String(entry.id);
-  const saved=await sbSave('poids',entry); if(saved&&(saved.supabase_id||saved.id))entry.supabase_id=saved.supabase_id||saved.id;
-  db.poids.push(entry); saveDB(db); clearCurrentDraft();
+  const saved=await sbSave('poids',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
+  db.poids.push(entry); saveDB(db);
   document.getElementById('poids-feedback').style.display = 'block';
   setTimeout(() => document.getElementById('poids-feedback').style.display='none', 2000);
 }
@@ -1360,8 +1220,8 @@ async function saveTest() {
   const entry={id: Date.now(),date: document.getElementById('ts-date').value,type: document.getElementById('ts-type').value,result: document.getElementById('ts-result').value,cible: document.getElementById('ts-cible').value,comment: document.getElementById('ts-comment').value};
   if(!entry.date || !entry.type || !entry.result){ alert('Date, type et résultat obligatoires.'); return; }
   entry.local_id = String(entry.id);
-  const saved=await sbSave('tests',entry); if(saved&&(saved.supabase_id||saved.id))entry.supabase_id=saved.supabase_id||saved.id;
-  db.tests.push(entry); saveDB(db); clearCurrentDraft();
+  const saved=await sbSave('tests',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
+  db.tests.push(entry); saveDB(db);
   document.getElementById('test-feedback').style.display = 'block';
   setTimeout(() => document.getElementById('test-feedback').style.display='none', 2000);
 }
@@ -1392,7 +1252,7 @@ async function saveRace() {
     comment: document.getElementById('r-comment').value
   };
   race.local_id = String(race.id);
-  const savedRace=await sbSave('races',race); if(savedRace&&(savedRace.supabase_id||savedRace.id))race.supabase_id=savedRace.supabase_id||savedRace.id; db.races.push(race); saveDB(db); clearCurrentDraft();
+  const savedRace=await sbSave('races',race); if(savedRace&&savedRace.id)race.supabase_id=savedRace.id; db.races.push(race); saveDB(db);
   document.getElementById('race-feedback').style.display = 'block';
   setTimeout(() => {
     document.getElementById('race-feedback').style.display='none';
@@ -1800,33 +1660,23 @@ function renderHistory(filter) {
         <div class="entry-meta">${meta}${item.comment ? ' · ' + item.comment : ''}</div>
         ${tags.length ? `<div class="entry-tags">${tagsHtml}</div>` : ''}
       </div>
-      <button class="del-btn" onclick="deleteEntry(${JSON.stringify(entryDeleteKey(item))}, '${item._cat}')">✕</button>
+      <button class="del-btn" onclick="deleteEntry(${JSON.stringify(String(item.id))}, '${item._cat}')">✕</button>
     </div>`;
   }).join('');
 }
 
 async function deleteEntry(id, cat) {
-  if (!id || id === 'undefined' || id === 'null') {
-    alert('Impossible de supprimer : identifiant introuvable. Lance une synchro puis réessaie.');
-    return;
-  }
   if (!confirm('Supprimer cette entrée ?')) return;
   const db = loadDB();
   const key = cat==='training' ? 'trainings' : cat==='test' ? 'tests' : cat==='poids' ? 'poids' : null;
-  if(!key) return;
-  const entry = (db[key]||[]).find(t=>sameEntryKey(t,id));
-
-  // Suppression locale immédiate : l’interface doit se mettre à jour même si Supabase répond lentement.
-  db[key] = (db[key]||[]).filter(t=>!sameEntryKey(t,id));
+  const entry = key ? (db[key]||[]).find(t=>String(t.id)===String(id) || String(t.local_id)===String(id) || String(t.supabase_id)===String(id)) : null;
+  if (cat==='training') db.trainings = db.trainings.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
+  if (cat==='test') db.tests = db.tests.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
+  if (cat==='poids') db.poids = db.poids.filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
+  const ok = await sbDel(tableForCat(cat), entry || id);
   saveDB(db);
-  renderHistory(loadUiState().histType || 'all');
-  renderDashboard();
-
-  const ok = await sbDel(tableForCat(cat), entry || {local_id:id,id:id});
-  if(!ok) {
-    console.warn('Suppression Supabase non confirmée', {cat,id,entry});
-    alert('Entrée supprimée du téléphone, mais suppression Supabase non confirmée. Si elle réapparaît après Sync, ajoute bien la colonne local_id dans Supabase.');
-  }
+  renderHistory('all');
+  if(!ok) alert('Entrée supprimée du téléphone, mais suppression Supabase non confirmée. Vérifie la table ou synchronise.');
 }
 
 // ════════════════════════════════════
@@ -1868,7 +1718,7 @@ function renderRaces() {
         </div>
         ${r.comment ? `<div class="entry-meta" style="margin-top:2px;font-style:italic">${r.comment}</div>` : ''}
       </div>
-      <button class="del-btn" onclick="deleteRace(${JSON.stringify(entryDeleteKey(r))})">✕</button>
+      <button class="del-btn" onclick="deleteRace(${JSON.stringify(String(r.id))})">✕</button>
     </div>`
   ).join('');
 
@@ -1918,18 +1768,13 @@ function renderRaces() {
 }
 
 async function deleteRace(id) {
-  if (!id || id === 'undefined' || id === 'null') {
-    alert('Impossible de supprimer : identifiant introuvable. Lance une synchro puis réessaie.');
-    return;
-  }
   if (!confirm('Supprimer cette course ?')) return;
   const db = loadDB();
-  const entry = (db.races||[]).find(r=>sameEntryKey(r,id));
-  db.races = (db.races||[]).filter(r=>!sameEntryKey(r,id));
+  const entry = (db.races||[]).find(r=>String(r.id)===String(id) || String(r.local_id)===String(id) || String(r.supabase_id)===String(id));
+  db.races = db.races.filter(r=>String(r.id)!==String(id) && String(r.local_id)!==String(id) && String(r.supabase_id)!==String(id));
+  const ok = await sbDel('races', entry || id);
   saveDB(db);
   renderRaces();
-  renderDashboard();
-  const ok = await sbDel('races', entry || {local_id:id,id:id});
   if(!ok) alert('Course supprimée du téléphone, mais suppression Supabase non confirmée.');
 }
 
@@ -2088,8 +1933,8 @@ async function saveCharge() {
   if (!db.charges) db.charges = [];
   const entry={ id: Date.now(), date, exo, kg, reps, sets, rpe, rm_estimated: rm };
   entry.local_id = String(entry.id);
-  const saved=await sbSave('charges',entry); if(saved&&(saved.supabase_id||saved.id))entry.supabase_id=saved.supabase_id||saved.id;
-  db.charges.push(entry); saveDB(db); clearCurrentDraft();
+  const saved=await sbSave('charges',entry); if(saved&&saved.id)entry.supabase_id=saved.id;
+  db.charges.push(entry); saveDB(db);
   displayRMResult(exo, kg, reps, rm);
   renderChargesHistory();
   const fb = document.getElementById('ch-feedback');
@@ -2251,7 +2096,7 @@ function renderChargesHistory(selectedExo) {
             }).slice(0,4).join('')}
           </div>
         </div>
-        <button class="del-btn" onclick="deleteCharge(${JSON.stringify(entryDeleteKey(c))})">✕</button>
+        <button class="del-btn" onclick="deleteCharge(${JSON.stringify(String(c.id))})">✕</button>
       </div>`;
     }).join('')}`;
   
@@ -2264,18 +2109,13 @@ function renderChargesHistory(selectedExo) {
 }
 
 async function deleteCharge(id) {
-  if (!id || id === 'undefined' || id === 'null') {
-    alert('Impossible de supprimer : identifiant introuvable. Lance une synchro puis réessaie.');
-    return;
-  }
   if (!confirm('Supprimer cette série ?')) return;
   const db = loadDB();
-  const entry = (db.charges||[]).find(c=>sameEntryKey(c,id));
-  db.charges = (db.charges||[]).filter(c=>!sameEntryKey(c,id));
+  const entry = (db.charges||[]).find(c=>String(c.id)===String(id) || String(c.local_id)===String(id) || String(c.supabase_id)===String(id));
+  db.charges = (db.charges||[]).filter(c => String(c.id)!==String(id) && String(c.local_id)!==String(id) && String(c.supabase_id)!==String(id));
+  const ok = await sbDel('charges', entry || id);
   saveDB(db);
   renderChargesHistory();
-  renderDashboard();
-  const ok = await sbDel('charges', entry || {local_id:id,id:id});
   if(!ok) alert('Série supprimée du téléphone, mais suppression Supabase non confirmée.');
 }
 
@@ -2318,7 +2158,7 @@ async function saveMensur() {
   }
 
   entry.local_id = String(entry.id);
-  const saved=await sbSave('mensur',entry); if(saved&&(saved.supabase_id||saved.id))entry.supabase_id=saved.supabase_id||saved.id; db.mensur.push(entry); saveDB(db); clearCurrentDraft();
+  const saved=await sbSave('mensur',entry); if(saved&&saved.id)entry.supabase_id=saved.id; db.mensur.push(entry); saveDB(db);
 
   const fb = document.getElementById('m-feedback');
   fb.style.display = 'block';
@@ -2402,19 +2242,8 @@ function renderMensur() {
 }
 
 // Init
-// Ne pas appeler showTab('dashboard') au chargement : cela écrase l'onglet mémorisé.
-// L'initialisation réelle est faite dans le listener load plus haut, qui restaure l'onglet actif.
-window.addEventListener('load',()=>{
-  syncAll().then(()=>{
-    const active = (document.querySelector('.sec.on')?.id || 'tab-dashboard').replace('tab-','');
-    // Après la synchro, on rerend l'onglet réellement affiché sans jamais forcer le dashboard.
-    if (active==='dashboard') renderDashboard();
-    else if (active==='history') renderHistory(loadUiState().histType || 'all');
-    else if (active==='race') renderRaces();
-    else if (active==='charges') renderChargesHistory();
-    else if (active==='mensur') renderMensur();
-  });
-});
+showTab('dashboard');
+window.addEventListener('load',()=>syncAll().then(()=>renderDashboard()));
 </script>
 </body>
 </html>
