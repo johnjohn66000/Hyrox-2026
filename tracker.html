@@ -1583,130 +1583,90 @@ function renderRPEAnalysis(db) {
 // ════════════════════════════════════
 // HISTORY RENDER
 // ════════════════════════════════════
-function getHistoryIdentity(item) {
-  return String((item && (item.id || item.local_id || item.supabase_id)) || '');
+function historyEntryId(item){
+  if(!item) return '';
+  return String(item.id || item.local_id || item.supabase_id || '');
 }
-
-function findHistoryEntry(id, cat) {
-  const db = loadDB();
-  const key = cat==='training' ? 'trainings' : cat==='test' ? 'tests' : cat==='poids' ? 'poids' : null;
-  if (!key) return null;
-  return (db[key]||[]).find(t =>
-    String(t.id)===String(id) ||
-    String(t.local_id)===String(id) ||
-    String(t.supabase_id)===String(id)
-  ) || null;
+function hxEsc(v){
+  return String(v===undefined||v===null?'':v)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-
-function detailField(label, value) {
-  if (value === undefined || value === null || value === '') return '';
-  return `<div style="display:flex;justify-content:space-between;gap:.8rem;border-bottom:1px solid var(--bo);padding:.32rem 0;font-family:monospace;font-size:11px">
-    <span style="color:var(--tx4)">${escapeHtml(label)}</span>
-    <b style="color:var(--tx);text-align:right;word-break:break-word">${escapeHtml(value)}</b>
-  </div>`;
+function findHistoryEntry(id, cat){
+  const d=loadDB();
+  const key=cat==='training'?'trainings':cat==='test'?'tests':cat==='poids'?'poids':null;
+  if(!key) return null;
+  return (d[key]||[]).find(function(t){
+    return String(t.id)===String(id) || String(t.local_id)===String(id) || String(t.supabase_id)===String(id);
+  }) || null;
 }
-
-function renderTrainingExercisesDetail(t) {
-  const exercises = Array.isArray(t.exercises) ? t.exercises.filter(e => e && Array.isArray(e.series) && e.series.length) : [];
-  if (!exercises.length) {
-    const legacy = [];
-    [['Back squat','squat','squat_reps'],['Bench press','bench','bench_reps'],['RDL','rdl','rdl_reps'],['Hip thrust','hip','hip_reps'],['Pull-up','pullup','pullup_reps'],['Farmer','farmer','farmer_reps']].forEach(([label,kgKey,repsKey])=>{
-      if (t[kgKey]) legacy.push({label, kg:t[kgKey], reps:t[repsKey]||'—'});
+function renderExerciseSeriesDetail(entry){
+  const exos=Array.isArray(entry.exercises)?entry.exercises:[];
+  if(!exos.length){
+    const legacy=[];
+    [['squat','Back squat'],['bench','Développé couché'],['rdl','RDL'],['hip','Hip thrust'],['pullup','Pull-up lesté'],['farmer','Farmer carry']].forEach(function(p){
+      const kg=entry[p[0]], reps=entry[p[0]+'_reps'];
+      if(kg&&reps){
+        const rm=Math.round((parseFloat(kg)*(1+parseFloat(reps)/30))*4)/4;
+        legacy.push('<div class="entry" style="cursor:default"><div class="entry-icon">💪</div><div class="entry-content"><div class="entry-title">'+hxEsc(p[1])+'</div><div class="entry-meta">1 série · '+hxEsc(kg)+' kg × '+hxEsc(reps)+' reps · 1RM estimé '+hxEsc(rm)+' kg</div></div></div>');
+      }
     });
-    if (!legacy.length) return '<div style="font-size:11px;color:var(--tx4);padding:.6rem 0">Aucun détail de série enregistré pour cette séance.</div>';
-    return legacy.map(x=>`<div class="entry" style="margin:.35rem 0">
-      <div class="entry-icon">💪</div><div class="entry-content">
-        <div class="entry-title">${escapeHtml(x.label)}</div>
-        <div class="entry-meta">${escapeHtml(x.kg)} kg × ${escapeHtml(x.reps)} reps</div>
-      </div></div>`).join('');
+    return legacy.length?legacy.join(''):'<div class="entry" style="cursor:default"><div class="entry-icon">ℹ️</div><div class="entry-content"><div class="entry-title">Aucun détail série enregistré</div><div class="entry-meta">Cette séance ne contient pas de tableau exercices/séries exploitable.</div></div></div>';
   }
-  return exercises.map(exo => {
-    const label = exo.label || EXO_NAMES[exo.key] || EXO_LABELS[exo.key] || exo.key || 'Exercice';
-    const rows = exo.series.map((s, i) => {
-      const kg = s.kg ?? '—';
-      const reps = s.reps ?? '—';
-      const rm = s.rm || (parseFloat(kg)&&parseInt(reps,10) ? Math.round(parseFloat(kg)*(1+parseInt(reps,10)/30)*4)/4 : null);
-      return `<tr>
-        <td style="padding:.35rem .25rem;color:var(--tx4)">${i+1}</td>
-        <td style="padding:.35rem .25rem;text-align:right;color:var(--tx)">${escapeHtml(kg)} kg</td>
-        <td style="padding:.35rem .25rem;text-align:right;color:var(--tx)">${escapeHtml(reps)}</td>
-        <td style="padding:.35rem .25rem;text-align:right;color:var(--gr);font-weight:700">${rm ? escapeHtml(rm)+' kg' : '—'}</td>
-      </tr>`;
-    }).join('');
-    return `<div style="background:var(--bg2);border:1px solid var(--bo2);border-radius:10px;padding:.65rem;margin:.55rem 0">
-      <div style="font-size:13px;font-weight:800;color:var(--tx);margin-bottom:.4rem">${escapeHtml(label)}</div>
-      <table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:11px">
-        <thead><tr style="color:var(--tx4);border-bottom:1px solid var(--bo)"><th style="text-align:left;padding:.3rem .25rem">Série</th><th style="text-align:right;padding:.3rem .25rem">Charge</th><th style="text-align:right;padding:.3rem .25rem">Reps</th><th style="text-align:right;padding:.3rem .25rem">1RM estimé</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>`;
+  return exos.map(function(exo){
+    const label=hxEsc(exo.label || EXO_NAMES[exo.key] || EXO_LABELS[exo.key] || exo.key || 'Exercice');
+    const series=Array.isArray(exo.series)?exo.series:[];
+    const rows=series.length?series.map(function(s,i){
+      const kg=s.kg!==undefined&&s.kg!==null?s.kg:'—';
+      const reps=s.reps!==undefined&&s.reps!==null?s.reps:'—';
+      const rm=s.rm!==undefined&&s.rm!==null?s.rm:(kg!=='—'&&reps!=='—'?Math.round((parseFloat(kg)*(1+parseFloat(reps)/30))*4)/4:null);
+      return '<div style="display:flex;justify-content:space-between;gap:.5rem;border-top:1px solid var(--bo);padding:.32rem 0;font-family:monospace;font-size:11px;color:var(--tx3)"><span>Série '+(i+1)+'</span><span><b style="color:var(--tx)">'+hxEsc(kg)+' kg × '+hxEsc(reps)+' reps</b>'+(rm?' · 1RM ~'+hxEsc(rm)+' kg':'')+'</span></div>';
+    }).join(''):'<div style="font-family:monospace;font-size:11px;color:var(--tx4);padding:.3rem 0">Aucune série détaillée.</div>';
+    return '<div class="card" style="margin:.45rem 0;background:var(--bg2)"><div class="card-title">'+label+'</div>'+rows+'</div>';
   }).join('');
 }
-
-function openHistoryDetail(id, cat) {
-  const item = findHistoryEntry(id, cat);
-  if (!item) { alert('Séance introuvable. Synchronise puis réessaie.'); return; }
-  let title = 'Détail';
-  let body = '';
-  if (cat === 'training') {
-    const typeLabels = {vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',bike:'Vélo',ergo:'Ergo',compromised:'Compromised',simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',mob:'Mobilité'};
-    title = `${typeLabels[item.type] || item.type || 'Séance'} — ${fmtDate(item.date)}`;
-    body += detailField('Date', item.date);
-    body += detailField('Durée', item.duree ? item.duree + ' min' : '');
-    body += detailField('RPE', item.rpe);
-    body += detailField('Qualité', item.qualite);
-    body += detailField('Distance', item.dist ? item.dist + ' km' : '');
-    body += detailField('Allure', item.allure ? item.allure + '/km' : '');
-    body += detailField('Intervalles', item.intervals);
-    body += detailField('FC moyenne', getFcAvg(item) ? getFcAvg(item) + ' bpm' : '');
-    body += detailField('FC max', getFcMax(item) ? getFcMax(item) + ' bpm' : '');
-    body += detailField('Run SP', item.sp_allure ? item.sp_allure + '/km' : '');
-    body += detailField('Temps total SP', item.sp_total ? item.sp_total + ' min' : '');
-    body += detailField('Rounds', item.sp_rounds);
-    body += detailField('BBJ', item.sp_bbj);
-    body += detailField('WB 100', item.sp_wb);
-    body += item.comment ? `<div style="margin-top:.6rem;background:var(--bg2);border:1px solid var(--bo2);border-radius:8px;padding:.55rem;font-size:12px;color:var(--tx3);line-height:1.4"><b style="color:var(--tx)">Commentaire</b><br>${escapeHtml(item.comment)}</div>` : '';
-    body += `<div style="margin-top:.75rem"><div style="font-size:12px;font-weight:800;color:var(--tx);margin-bottom:.35rem">Exercices & séries</div>${renderTrainingExercisesDetail(item)}</div>`;
-  } else if (cat === 'test') {
-    const c = CIBLES[item.type];
-    title = `Test — ${c?.label || item.type || ''}`;
-    body += detailField('Date', item.date);
-    body += detailField('Résultat', item.result);
-    body += detailField('Cible', item.cible || c?.target);
-    body += detailField('Commentaire', item.comment);
-  } else if (cat === 'poids') {
-    title = `Poids — ${item.val} kg`;
-    body += detailField('Date', item.date);
-    body += detailField('Poids', item.val ? item.val + ' kg' : '');
-    body += detailField('Moment', item.moment);
+function openHistoryDetail(id, cat){
+  const entry=findHistoryEntry(id,cat);
+  if(!entry){ alert('Séance introuvable dans le cache local. Lance une synchro puis réessaie.'); return; }
+  const typeLabels={vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',compromised:'Compromised',simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',ergo:'Ergo',mob:'Mobilité'};
+  let title=cat==='training'?(typeLabels[entry.type]||entry.type||'Séance'):cat==='test'?'Test':'Poids';
+  let body='';
+  if(cat==='training'){
+    const meta=[];
+    if(entry.duree) meta.push(entry.duree+' min');
+    if(entry.distance) meta.push(entry.distance+' km');
+    if(entry.allure) meta.push(entry.allure+'/km');
+    if(entry.rpe) meta.push('RPE '+entry.rpe);
+    if(getFcAvg(entry)) meta.push('FC moy '+getFcAvg(entry));
+    if(getFcMax(entry)) meta.push('FC max '+getFcMax(entry));
+    body+='<div class="entry" style="cursor:default"><div class="entry-icon">📅</div><div class="entry-content"><div class="entry-title">'+hxEsc(fmtDate(entry.date))+'</div><div class="entry-meta">'+hxEsc(meta.join(' · ')||'Séance enregistrée')+'</div>'+(entry.comment?'<div class="entry-tags"><span class="etag">'+hxEsc(entry.comment)+'</span></div>':'')+'</div></div>';
+    if(['str_bas','str_haut','str_full'].includes(entry.type)){
+      body+='<div class="card-title" style="margin-top:.7rem">Détail exercices / séries</div>'+renderExerciseSeriesDetail(entry);
+    }else{
+      const bits=[];
+      ['intervals','sp_allure','sp_total','sp_rounds','sp_bbj','sp_wb','qualite'].forEach(function(k){ if(entry[k]) bits.push('<div><b>'+hxEsc(k)+'</b> : '+hxEsc(entry[k])+'</div>'); });
+      body+=bits.length?'<div class="card" style="margin-top:.5rem;background:var(--bg2);font-family:monospace;font-size:11px;color:var(--tx3);line-height:1.7">'+bits.join('')+'</div>':'<div class="empty"><p>Aucun détail supplémentaire pour cette séance.</p></div>';
+    }
+  }else if(cat==='test'){
+    body='<div class="entry" style="cursor:default"><div class="entry-icon">🎯</div><div class="entry-content"><div class="entry-title">'+hxEsc(entry.type)+' — '+hxEsc(entry.result)+'</div><div class="entry-meta">'+hxEsc(fmtDate(entry.date))+(entry.comment?' · '+hxEsc(entry.comment):'')+'</div></div></div>';
+  }else{
+    body='<div class="entry" style="cursor:default"><div class="entry-icon">⚖️</div><div class="entry-content"><div class="entry-title">'+hxEsc(entry.val)+' kg</div><div class="entry-meta">'+hxEsc(fmtDate(entry.date))+' · '+hxEsc(entry.moment||'')+'</div></div></div>';
   }
-  showHistoryModal(title, body || '<div style="font-size:12px;color:var(--tx4)">Aucun détail disponible.</div>');
-}
-
-function showHistoryModal(title, body) {
-  let modal = document.getElementById('history-detail-modal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'history-detail-modal';
-    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;padding:0 .75rem .75rem .75rem;box-sizing:border-box';
-    modal.innerHTML = `<div style="width:100%;max-width:560px;max-height:86vh;overflow:auto;background:var(--bg);border:1px solid var(--bo2);border-radius:18px;padding:1rem;box-shadow:0 18px 60px rgba(0,0,0,.45)">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;margin-bottom:.75rem;position:sticky;top:0;background:var(--bg);padding-bottom:.55rem;border-bottom:1px solid var(--bo);z-index:1">
-        <div id="history-detail-title" style="font-size:15px;font-weight:900;color:var(--tx);line-height:1.25"></div>
-        <button onclick="closeHistoryDetail()" style="background:var(--bg2);border:1px solid var(--bo2);border-radius:10px;color:var(--tx);font-size:18px;line-height:1;padding:.35rem .55rem;cursor:pointer">×</button>
-      </div>
-      <div id="history-detail-body"></div>
-    </div>`;
-    modal.addEventListener('click', function(e){ if(e.target === modal) closeHistoryDetail(); });
+  let modal=document.getElementById('history-detail-modal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='history-detail-modal';
+    modal.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;padding:0;-webkit-tap-highlight-color:transparent';
+    modal.innerHTML='<div id="history-detail-panel" style="width:100%;max-width:560px;max-height:88vh;overflow:auto;background:var(--bg);border:1px solid var(--bo2);border-radius:18px 18px 0 0;padding:1rem;box-shadow:0 -20px 60px rgba(0,0,0,.45)"></div>';
+    modal.addEventListener('click',function(e){ if(e.target===modal) closeHistoryDetail(); });
     document.body.appendChild(modal);
   }
-  document.getElementById('history-detail-title').innerHTML = escapeHtml(title);
-  document.getElementById('history-detail-body').innerHTML = body;
-  modal.style.display = 'flex';
+  document.getElementById('history-detail-panel').innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin-bottom:.7rem"><div class="card-title" style="margin:0">'+hxEsc(title)+'</div><button class="del-btn" onclick="closeHistoryDetail()">✕</button></div>'+body;
+  modal.style.display='flex';
 }
-
-function closeHistoryDetail() {
-  const modal = document.getElementById('history-detail-modal');
-  if (modal) modal.style.display = 'none';
+function closeHistoryDetail(){
+  const modal=document.getElementById('history-detail-modal');
+  if(modal) modal.style.display='none';
 }
 
 function renderHistory(filter) {
@@ -1717,7 +1677,7 @@ function renderHistory(filter) {
                ...(db.poids||[]).map(t=>({...t,_cat:'poids'}))];
 
   if (filter !== 'all') {
-    const map = {run:['vma','tempo','z2','long','bike','ergo'], str:['str_bas','str_haut','str_full'],
+    const map = {run:['vma','tempo','z2','long'], str:['str_bas','str_haut','str_full'],
       sp:['compromised','simulation'], test:['_cat=test']};
     if (filter === 'test') items = items.filter(t=>t._cat==='test');
     else items = items.filter(t => (map[filter]||[]).includes(t.type));
@@ -1731,13 +1691,13 @@ function renderHistory(filter) {
   }
 
   el.innerHTML = items.map(item => {
+    const itemId=historyEntryId(item);
     const icon = TYPE_ICONS[item._cat==='test'?'test':item._cat==='poids'?'poids':item.type] || '📋';
-    const id = getHistoryIdentity(item);
     let title = '', meta = '', tags = [];
 
     if (item._cat === 'poids') {
       title = item.val + ' kg';
-      meta = fmtDate(item.date) + ' · ' + (item.moment || '');
+      meta = fmtDate(item.date) + ' · ' + (item.moment||'');
     } else if (item._cat === 'test') {
       const c = CIBLES[item.type];
       title = (c?.label||item.type) + ' — ' + item.result;
@@ -1750,8 +1710,8 @@ function renderHistory(filter) {
         }
       }
     } else {
-      const typeLabels = {vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',bike:'Vélo',ergo:'Ergo',compromised:'Compromised',
-        simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',mob:'Mobilité'};
+      const typeLabels = {vma:'VMA',tempo:'Tempo',z2:'Zone 2',long:'Longue',compromised:'Compromised',
+        simulation:'Simulation',str_bas:'H-B Bas',str_haut:'H-B Haut',str_full:'Full body',ergo:'Ergo',mob:'Mobilité'};
       title = typeLabels[item.type] || item.type || 'Séance';
       if (item.duree) title += ` — ${item.duree} min`;
       meta = fmtDate(item.date);
@@ -1768,39 +1728,37 @@ function renderHistory(filter) {
       if (item.allure) tags.push({txt:item.allure+'/km', cls:'etag'});
       if (getFcAvg(item)) tags.push({txt:'FC moy '+getFcAvg(item)+' bpm', cls:'etag'});
       if (getFcMax(item)) tags.push({txt:'FC max '+getFcMax(item)+' bpm', cls:'etag'});
-      const exCount = Array.isArray(item.exercises) ? item.exercises.length : 0;
-      const setCount = Array.isArray(item.exercises) ? item.exercises.reduce((s,e)=>s+((e.series||[]).length),0) : 0;
-      if (exCount) tags.push({txt:`${exCount} exos · ${setCount} séries`, cls:'etag-ok'});
+      const exCount=Array.isArray(item.exercises)?item.exercises.length:0;
+      if(exCount) tags.push({txt:exCount+' exos détaillés',cls:'etag-ok'});
       if (item.sp_wb) tags.push({txt:'WB '+item.sp_wb, cls:'etag'});
     }
 
-    const tagsHtml = tags.map(t=>`<span class="etag ${t.cls}">${escapeHtml(t.txt)}</span>`).join('');
-    return `<div class="entry" onclick="openHistoryDetail(${JSON.stringify(id)}, '${item._cat}')" style="cursor:pointer;-webkit-tap-highlight-color:transparent">
+    const tagsHtml = tags.map(t=>`<span class="etag ${t.cls}">${hxEsc(t.txt)}</span>`).join('');
+    return `<div class="entry" onclick="openHistoryDetail(${JSON.stringify(itemId)}, ${JSON.stringify(item._cat)})" style="cursor:pointer">
       <div class="entry-icon">${icon}</div>
       <div class="entry-content">
-        <div class="entry-title">${escapeHtml(title)}</div>
-        <div class="entry-meta">${escapeHtml(meta)}${item.comment && item._cat==='training' ? ' · ' + escapeHtml(item.comment) : ''}</div>
+        <div class="entry-title">${hxEsc(title)}</div>
+        <div class="entry-meta">${hxEsc(meta)}${item.comment && item._cat!=='test' ? ' · ' + hxEsc(item.comment) : ''}</div>
         ${tags.length ? `<div class="entry-tags">${tagsHtml}</div>` : ''}
       </div>
-      <button class="del-btn" onclick="deleteEntry(event, ${JSON.stringify(id)}, '${item._cat}')">✕</button>
+      <button class="del-btn" onclick="event.stopPropagation(); deleteEntry(${JSON.stringify(itemId)}, ${JSON.stringify(item._cat)})">✕</button>
     </div>`;
   }).join('');
 }
 
-async function deleteEntry(evt, id, cat) {
-  if (evt && evt.stopPropagation) evt.stopPropagation();
+async function deleteEntry(id, cat) {
   if (!confirm('Supprimer cette entrée ?')) return;
   const db = loadDB();
   const key = cat==='training' ? 'trainings' : cat==='test' ? 'tests' : cat==='poids' ? 'poids' : null;
   const entry = key ? (db[key]||[]).find(t=>String(t.id)===String(id) || String(t.local_id)===String(id) || String(t.supabase_id)===String(id)) : null;
-  if (!entry) { alert('Entrée introuvable. Synchronise puis réessaie.'); return; }
   if (cat==='training') db.trainings = (db.trainings||[]).filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
   if (cat==='test') db.tests = (db.tests||[]).filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
   if (cat==='poids') db.poids = (db.poids||[]).filter(t=>String(t.id)!==String(id) && String(t.local_id)!==String(id) && String(t.supabase_id)!==String(id));
-  const ok = await sbDel(tableForCat(cat), entry);
+  const ok = await sbDel(tableForCat(cat), entry || id);
   saveDB(db);
+  closeHistoryDetail();
   renderHistory('all');
-  if (cat==='training') renderDashboard();
+  renderDashboard();
   if(!ok) alert('Entrée supprimée du téléphone, mais suppression Supabase non confirmée. Vérifie la table ou synchronise.');
 }
 
@@ -2157,70 +2115,50 @@ function getPlanTargets(exo) {
   return targets[exo] || [];
 }
 
+function validChargeEntry(c){
+  if(!c) return false;
+  const exo=String(c.exo||'').trim();
+  return !!exo && exo!=='undefined' && exo!=='null' && isFinite(parseFloat(c.kg)) && isFinite(parseFloat(c.reps)) && isFinite(parseFloat(c.rm_estimated));
+}
 function renderChargesHistory(selectedExo) {
   const db = loadDB();
-  const charges = (db.charges || []).filter(c => {
-    if (!c) return false;
-    const exo = String(c.exo || '').trim();
-    const kg = parseFloat(c.kg);
-    const reps = parseInt(c.reps, 10);
-    const rm = parseFloat(c.rm_estimated);
-    return exo && exo !== 'undefined' && exo !== 'null' && Number.isFinite(kg) && kg > 0 && Number.isFinite(reps) && reps > 0 && Number.isFinite(rm) && rm > 0;
-  });
-  
+  const charges = (db.charges || []).filter(validChargeEntry);
   const tabsEl = document.getElementById('exo-subtabs');
   const histEl = document.getElementById('rm-history');
-  const chartWrap = document.getElementById('rm-chart-wrap');
   if (!tabsEl || !histEl) return;
-  
-  // Build clean exercise list for a single dropdown, not a long button list.
-  const exosWithData = [...new Set(charges.map(c => String(c.exo || '').trim()))]
-    .filter(e => e && e !== 'undefined' && e !== 'null')
-    .sort((a,b) => (EXO_LABELS[a] || a).localeCompare(EXO_LABELS[b] || b));
-  
-  if (!exosWithData.length) {
+  const chartWrap = document.getElementById('rm-chart-wrap');
+  if (!charges.length) {
     histEl.innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Enregistre des séries pour voir l&#39;historique 1RM.</p></div>';
     tabsEl.innerHTML = '';
-    if (chartWrap) chartWrap.style.display = 'none';
+    if(chartWrap) chartWrap.style.display='none';
     return;
   }
-  
-  const current = (selectedExo && exosWithData.includes(String(selectedExo))) ? String(selectedExo) : exosWithData[0];
-  
-  // Count auto vs manual on valid charges only.
+  const exosWithData = [...new Set(charges.map(c => String(c.exo).trim()))].sort((a,b)=>(EXO_LABELS[a]||a).localeCompare(EXO_LABELS[b]||b));
+  const current = selectedExo && exosWithData.includes(selectedExo) ? selectedExo : exosWithData[0];
   const autoCount = charges.filter(c => c.auto).length;
   const manualCount = charges.filter(c => !c.auto).length;
-  
   tabsEl.innerHTML = `
-    <select id="rm-exo-select" onchange="renderChargesHistory(this.value)" style="width:100%;background:var(--bg2);border:1px solid var(--bo2);border-radius:10px;color:var(--tx);font-family:monospace;font-size:12px;padding:.65rem .7rem;outline:none">
-      ${exosWithData.map(e => `<option value="${String(e).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}" ${e===current?'selected':''}>${EXO_LABELS[e]||e}</option>`).join('')}
+    <select id="rm-exo-select" onchange="renderChargesHistory(this.value)" style="width:100%;background:var(--bg3);border:1px solid var(--bo2);border-radius:8px;padding:.55rem .65rem;color:var(--tx);font-family:monospace;font-size:12px;outline:none">
+      ${exosWithData.map(e=>`<option value="${hxEsc(e)}" ${e===current?'selected':''}>${hxEsc(EXO_LABELS[e]||e)}</option>`).join('')}
     </select>
-    ${autoCount > 0 ? `<div style="font-family:monospace;font-size:9px;color:var(--tx4);margin-top:.35rem">⚡ ${autoCount} entrées auto depuis les logs · ${manualCount} manuelles</div>` : ''}
-  `;
-  
-  const exoCharges = charges
-    .filter(c => String(c.exo || '').trim() === current)
-    .sort((a,b) => String(a.date || '').localeCompare(String(b.date || '')));
-  
+    <div style="font-family:monospace;font-size:9px;color:var(--tx4);margin-top:.35rem;width:100%">⚡ ${autoCount} entrées auto depuis les logs · ${manualCount} manuelles · ${exosWithData.length} exercices</div>`;
+  const exoCharges = charges.filter(c => String(c.exo).trim() === current).sort((a,b) => String(a.date||'').localeCompare(String(b.date||'')));
   if (!exoCharges.length) {
     histEl.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Aucune donnée pour cet exercice.</div>';
-    if (chartWrap) chartWrap.style.display = 'none';
+    if(chartWrap) chartWrap.style.display='none';
     return;
   }
-  
-  // Latest 1RM
   const latest = exoCharges[exoCharges.length-1];
   const best = exoCharges.reduce((a,b) => parseFloat(a.rm_estimated) > parseFloat(b.rm_estimated) ? a : b);
-  
   histEl.innerHTML = `
     <div class="stat-grid" style="margin-bottom:.4rem">
       <div class="stat-box">
-        <div class="val" style="color:var(--gr)">${latest.rm_estimated} kg</div>
+        <div class="val" style="color:var(--gr)">${hxEsc(latest.rm_estimated)} kg</div>
         <div class="lbl">1RM actuel</div>
         <div class="delta" style="font-family:monospace;font-size:10px;color:var(--tx4)">${fmtDate(latest.date)}</div>
       </div>
       <div class="stat-box">
-        <div class="val" style="color:var(--am)">${best.rm_estimated} kg</div>
+        <div class="val" style="color:var(--am)">${hxEsc(best.rm_estimated)} kg</div>
         <div class="lbl">1RM record</div>
         <div class="delta" style="font-family:monospace;font-size:10px;color:var(--tx4)">${fmtDate(best.date)}</div>
       </div>
@@ -2230,27 +2168,26 @@ function renderChargesHistory(selectedExo) {
       return `<div class="entry">
         <div class="entry-icon">${isNew ? '🏆' : '💪'}</div>
         <div class="entry-content">
-          <div class="entry-title">${c.kg} kg × ${c.reps} reps = <b style="color:var(--gr)">${c.rm_estimated} kg 1RM</b></div>
-          <div class="entry-meta">${fmtDate(c.date)} · RPE ${c.rpe || '—'} · ${c.sets || 1} série(s)</div>
+          <div class="entry-title">${hxEsc(c.kg)} kg × ${hxEsc(c.reps)} reps = <b style="color:var(--gr)">${hxEsc(c.rm_estimated)} kg 1RM</b></div>
+          <div class="entry-meta">${fmtDate(c.date)} · RPE ${hxEsc(c.rpe||'—')} · ${hxEsc(c.sets||1)} série(s)</div>
           <div class="entry-tags">
             ${PLAN_INTENSITIES.map(i => {
               const rec = round25(parseFloat(c.rm_estimated) * i.pct);
-              return `<span class="etag">${i.label.split(' ')[0]}: <b>${rec}</b></span>`;
+              return `<span class="etag">${hxEsc(i.label.split(' ')[0])}: <b>${rec}</b></span>`;
             }).slice(0,4).join('')}
           </div>
         </div>
-        <button class="del-btn" onclick="deleteCharge(${JSON.stringify(String(c.id || c.local_id || c.supabase_id || ''))})">✕</button>
+        <button class="del-btn" onclick="deleteCharge(${JSON.stringify(String(c.id||c.local_id||c.supabase_id||''))})">✕</button>
       </div>`;
     }).join('')}`;
-  
-  // Draw chart for selected exercise only.
-  if (chartWrap) chartWrap.style.display = 'block';
+  if(chartWrap) chartWrap.style.display = 'block';
   const canvas = document.getElementById('rm-chart');
-  const data = exoCharges.map(c => ({x: fmtDate(c.date), y: parseFloat(c.rm_estimated)}));
-  if (canvas && data.length) {
+  const data = exoCharges.map(c => ({x: fmtDate(c.date), y: parseFloat(c.rm_estimated)})).filter(d=>isFinite(d.y));
+  if(canvas && data.length){
     drawLineChart(canvas, data, {color:'var(--gr)', min: Math.min(...data.map(d=>d.y))-5, max: Math.max(...data.map(d=>d.y))+5});
   }
 }
+
 async function deleteCharge(id) {
   if (!confirm('Supprimer cette série ?')) return;
   const db = loadDB();
