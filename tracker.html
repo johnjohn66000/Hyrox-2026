@@ -756,7 +756,8 @@ async function sbSave(table,entry){
   window.__lastSupabaseError = null;
   try{
     const localId = entry.local_id || entry.id || (Date.now()+'_'+Math.random().toString(36).slice(2));
-    const p={...entry,device_id:DEVICE_ID,local_id:String(localId)};
+    const p={...entry,device_id:DEVICE_ID};
+    delete p.local_id;
     if(table==='trainings'){ delete p.fc; } // évite l'échec si la colonne legacy fc n'existe pas
     delete p.id;          // id reste géré par Supabase
     delete p.supabase_id; // colonne locale uniquement
