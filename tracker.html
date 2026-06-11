@@ -624,12 +624,7 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
   <!-- Sélecteur exercice pour historique -->
   <div class="card">
     <div class="card-title">Historique 1RM par exercice</div>
-    <div class="field" style="margin-bottom:.6rem">
-      <label>Exercice à afficher</label>
-      <select id="rm-exo-select" onchange="renderChargesHistory(this.value)">
-        <option value="">— Choisir un exercice —</option>
-      </select>
-    </div>
+    <div class="subtabs" id="exo-subtabs" style="flex-wrap:wrap"></div>
     <div id="rm-history"></div>
     <div id="rm-chart-wrap" class="chart-wrap" style="display:none">
       <div class="chart-title">Évolution 1RM estimé</div>
@@ -968,11 +963,6 @@ function secToTime(s) {
   if (h>0) return `${h}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
   return `${m}:${String(ss).padStart(2,'0')}`;
 }
-
-function escapeAttr(v){
-  return String(v==null?'':v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
 function fmtDate(d) {
   if (!d) return '';
   const dt = new Date(d);
@@ -2042,57 +2032,44 @@ function getPlanTargets(exo) {
   return targets[exo] || [];
 }
 
-function getValidChargeRows(db) {
-  return (db.charges || []).filter(c => {
-    const exo = String(c && c.exo ? c.exo : '').trim();
-    const kg = parseFloat(c && c.kg);
-    const reps = parseInt(c && c.reps, 10);
-    const rm = parseFloat(c && c.rm_estimated);
-    return exo && exo !== 'undefined' && exo !== 'null' && isFinite(kg) && kg > 0 && isFinite(reps) && reps > 0 && isFinite(rm) && rm > 0;
-  });
-}
-
 function renderChargesHistory(selectedExo) {
   const db = loadDB();
-  const charges = getValidChargeRows(db);
-  const selectEl = document.getElementById('rm-exo-select');
-  const historyEl = document.getElementById('rm-history');
-  const chartWrap = document.getElementById('rm-chart-wrap');
-  if (!historyEl) return;
+  const charges = db.charges || [];
   
-  const exosWithData = [...new Set(charges.map(c => String(c.exo).trim()))].sort((a,b) => (EXO_LABELS[a]||a).localeCompare(EXO_LABELS[b]||b));
+  // Build list of exercices that have data
+  const exosWithData = [...new Set(charges.map(c => c.exo))];
+  
+  const tabsEl = document.getElementById('exo-subtabs');
+  if (!tabsEl) return;
   
   if (!exosWithData.length) {
-    historyEl.innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Enregistre des séries pour voir l&#39;historique 1RM.</p></div>';
-    if (selectEl) selectEl.innerHTML = '<option value="">— Aucun exercice valide —</option>';
-    if (chartWrap) chartWrap.style.display = 'none';
+    document.getElementById('rm-history').innerHTML = '<div class="empty"><div class="empty-icon">💪</div><p>Enregistre des séries pour voir l&#39;historique 1RM.</p></div>';
+    tabsEl.innerHTML = '';
     return;
   }
   
-  const previous = selectEl && selectEl.value ? selectEl.value : '';
-  const current = exosWithData.includes(selectedExo) ? selectedExo : (exosWithData.includes(previous) ? previous : exosWithData[0]);
+  const current = selectedExo || exosWithData[0];
   
-  if (selectEl) {
-    selectEl.innerHTML = exosWithData.map(e => `<option value="${escapeAttr(e)}" ${e===current?'selected':''}>${EXO_LABELS[e]||e}</option>`).join('');
-  }
+  // Count auto vs manual
+  const autoCount = (db.charges||[]).filter(c => c.auto).length;
+  const manualCount = (db.charges||[]).filter(c => !c.auto).length;
   
-  const autoCount = charges.filter(c => c.auto).length;
-  const manualCount = charges.filter(c => !c.auto).length;
+  tabsEl.innerHTML = exosWithData.map(e => 
+    `<button class="stab ${e===current?'on':''}" onclick="renderChargesHistory('${e}')">${EXO_LABELS[e]||e}</button>`
+  ).join('') + (autoCount > 0 ? `<div style="font-family:monospace;font-size:9px;color:var(--tx4);margin-top:.3rem;width:100%">⚡ ${autoCount} entrées auto depuis les logs · ${manualCount} manuelles</div>` : '');
   
-  const exoCharges = charges.filter(c => String(c.exo).trim() === current).sort((a,b) => String(a.date||'').localeCompare(String(b.date||'')));
+  const exoCharges = charges.filter(c => c.exo === current).sort((a,b) => a.date.localeCompare(b.date));
   
   if (!exoCharges.length) {
-    historyEl.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Aucune donnée pour cet exercice.</div>';
-    if (chartWrap) chartWrap.style.display = 'none';
+    document.getElementById('rm-history').innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Aucune donnée pour cet exercice.</div>';
     return;
   }
   
+  // Latest 1RM
   const latest = exoCharges[exoCharges.length-1];
-  const best = exoCharges.reduce((a,b) => parseFloat(a.rm_estimated) > parseFloat(b.rm_estimated) ? a : b);
-  const infoLine = autoCount > 0 ? `<div style="font-family:monospace;font-size:9px;color:var(--tx4);margin:.2rem 0 .5rem">⚡ ${autoCount} entrées auto depuis les logs · ${manualCount} manuelles</div>` : '';
+  const best = exoCharges.reduce((a,b) => a.rm_estimated > b.rm_estimated ? a : b);
   
-  historyEl.innerHTML = `
-    ${infoLine}
+  document.getElementById('rm-history').innerHTML = `
     <div class="stat-grid" style="margin-bottom:.4rem">
       <div class="stat-box">
         <div class="val" style="color:var(--gr)">${latest.rm_estimated} kg</div>
@@ -2106,30 +2083,29 @@ function renderChargesHistory(selectedExo) {
       </div>
     </div>
     ${exoCharges.slice(-5).reverse().map(c => {
-      const isNew = parseFloat(c.rm_estimated) >= parseFloat(best.rm_estimated);
-      const safeId = String(c.id || c.local_id || c.supabase_id || '');
+      const isNew = c.rm_estimated >= best.rm_estimated;
       return `<div class="entry">
         <div class="entry-icon">${isNew ? '🏆' : '💪'}</div>
         <div class="entry-content">
           <div class="entry-title">${c.kg} kg × ${c.reps} reps = <b style="color:var(--gr)">${c.rm_estimated} kg 1RM</b></div>
-          <div class="entry-meta">${fmtDate(c.date)} · RPE ${c.rpe || '—'} · ${c.sets || 1} série(s)</div>
+          <div class="entry-meta">${fmtDate(c.date)} · RPE ${c.rpe} · ${c.sets} série(s)</div>
           <div class="entry-tags">
             ${PLAN_INTENSITIES.map(i => {
-              const rec = round25(parseFloat(c.rm_estimated) * i.pct);
+              const rec = round25(c.rm_estimated * i.pct);
               return `<span class="etag">${i.label.split(' ')[0]}: <b>${rec}</b></span>`;
             }).slice(0,4).join('')}
           </div>
         </div>
-        <button class="del-btn" onclick="deleteCharge(${JSON.stringify(safeId)})">✕</button>
+        <button class="del-btn" onclick="deleteCharge(${JSON.stringify(String(c.id))})">✕</button>
       </div>`;
     }).join('')}`;
   
-  if (chartWrap) chartWrap.style.display = 'block';
+  // Draw chart
+  const chartWrap = document.getElementById('rm-chart-wrap');
+  chartWrap.style.display = 'block';
   const canvas = document.getElementById('rm-chart');
-  const data = exoCharges.map(c => ({x: fmtDate(c.date), y: parseFloat(c.rm_estimated)})).filter(d => isFinite(d.y));
-  if (canvas && data.length) {
-    drawLineChart(canvas, data, {color:'var(--gr)', min: Math.min(...data.map(d=>d.y))-5, max: Math.max(...data.map(d=>d.y))+5});
-  }
+  const data = exoCharges.map(c => ({x: fmtDate(c.date), y: c.rm_estimated}));
+  drawLineChart(canvas, data, {color:'var(--gr)', min: Math.min(...data.map(d=>d.y))-5, max: Math.max(...data.map(d=>d.y))+5});
 }
 
 async function deleteCharge(id) {
