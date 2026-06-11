@@ -1629,7 +1629,8 @@ function asArrayStrict(v) {
   if (typeof v === 'object') {
     if (Array.isArray(v.exercises)) return v.exercises;
     if (Array.isArray(v.series)) return [v];
-    if (v.kg !== undefined || v.charge !== undefined || v.weight !== undefined || v.poids !== undefined || v.reps !== undefined || v.rep !== undefined || v.repetitions !== undefined) return [v];
+    if (Array.isArray(v.sets)) return [v];
+    if (v.kg !== undefined || v.charge !== undefined || v.weight !== undefined || v.load !== undefined || v.poids !== undefined || v.reps !== undefined || v.rep !== undefined || v.repetitions !== undefined) return [v];
     const vals = Object.values(v).filter(x => x && typeof x === 'object');
     if (vals.length) return vals;
   }
@@ -1642,55 +1643,76 @@ function cleanExoLabel(v) {
   return s;
 }
 
+function toNumOrNull(v) {
+  if (v === null || v === undefined || v === '') return null;
+  if (typeof v === 'string') v = v.replace(',', '.').replace(/kg/ig, '').trim();
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function normalizeSingleSet(raw, defaultRpe) {
+  const s = safeJsonMaybe(raw, raw) || {};
+  const kg = toNumOrNull(s.kg ?? s.charge ?? s.weight ?? s.load ?? s.poids ?? s.value);
+  const reps = toNumOrNull(s.reps ?? s.rep ?? s.repetitions ?? s.nb_reps ?? s.nbReps);
+  const rpe = s.rpe ?? s.RPE ?? defaultRpe ?? '';
+  const rmRaw = s.rm ?? s.rm_estimated ?? s.rmEstimated ?? s.one_rm ?? s.oneRm;
+  const rm = toNumOrNull(rmRaw);
+  const computedRm = (kg && reps) ? Math.round(kg*(1+reps/30)*4)/4 : null;
+  if (kg === null && reps === null) return null;
+  return {kg, reps, rpe, rm: rm !== null ? rm : computedRm};
+}
+
+function expandSetByCount(setObj, fallbackCount) {
+  const s = safeJsonMaybe(setObj, setObj) || {};
+  const count = toNumOrNull(s.sets ?? s.nb_sets ?? s.nbSets ?? s.count ?? s.series_count ?? fallbackCount);
+  const one = normalizeSingleSet(s);
+  if (!one) return [];
+  const n = count && count > 1 && count < 30 ? Math.round(count) : 1;
+  return Array.from({length:n}, () => ({...one}));
+}
+
 function normalizeExerciseSeries(exo) {
   exo = safeJsonMaybe(exo, exo) || {};
   let rawSeries = exo.series;
   if (rawSeries === undefined) rawSeries = exo.sets;
   if (rawSeries === undefined) rawSeries = exo.rows;
   if (rawSeries === undefined) rawSeries = exo.lignes;
-  let series = asArrayStrict(rawSeries);
 
-  // Cas où l'exercice lui-même est une série unique.
-  if (!series.length && (exo.kg !== undefined || exo.charge !== undefined || exo.weight !== undefined || exo.poids !== undefined || exo.reps !== undefined || exo.rep !== undefined || exo.repetitions !== undefined)) {
-    series = [exo];
+  let series = [];
+
+  // Cas 1 : series/sets est un tableau de vraies lignes.
+  const parsedRaw = safeJsonMaybe(rawSeries, rawSeries);
+  if (Array.isArray(parsedRaw)) {
+    parsedRaw.forEach(row => {
+      const r = safeJsonMaybe(row, row) || {};
+      // Une ligne peut elle-même représenter "4 séries de 5 reps".
+      const expanded = expandSetByCount(r);
+      if (expanded.length) series = series.concat(expanded);
+    });
   }
 
-  return series.map(s => {
-    s = safeJsonMaybe(s, s) || {};
-    const kgRaw = s.kg ?? s.charge ?? s.weight ?? s.poids;
-    const repsRaw = s.reps ?? s.rep ?? s.repetitions;
-    const kg = Number(kgRaw);
-    const reps = Number(repsRaw);
-    const rpe = s.rpe ?? s.RPE ?? '';
-    const rmRaw = s.rm ?? s.rm_estimated ?? s.one_rm;
-    const rm = Number(rmRaw !== undefined && rmRaw !== null && rmRaw !== '' ? rmRaw : (Number.isFinite(kg)&&Number.isFinite(reps)&&kg>0&&reps>0 ? Math.round(kg*(1+reps/30)*4)/4 : NaN));
-    // On refuse les fausses lignes : il faut au minimum une charge ou des reps réelles.
-    if (!Number.isFinite(kg) && !Number.isFinite(reps)) return null;
-    return {
-      kg: Number.isFinite(kg) ? kg : null,
-      reps: Number.isFinite(reps) ? reps : null,
-      rpe,
-      rm: Number.isFinite(rm) ? rm : null
-    };
-  }).filter(Boolean);
+  // Cas 2 : series/sets est un objet indexé {0:{...},1:{...}} ou un objet série unique.
+  else if (parsedRaw && typeof parsedRaw === 'object') {
+    if (parsedRaw.kg !== undefined || parsedRaw.charge !== undefined || parsedRaw.weight !== undefined || parsedRaw.load !== undefined || parsedRaw.poids !== undefined || parsedRaw.reps !== undefined || parsedRaw.rep !== undefined || parsedRaw.repetitions !== undefined) {
+      series = series.concat(expandSetByCount(parsedRaw));
+    } else {
+      Object.values(parsedRaw).forEach(row => {
+        const expanded = expandSetByCount(row);
+        if (expanded.length) series = series.concat(expanded);
+      });
+    }
+  }
+
+  // Cas 3 : l'exercice lui-même porte kg/reps/sets.
+  if (!series.length && (exo.kg !== undefined || exo.charge !== undefined || exo.weight !== undefined || exo.load !== undefined || exo.poids !== undefined || exo.reps !== undefined || exo.rep !== undefined || exo.repetitions !== undefined)) {
+    series = series.concat(expandSetByCount(exo, exo.sets));
+  }
+
+  return series.filter(s => s && (s.kg !== null || s.reps !== null));
 }
 
-function normalizeTrainingExercises(t) {
-  const dataObj = safeJsonMaybe(t && t.data, {}) || {};
-  const nestedData = safeJsonMaybe(dataObj && dataObj.data, {}) || {};
-  let sources = [];
-
-  // Sources fiables uniquement : la séance elle-même ou son data Supabase.
-  // On ne reconstruit plus depuis la table charges ici : charges = synthèse 1RM, pas détail de séance.
-  sources = sources.concat(asArrayStrict(t && t.exercises));
-  sources = sources.concat(asArrayStrict(dataObj.exercises));
-  sources = sources.concat(asArrayStrict(dataObj.str_exercises));
-  sources = sources.concat(asArrayStrict(dataObj.strExos));
-  sources = sources.concat(asArrayStrict(nestedData.exercises));
-  sources = sources.concat(asArrayStrict(nestedData.str_exercises));
-  sources = sources.concat(asArrayStrict(nestedData.strExos));
-
-  const normalized = sources.map(exo => {
+function normalizeExerciseList(list) {
+  return asArrayStrict(list).map(exo => {
     exo = safeJsonMaybe(exo, exo) || {};
     const key = cleanExoLabel(exo.key || exo.exo || exo.exercise || exo.name || exo.label);
     const mapped = key ? (EXO_NAMES[key] || (typeof EXO_LABELS !== 'undefined' ? EXO_LABELS[key] : '') || key) : '';
@@ -1698,17 +1720,44 @@ function normalizeTrainingExercises(t) {
     const series = normalizeExerciseSeries(exo);
     return {key, label: label || mapped || key, series};
   }).filter(e => e.series && e.series.length && cleanExoLabel(e.label));
+}
 
-  // Fusion légère des doublons exacts, sans inventer de séries.
+function countSeriesInExercises(exos) {
+  return (exos || []).reduce((sum,e) => sum + ((e.series || []).length), 0);
+}
+
+function normalizeTrainingExercises(t) {
+  const dataObj = safeJsonMaybe(t && t.data, {}) || {};
+  const nestedData = safeJsonMaybe(dataObj && dataObj.data, {}) || {};
+
+  // On analyse chaque source possible séparément, puis on garde la plus complète.
+  // Important : on ne déduplique pas les séries identiques, car 4×5 à 100 kg = 4 vraies séries.
+  const candidates = [
+    t && t.exercises,
+    dataObj.exercises,
+    dataObj.str_exercises,
+    dataObj.strExos,
+    nestedData.exercises,
+    nestedData.str_exercises,
+    nestedData.strExos
+  ].map(src => normalizeExerciseList(src)).filter(group => group.length);
+
+  if (!candidates.length) return [];
+
+  candidates.sort((a,b) => {
+    const diffSeries = countSeriesInExercises(b) - countSeriesInExercises(a);
+    if (diffSeries) return diffSeries;
+    return b.length - a.length;
+  });
+
+  const chosen = candidates[0];
   const merged = {};
-  normalized.forEach(e => {
+  chosen.forEach(e => {
     const k = cleanExoLabel(e.key || e.label).toLowerCase();
     if (!k) return;
     if (!merged[k]) merged[k] = {key:e.key, label:e.label, series:[]};
-    e.series.forEach(s => {
-      const sig = [s.kg, s.reps, s.rpe, s.rm].join('|');
-      if (!merged[k].series.some(x => [x.kg,x.reps,x.rpe,x.rm].join('|') === sig)) merged[k].series.push(s);
-    });
+    // On ajoute toutes les séries, y compris les séries identiques.
+    merged[k].series = merged[k].series.concat(e.series || []);
   });
   return Object.values(merged);
 }
