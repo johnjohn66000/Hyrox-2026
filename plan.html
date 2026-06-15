@@ -2456,7 +2456,7 @@ window.addEventListener('load',()=>{
 <script id="plan-dynamic-tracker-values">
 // ════════════════════════════════════
 // VALEURS DYNAMIQUES DU TRACKER → PLAN
-// Correction affichage : prescription claire (% cible → valeur tracker)
+// Ajout non destructif : on nettoie l'affichage visible et on place les valeurs tracker dans un panneau séparé.
 // ════════════════════════════════════
 (function(){
   var DB_KEY = 'hyrox_tracker_v1';
@@ -2489,6 +2489,51 @@ window.addEventListener('load',()=>{
   var LABELS = {};
   for(var ei=0; ei<EXOS.length; ei++){ LABELS[EXOS[ei].key]=EXOS[ei].names[0]; }
 
+  function exoSlug(v){
+    return String(v==null?'':v).toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/&nbsp;/g,' ')
+      .replace(/[^a-z0-9]+/g,' ')
+      .trim();
+  }
+  var EXO_ALIASES = {};
+  for(var ai=0; ai<EXOS.length; ai++){
+    EXO_ALIASES[exoSlug(EXOS[ai].key)] = EXOS[ai].key;
+    for(var aj=0; aj<EXOS[ai].names.length; aj++){ EXO_ALIASES[exoSlug(EXOS[ai].names[aj])] = EXOS[ai].key; }
+  }
+  // Alias issus du tracker : selon les versions, le même exercice peut être stocké avec label, slug ou abréviation.
+  [
+    ['front_squat','front squat','frontsquat','front-squat','fs','squat avant'],
+    ['squat','back squat','backsquat','back-squat','squat arriere','squat arrière'],
+    ['rdl','rdl bilateral','rdl bilatéral','romanian deadlift','souleve de terre roumain','soulevé de terre roumain'],
+    ['hip_thrust','hip thrust','hipthrust'],
+    ['bulgarian','bulgarian split squat','split squat bulgare','fente bulgare','bulgarian split'],
+    ['mollets','mollets debout','calf raise','standing calf raise'],
+    ['bench','developpe couche','développé couché','bench press'],
+    ['bench_incline','developpe incline','développé incliné','incline bench'],
+    ['pullup','pull up','pull-up','traction','tractions','pullup leste','pull-up lesté','pull-up lestes'],
+    ['press','strict press','shoulder press','developpe militaire','développé militaire'],
+    ['pendlay','pendlay row','rowing pendlay'],
+    ['yates','yates row','rowing yates'],
+    ['lat_pulldown','lat pulldown','tirage vertical'],
+    ['curl','curl barre','barbell curl'],
+    ['skull','skull crusher','barre front'],
+    ['dips','dips leste','dips lesté','dips lestes'],
+    ['farmer','farmer carry','farmers carry','farmer walk'],
+    ['sled_push','sled push','push sled'],
+    ['wall_ball','wall ball','wall balls','wb'],
+    ['sandbag','sandbag lunge','fentes sandbag','sandbag walking lunge'],
+    ['bbj','bbj','burpee broad jump','burpee broad jumps']
+  ].forEach(function(row){ var key=row[0]; for(var i=1;i<row.length;i++){ EXO_ALIASES[exoSlug(row[i])] = key; } });
+  function normalizeExoKey(v){
+    var s=exoSlug(v);
+    if(!s || s==='undefined' || s==='null') return '';
+    if(EXO_ALIASES[s]) return EXO_ALIASES[s];
+    // match partiel sécurisé pour les labels longs du tracker
+    for(var k in EXO_ALIASES){ if(k && (s.indexOf(k)!==-1 || k.indexOf(s)!==-1)) return EXO_ALIASES[k]; }
+    return s.replace(/ /g,'_');
+  }
+
   function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
   function loadDB(){ try{ return JSON.parse(localStorage.getItem(DB_KEY) || '{}') || {}; }catch(e){ return {}; } }
   function toNum(v){ var n=parseFloat(String(v==null?'':v).replace(',','.')); return isFinite(n)?n:null; }
@@ -2508,22 +2553,11 @@ window.addEventListener('load',()=>{
     return m+"'"+(r<10?'0':'')+r+'/km';
   }
   function latestDate(a,b){ return String(a||'').localeCompare(String(b||'')); }
-  function unique(arr){ var out=[], seen={}; for(var i=0;i<arr.length;i++){ var k=String(arr[i]); if(k && !seen[k]){seen[k]=1; out.push(arr[i]);} } return out; }
-  function normalizeExoKey(v){
-    if(!v) return '';
-    var txt=String(v).toLowerCase().trim();
-    for(var i=0;i<EXOS.length;i++){
-      for(var j=0;j<EXOS[i].names.length;j++){
-        var n=EXOS[i].names[j].toLowerCase();
-        if(txt===n || txt.indexOf(n)!==-1) return EXOS[i].key;
-      }
-    }
-    return String(v);
-  }
   function computeRMs(db){
     var out={}, charges=db.charges||[], trainings=db.trainings||[];
     function add(exo,rm,date,kg,reps){
-      exo=normalizeExoKey(exo); rm=toNum(rm); if(!exo || !rm) return;
+      exo=normalizeExoKey(exo);
+      rm=toNum(rm); if(!exo || !rm) return;
       if(!out[exo]) out[exo]={key:exo,label:LABELS[exo]||exo,best:0,bestDate:'',latest:0,latestDate:'',kg:null,reps:null};
       if(rm>out[exo].best){ out[exo].best=rm; out[exo].bestDate=date||''; }
       if(!out[exo].latestDate || latestDate(date,out[exo].latestDate)>=0){ out[exo].latest=rm; out[exo].latestDate=date||''; out[exo].kg=kg; out[exo].reps=reps; }
@@ -2532,126 +2566,199 @@ window.addEventListener('load',()=>{
       var c=charges[i]||{};
       add(c.exo, c.rm_estimated || c.rm || (toNum(c.kg)&&toNum(c.reps)?toNum(c.kg)*(1+toNum(c.reps)/30):null), c.date || c.created_at || '', c.kg, c.reps);
     }
+    function parseMaybeJSON(v){ if(typeof v==='string'){ try{return JSON.parse(v);}catch(e){return v;} } return v; }
+    function seriesArray(ex){
+      ex=parseMaybeJSON(ex)||{};
+      var candidates=[ex.series, ex.sets_detail, ex.setsDetails, ex.lignes, ex.rows, ex.data&&ex.data.series];
+      for(var ci=0; ci<candidates.length; ci++){
+        var c=parseMaybeJSON(candidates[ci]);
+        if(Array.isArray(c)) return c;
+      }
+      var sets=toNum(ex.sets||ex.nb_series||ex.nbSets), kg=toNum(ex.kg||ex.charge||ex.weight), reps=toNum(ex.reps||ex.rep);
+      if(sets && kg && reps){ var arr=[]; for(var si=0; si<sets; si++) arr.push({kg:kg,reps:reps,rpe:ex.rpe}); return arr; }
+      return [];
+    }
+    function exerciseArray(tr){
+      tr=parseMaybeJSON(tr)||{};
+      var d=parseMaybeJSON(tr.data)||{};
+      var candidates=[tr.exercises,tr.exos,tr.str_exercises,tr.strExos,d.exercises,d.exos,d.str_exercises,d.strExos];
+      for(var ci=0; ci<candidates.length; ci++){
+        var c=parseMaybeJSON(candidates[ci]);
+        if(Array.isArray(c)) return c;
+      }
+      return [];
+    }
     for(var t=0;t<trainings.length;t++){
-      var tr=trainings[t]||{}, exs=tr.exercises || (tr.data&&tr.data.exercises) || [];
-      if(typeof exs==='string'){ try{ exs=JSON.parse(exs); }catch(e){ exs=[]; } }
-      if(!Array.isArray(exs)) exs=[];
+      var tr=trainings[t]||{}, exs=exerciseArray(tr);
       for(var j=0;j<exs.length;j++){
-        var ex=exs[j]||{}, ser=ex.series || ex.sets || ex.lignes || [];
-        if(!Array.isArray(ser)) ser=[];
+        var ex=parseMaybeJSON(exs[j])||{}, ser=seriesArray(ex);
+        var exName=ex.key || ex.exo || ex.name || ex.nom || ex.exercise || ex.label || ex.title;
         for(var k=0;k<ser.length;k++){
-          var se=ser[k]||{}, kg=toNum(se.kg || se.charge || se.weight), reps=toNum(se.reps || se.rep), rm=toNum(se.rm || se.rm_estimated);
+          var se=parseMaybeJSON(ser[k])||{}, kg=toNum(se.kg||se.charge||se.weight), reps=toNum(se.reps||se.rep), rm=toNum(se.rm||se.rm_estimated||se.one_rm);
           if(!rm && kg && reps) rm=kg*(1+reps/30);
-          add(ex.key || ex.exo || ex.name || ex.nom, rm, tr.date || tr.created_at || '', kg, reps);
+          add(exName, rm, tr.date || tr.created_at || '', kg, reps);
         }
       }
     }
     return out;
   }
   function computeVMA(db){
-    var tests=(db.tests||[]).filter(function(t){return t && (t.type==='5km' || String(t.type||'').toLowerCase().indexOf('5')!==-1) && t.result;}).sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''));});
-    if(!tests.length) return null;
-    var t=tests[tests.length-1], sec=parseTimeToSec(t.result);
-    if(!sec) return null;
-    var kmh=18000/sec;
-    return {kmh:kmh,date:t.date||'',result:t.result};
-  }
-  function pickExoKeys(text){
-    var found=[]; text=String(text||'');
-    for(var i=0;i<EXOS.length;i++){
-      for(var j=0;j<EXOS[i].names.length;j++){
-        if(text.toLowerCase().indexOf(EXOS[i].names[j].toLowerCase())!==-1){ found.push(EXOS[i].key); break; }
+    var tests=(db.tests||[]).slice();
+    function normType(t){ return String((t&& (t.type||t.test||t.name||t.nom||t.label||t.distance)) || '').toLowerCase().replace(/\s/g,''); }
+    function dateOf(t){ return String((t&&(t.date||t.created_at))||''); }
+    var candidates=[];
+    for(var i=0;i<tests.length;i++){
+      var t=tests[i]||{}, ty=normType(t);
+      var direct=toNum(t.vma||t.vma_kmh||t.vmaKmh||t.kmh||t.speed_kmh);
+      if(direct && direct>8 && direct<30){ candidates.push({kmh:direct,date:dateOf(t),result:t.result||t.temps||t.time||String(direct)+' km/h'}); continue; }
+      var res=t.result||t.temps||t.time||t.chrono||t.value;
+      var is5=(ty==='5km'||ty==='5k'||ty.indexOf('5000')!==-1||ty.indexOf('5km')!==-1||String(t.distance||'').replace(/\s/g,'')==='5000');
+      if(is5 && res){
+        var sec=parseTimeToSec(res);
+        if(sec){ candidates.push({kmh:18000/sec,date:dateOf(t),result:res}); }
       }
     }
-    return unique(found);
+    candidates.sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''));});
+    return candidates.length ? candidates[candidates.length-1] : null;
   }
-  function plainSegments(el){
-    var html=(el.innerHTML||'')
-      .replace(/<div class="dyn-panel"[\s\S]*?<\/div>/gi,'')
-      .replace(/<div class="recup"[\s\S]*?<\/div>/gi,'')
-      .replace(/<br\s*\/?>/gi,'\n')
-      .replace(/<\/p>|<\/div>/gi,'\n')
-      .replace(/<[^>]+>/g,' ');
-    return html.split(/\n|\./).map(function(x){return x.replace(/\s+/g,' ').trim();}).filter(Boolean);
+  function pickExoKeys(text){
+    var found=[], seen={}, low=exoSlug(text);
+    if(!low) return found;
+    for(var alias in EXO_ALIASES){
+      if(alias && low.indexOf(alias)!==-1){ var key=EXO_ALIASES[alias]; if(key && !seen[key]){ seen[key]=1; found.push(key); } }
+    }
+    return found;
   }
-  function segmentForKey(segments,key){
-    var out=[];
-    for(var i=0;i<segments.length;i++){ if(pickExoKeys(segments[i]).indexOf(key)!==-1) out.push(segments[i]); }
-    return out.join(' ');
+  function extractStrengthPrescriptions(text){
+    var pcts=[], kgVals=[], m, re;
+    re=/(\d{2,3}(?:[\.,]\d+)?)\s*%/g;
+    while((m=re.exec(text))){ var v=toNum(m[1]); if(v && v>=40 && v<=110) pcts.push(v/100); }
+    re=/@\s*\+?\s*(\d{1,3}(?:[\.,]\d+)?)\s*kg/gi;
+    while((m=re.exec(text))){ var kg=toNum(m[1]); if(kg && kg>=5) kgVals.push(kg); }
+    return {pcts:pcts, kgVals:kgVals};
   }
-  function explicitStrengthPct(txt){
-    var m, p=[]; txt=String(txt||'');
-    var re=/(\d{2,3}(?:[\.,]\d+)?)\s*%\s*(?:1\s*RM|1RM|RM)?/gi;
-    while((m=re.exec(txt))){ var v=toNum(m[1]); if(v && v>=40 && v<=105) p.push(v/100); }
-    return unique(p);
+  function unique(arr){ var out=[], seen={}; for(var i=0;i<arr.length;i++){ var k=String(arr[i]); if(!seen[k]){seen[k]=1; out.push(arr[i]);} } return out; }
+  function panelSourceText(el){
+    if(!el) return '';
+    var html = el.getAttribute('data-dyn-source-html') || el.innerHTML || '';
+    return html.replace(/<[^>]*>/g,' ');
   }
-  function inferPctFromRepScheme(txt){
-    txt=String(txt||'');
-    var m=txt.match(/(\d+)\s*[×x]\s*(\d+)/i);
-    if(!m) return null;
-    var sets=parseInt(m[1],10), reps=parseInt(m[2],10);
-    if(!reps) return null;
-    if(reps<=3) return 0.88;
-    if(reps===4) return 0.84;
-    if(reps===5) return sets>=5 ? 0.80 : 0.78;
-    if(reps===6) return 0.76;
-    if(reps===7) return 0.74;
-    if(reps===8) return sets>=5 ? 0.72 : 0.70;
-    if(reps===9 || reps===10) return 0.65;
-    if(reps>=11 && reps<=15) return 0.55;
-    if(reps>15) return 0.45;
-    return null;
+  function panelSourceHTML(el){
+    if(!el) return '';
+    return el.getAttribute('data-dyn-source-html') || el.innerHTML || '';
   }
-  function pctLabel(p){ return Math.round(p*100)+'%'; }
-  function makeStrengthChip(key,segment,rms){
-    if(!segment) return '';
-    var pcts=explicitStrengthPct(segment);
-    var pct=pcts.length ? pcts[0] : inferPctFromRepScheme(segment);
-    if(!pct) return '';
-    var rm=rms[key], scheme=(segment.match(/\d+\s*[×x]\s*\d+/)||[''])[0].replace('x','×');
-    var prefix=esc(LABELS[key]||key)+(scheme?' '+esc(scheme):'');
-    if(rm && rm.best){ return '<span class="dyn-chip">'+prefix+' : <b>'+pctLabel(pct)+' 1RM</b> → '+kgFmt(round25(rm.best*pct))+'</span>'; }
-    return '<span class="dyn-chip miss">'+prefix+' : <b>'+pctLabel(pct)+' 1RM</b> → 1RM manquant</span>';
+  function cleanPrescriptionHTML(html){
+    if(!html) return html;
+    var out = String(html);
+    // Nettoyage visible seulement : on retire les allures/charges fixes de prescription.
+    // Les valeurs originales restent dans data-dyn-source-html pour générer le panneau tracker.
+    out = out.replace(/(\d+×\d+(?:\+\d+×\d+)?(?:\s*min)?)(?:\s*\d{2,3}\s*%\s*VMA)?\s*@\s*[^<,;.]+\/km/gi, '$1');
+    out = out.replace(/(\d+×\d+\s*min(?:\s*seuil)?\s*\+\s*\d+×\d+\s*min\s*VMA)\s*@\s*[^<,;.]+/gi, '$1');
+    out = out.replace(/(\d+\s*min\s*seuil\s*\+\s*\d+×\d+\s*min\s*VMA)\s*@\s*[^<,;.]+/gi, '$1');
+    out = out.replace(/\s*\d{2,3}\s*%\s*VMA/gi, '');
+    out = out.replace(/\s*@\s*[0-9]'[0-9]{2}(?:[–-][0-9]'[0-9]{2})?\/km/gi, '');
+    out = out.replace(/\s*@\s*\+?\s*<b>\s*\d{1,3}(?:[\.,]\d+)?\s*kg\s*<\/b>/gi, '');
+    out = out.replace(/\s*@\s*\+?\s*\d{1,3}(?:[\.,]\d+)?\s*kg/gi, '');
+    out = out.replace(/\s*@\s*BW\s*kg/gi, '');
+    out = out.replace(/<b>([^<]*?)\s*@\s*\+?\s*\d{1,3}(?:[\.,]\d+)?\s*kg<\/b>/gi, '<b>$1</b>');
+    out = out.replace(/<b>([^<]*?)\s*@\s*BW\s*kg<\/b>/gi, '<b>$1</b>');
+    out = out.replace(/\s+([,;.])/g, '$1');
+    out = out.replace(/\s{2,}/g, ' ');
+    return out;
   }
-  function explicitVMAPcts(txt){
-    var out=[], m, re=/(\d{2,3})\s*%\s*VMA/gi; txt=String(txt||'');
+  function cleanDynamicVisibleText(){
+    var bodies=document.querySelectorAll('.ss-body');
+    for(var i=0;i<bodies.length;i++){
+      var b=bodies[i];
+      if(!b.getAttribute('data-dyn-source-html')) b.setAttribute('data-dyn-source-html', b.innerHTML);
+      var old=b.querySelector('[data-dyn-panel="1"]'); if(old) old.parentNode.removeChild(old);
+      var src=b.getAttribute('data-dyn-source-html') || b.innerHTML;
+      b.innerHTML=cleanPrescriptionHTML(src);
+    }
+    var titles=document.querySelectorAll('.ss-title');
+    for(var ti=0;ti<titles.length;ti++){
+      var t=titles[ti];
+      if(!t.getAttribute('data-dyn-source-title')) t.setAttribute('data-dyn-source-title', t.innerHTML);
+      t.innerHTML=cleanPrescriptionHTML(t.getAttribute('data-dyn-source-title')||t.innerHTML);
+    }
+    var kps=document.querySelectorAll('.ss-kp');
+    for(var ki=0;ki<kps.length;ki++){
+      var k=kps[ki];
+      if(!k.getAttribute('data-dyn-source-kp')) k.setAttribute('data-dyn-source-kp', k.innerHTML);
+      var cleaned=cleanPrescriptionHTML(k.getAttribute('data-dyn-source-kp')||k.innerHTML);
+      // Supprime les chips d'allure fixe devenues inutiles.
+      cleaned=cleaned.replace(/<span class="ki">\s*Allure\s*<b>[^<]*<\/b>\s*<\/span>/gi,'');
+      k.innerHTML=cleaned;
+    }
+  }
+  function inferVmaPcts(txt){
+    var low=String(txt||'').toLowerCase(), out=[];
+    var m, re=/(\d{2,3})\s*%\s*VMA/gi;
     while((m=re.exec(txt))){ var pct=parseInt(m[1],10); if(pct>=50&&pct<=130) out.push(pct); }
-    return unique(out);
-  }
-  function inferVMAPct(el,txt){
-    var title=(el.parentNode&&el.parentNode.querySelector('.ss-title')?el.parentNode.querySelector('.ss-title').textContent:'')+' '+txt;
-    var low=title.toLowerCase();
-    if(low.indexOf('z2')!==-1 || low.indexOf('fondamental')!==-1 || low.indexOf('footing')!==-1) return 70;
+    if(out.length) return unique(out);
     if(low.indexOf('vma')!==-1){
-      if(/30["']?\/?30|30\s*sec/i.test(title)) return 110;
-      if(/\d+\s*[×x]\s*1\s*min|\d+\s*[×x]\s*400/i.test(title)) return 105;
-      if(/\d+\s*[×x]\s*2\s*min|\d+\s*[×x]\s*3\s*min/i.test(title)) return 103;
-      return 100;
+      if(/\b(30\s*\/\s*30|45\s*\/\s*15|court|primer)\b/.test(low)) return [105];
+      if(/\b(6×4|6x4|4\s*min|3\s*min)\b/.test(low)) return [100];
+      return [100];
     }
-    if(low.indexOf('tempo')!==-1) return 88;
-    if(low.indexOf('seuil')!==-1 || low.indexOf('threshold')!==-1) return 90;
-    if(low.indexOf('race pace')!==-1 || low.indexOf('allure hyrox')!==-1) return 82;
-    return null;
+    if(low.indexOf('seuil')!==-1) return [90];
+    if(low.indexOf('tempo')!==-1) return [85];
+    return [];
   }
-  function makeVMAChips(el,vma){
-    var txt=el.textContent||'', pcts=explicitVMAPcts(txt), inferred=false;
-    if(!pcts.length){ var pct=inferVMAPct(el,txt); if(pct){ pcts=[pct]; inferred=true; } }
-    if(!pcts.length) return '';
-    var chips=[];
-    for(var i=0;i<pcts.length;i++){
-      var label=(inferred?'≈ ':'')+pcts[i]+'% VMA';
-      if(vma){ chips.push('<span class="dyn-chip">'+label+' → <b>'+paceFromSpeedKmh(vma.kmh*(pcts[i]/100))+'</b></span>'); }
-      else { chips.push('<span class="dyn-chip miss">'+label+' → test 5 km manquant</span>'); }
+  function fullSessionText(el){
+    var ss=el.closest ? el.closest('.ss') : null;
+    var txt=panelSourceText(el);
+    if(ss){
+      var title=ss.querySelector('.ss-title'), kp=ss.querySelector('.ss-kp');
+      if(title) txt+=' '+(title.getAttribute('data-dyn-source-title')||title.textContent||'');
+      if(kp) txt+=' '+(kp.getAttribute('data-dyn-source-kp')||kp.textContent||'');
     }
-    return 'Run : '+chips.join(' ');
+    return txt;
+  }
+  function inferStrengthPctForLine(line){
+    var s=String(line||'');
+    if(/5×8|5x8|4×8|4x8|3×8|3x8/.test(s)) return 0.70;
+    if(/5×5|5x5|4×5|4x5|3×5|3x5/.test(s)) return 0.78;
+    if(/5×3|5x3|4×3|4x3|3×3|3x3/.test(s)) return 0.85;
+    if(/4×10|4x10|3×10|3x10/.test(s)) return 0.65;
+    return null;
   }
   function makePanel(el, rms, vma){
-    var bits=[], vmaLine=makeVMAChips(el,vma);
-    if(vmaLine) bits.push(vmaLine);
-    var segs=plainSegments(el), full=segs.join(' '), keys=pickExoKeys(full), st=[];
+    var txt=fullSessionText(el);
+    var bits=[];
+    var vm=inferVmaPcts(txt);
+    if(vm.length){
+      var chips=[];
+      for(var i=0;i<vm.length;i++){
+        if(vma){ chips.push('<span class="dyn-chip">'+vm[i]+'% VMA → <b>'+paceFromSpeedKmh(vma.kmh*(vm[i]/100))+'</b></span>'); }
+        else { chips.push('<span class="dyn-chip miss">'+vm[i]+'% VMA → test 5 km manquant</span>'); }
+      }
+      bits.push('Run : '+chips.join(' '));
+    }
+    var keys=pickExoKeys(txt);
+    var lines=panelSourceHTML(el).split(/<br\s*\/?>|<div class="recup"/i);
+    var st=[];
     for(var ki=0;ki<keys.length;ki++){
-      var key=keys[ki], seg=segmentForKey(segs,key), chip=makeStrengthChip(key,seg,rms);
-      if(chip) st.push(chip);
+      var key=keys[ki], rm=rms[key], lineText='';
+      for(var li=0;li<lines.length;li++){
+        var plain=lines[li].replace(/<[^>]*>/g,' ');
+        if(pickExoKeys(plain).indexOf(key)!==-1){ lineText += ' '+plain; }
+      }
+      var pres=extractStrengthPrescriptions(lineText || txt), chips2=[];
+      pres.pcts=unique(pres.pcts); pres.kgVals=unique(pres.kgVals);
+      if(pres.pcts.length){
+        for(var pi=0;pi<pres.pcts.length;pi++){
+          if(rm && rm.best){ chips2.push(Math.round(pres.pcts[pi]*100)+'% 1RM → <b>'+kgFmt(round25(rm.best*pres.pcts[pi]))+'</b>'); }
+          else { chips2.push(Math.round(pres.pcts[pi]*100)+'% 1RM → 1RM manquant'); }
+        }
+      } else {
+        var inferred=inferStrengthPctForLine(lineText || txt);
+        if(inferred){
+          if(rm && rm.best){ chips2.push(Math.round(inferred*100)+'% 1RM → <b>'+kgFmt(round25(rm.best*inferred))+'</b>'); }
+          else { chips2.push(Math.round(inferred*100)+'% 1RM → 1RM manquant'); }
+        }
+      }
+      if(chips2.length){ st.push('<span class="dyn-chip '+((rm&&rm.best)?'':'miss')+'">'+esc(LABELS[key]||key)+' : '+chips2.join(' · ')+'</span>'); }
     }
     if(st.length) bits.push('Force : '+st.join(' '));
     if(!bits.length) return '';
@@ -2670,6 +2777,7 @@ window.addEventListener('load',()=>{
   }
   window.updateDynamicPlanValues=function(){
     var db=loadDB(), rms=computeRMs(db), vma=computeVMA(db);
+    cleanDynamicVisibleText();
     updateSummary(rms,vma);
     var bodies=document.querySelectorAll('.ss-body');
     for(var i=0;i<bodies.length;i++){
@@ -2683,7 +2791,6 @@ window.addEventListener('load',()=>{
   window.addEventListener('storage', function(e){ if(e && e.key===DB_KEY && window.updateDynamicPlanValues) window.updateDynamicPlanValues(); });
 })();
 </script>
-
 
 <script>
 function showPhase(ph) {
