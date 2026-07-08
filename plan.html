@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
-<title>HYROX 2026 — Plan 24 semaines PRO 18+ · Wall Ball + Sled · Race 13 nov</title>
+<title>HYROX 2026 — Plan 24 semaines PRO 18+ · V2 créneaux · Race 13 nov</title>
 <style>
 :root{--bg:#080b0a;--bg2:#0e1412;--bg3:#141c1a;--bg4:#1c2422;--bo:#1e2a27;--bo2:#263530;--bo3:#344840;--tx:#e8f0ed;--tx2:#b0c4be;--tx3:#718e87;--tx4:#4a6560;--gr:#00c4a7;--gr2:#009e87;--gr3:#003d35;--am:#ffb800;--am2:#c98d00;--am3:#3d2e00;--rd:#ff4444;--rd2:#c42020;--rd3:#3d0a0a;--bl:#4488ff;--pu:#a855f7;--ok:#22c55e;--ok2:#166534;--vo:#ff6b35}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
@@ -143,12 +143,21 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
   .dyn-chip{font-size:9px}
 }
 
+
+/* — Navigation "Aujourd'hui" — */
+.ss.today{border-left:3px solid var(--gr);background:linear-gradient(90deg,rgba(0,196,167,.09),transparent 65%);border-radius:6px}
+.ss.today .ss-day{color:var(--gr);font-weight:700}
+#today-banner{margin:.6rem .9rem 0;padding:.55rem .75rem;background:var(--bg3);border:1px solid var(--gr2);border-radius:10px;font-size:.85rem;line-height:1.45;color:var(--tx2);cursor:pointer}
+#today-banner b{color:var(--gr)}
+#today-btn{position:fixed;bottom:16px;right:calc(50vw - 201px);z-index:200;background:var(--gr);color:#04211c;border:none;border-radius:999px;padding:.55rem .95rem;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.45)}
+#today-btn:active{background:var(--gr2)}
+@media (max-width:430px){#today-btn{right:14px}}
 </style>
 </head>
 <body>
 <header class="hdr">
 <div class="hdr-badge">HYROX OFF-SEASON + PRÉ-COMP · 2026</div>
-<h1>Plan 24 semaines — Objectif 1h10</h1>
+<h1>Plan 24 semaines — Objectif 1h10 · V2</h1>
 <div class="hdr-sub">1er juin → 15 novembre · Semaines impaires/paires alternées</div>
 <div class="sync-plan-row">
 <a class="tracker-link" href="tracker.html">📊 Tracker performances →</a>
@@ -213,7 +222,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 </div>
 <div class="wb">
-<div class="wbl"><b>// S1 — Bloc A</b> Fondation aérobie + hypertrophie. Sem. impaire : pas de créneaux AM en semaine.</div>
+<div class="wbl"><b>// S1 — Bloc A</b> Fondation aérobie + hypertrophie. Sem. impaire : créneaux AM disponibles lundi + jeudi uniquement (mar/mer/ven : midi seulement).</div>
 <div class="ss-list">
 <div class="ss">
 <div class="ss-day">Lun<br/>AM</div>
@@ -268,7 +277,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
 <div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>assisté 4×4</b> descente 5 sec (récup 2 min). KB swing 4×10 @ <b>24 kg</b> explosif (récup 90 sec). Bulgarian split squat 3×6/jambe @ <b>18 kg</b>. Good morning 3×8 @ <b>40 kg</b> tempo 3-1-1. Mollets unijambiste excentrique 3×12/jambe descente 3 sec.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
+<div class="ss-body">Nordic <b>assisté 4×4</b> descente 5 sec (récup 2 min). KB swing 4×10 @ <b>24 kg</b> explosif (récup 90 sec). Bulgarian split squat 3×6/jambe @ <b>18 kg</b>. Good morning 3×8 @ <b>40 kg</b> tempo 3-1-1. Mollets unijambiste excentrique 3×12/jambe descente 3 sec. <b>Haut n°2 court (10–12 min)</b> : strict press 3×8 @ 40 kg + face pull 3×15 + suspension grip 3×30 sec.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
 <div class="ss-kp"><span class="ki">Nordic <b>assisté 4×4</b></span><span class="ki">KB <b><b>24 kg</b></b></span></div>
 </div>
 </div><div class="ss">
@@ -282,10 +291,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
-<div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
-<div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
+<div class="ss-type"><span class="t t-mob">OFF</span></div>
+<div class="ss-title">Repos complet — OFF hebdomadaire</div>
+<div class="ss-body">Repos total — V2 : un vrai jour off par quinzaine, pour les tendons et le sommeil. Option : marche 20–30 min si besoin de déverrouiller. Zéro cardio structuré.<div class="recup">↩ Sommeil prioritaire. Prochain jour dur : mardi midi.</div></div>
+<div class="ss-kp"><span class="ki">OFF</span></div>
 </div>
 </div>
 </div>
@@ -299,7 +308,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 </div>
 <div class="wb">
-<div class="wbl"><b>// S2 — Bloc A</b> Fondation aérobie + hypertrophie. Sem. paire : tous créneaux AM disponibles.</div>
+<div class="wbl"><b>// S2 — Bloc A</b> Fondation aérobie + hypertrophie. Sem. paire : tous créneaux AM · mardi = jour dur empilé (qualité course AM + bas lourd midi).</div>
 <div class="ss-list">
 <div class="ss">
 <div class="ss-day">Lun<br/>AM</div>
@@ -313,9 +322,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>5×8 @ 82.5 kg</b> (récup 2 min 30).<br/>Front squat <b>3×5 @ 62.5 kg</b> (récup 2 min 30). RDL bilatéral <b>4×8 @ 70 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>4×10 @ 87.5 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>18 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>60 kg</b> (récup 60 sec).<br/>Nordic <b>assisté 4×4</b> descente 5 sec (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>82.5 kg</b></span><span class="ki">RDL <b>70 kg</b></span><span class="ki">Hip <b>87.5 kg</b></span></div>
+<div class="ss-title">Haut n°1 — tirage dominant</div>
+<div class="ss-body">Journée jambes faciles. 🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15). Pull-up lestés 4×8 @ BW (récup 2 min). Pendlay row 4×10 @ 60 kg (récup 90 sec). Yates row 3×10 @ 50 kg (récup 90 sec). Curl barre 3×10 @ 27.5 kg (récup 60 sec). Core anti-rotation : Pallof press 4×10/côté + Side plank 3×30 sec/côté.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Pull-up <b>4×8 BW</b></span><span class="ki">Pendlay <b>60 kg</b></span><span class="ki">Tirage dominant</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>AM</div>
@@ -329,9 +338,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Mar<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Muscles négligés — Fessiers moyens + stabilisation</div>
-<div class="ss-body">Charges max 30 kg. Abducteur bande <b>3×20/côté</b> (45 sec). Clamshell lesté <b>3×15/côté @ 5 kg</b> (45 sec). <b>Tibialis anterior 3×20 reps</b> (prévention douleurs tibiales run). Pallof press bande lourde <b>4×12/côté</b> (60 sec). Face pull <b>3×20</b> + External rotation bande <b>3×15/côté</b>. Planche RKC <b>4×20 sec</b> + Side plank <b>3×35 sec/côté</b>.<div class="recup">↩ 45 sec entre séries max.</div></div>
-<div class="ss-kp"><span class="ki">Focus <b>Fessiers moyens + stabilisation</b></span><span class="ki">Durée <b>40 min</b></span><span class="ki">&lt;30 kg</span></div>
+<div class="ss-title">Half-body bas — progression linéaire</div>
+<div class="ss-body">≥ 3h après la qualité course du matin. 🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>5×8 @ 82.5 kg</b> (récup 2 min 30).<br/>Front squat <b>3×5 @ 62.5 kg</b> (récup 2 min 30). RDL bilatéral <b>4×8 @ 70 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>4×10 @ 87.5 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>18 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>60 kg</b> (récup 60 sec).<br/>Nordic <b>assisté 4×4</b> descente 5 sec (récup 2 min). Préhab ciblée 8 min : abducteurs bande 2×15/côté + tibialis 2×20 + Copenhagen 2×20 sec/côté.<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Squat <b>82.5 kg</b></span><span class="ki">RDL <b>70 kg</b></span><span class="ki">Hip <b>87.5 kg</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mer<br/>AM</div>
@@ -361,9 +370,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Jeu<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body haut — progression linéaire</div>
-<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>4×10 @ 72.5 kg</b> (récup 90 sec).<br/>Pull-up lestés <b>4×8 @ BW kg</b> (récup 2 min).<br/>Strict press barre <b>4×8 @ 45 kg</b> (récup 2 min).<br/>Pendlay row <b>4×10 @ 60 kg</b> (récup 90 sec).<br/>Curl barre 3×10 @ <b>27.5 kg</b> (récup 60 sec). Skull crusher 3×12 @ <b>20 kg</b> (récup 60 sec).<br/>Dips lestés 3×8 @ <b>+10 kg</b> (récup 90 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
-<div class="ss-kp"><span class="ki">Bench <b>72.5 kg</b></span><span class="ki">Curl <b>27.5 kg</b></span><span class="ki">Skull <b>20 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
+<div class="ss-title">Haut n°2 — press + bras</div>
+<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15). Développé couché 4×10 @ 72.5 kg (récup 90 sec). Strict press barre 4×8 @ 45 kg (récup 2 min). Skull crusher 3×12 @ 20 kg (récup 60 sec). Dips lestés 3×8 @ +10 kg (récup 90 sec). Core dense : Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div> <b>Transfert Wall Ball sans ballon</b> : thruster barre 3×8–10 RPE 6–7 si prévu ici. Ne pas ajouter de wall ball en fin de muscu.</div>
+<div class="ss-kp"><span class="ki">Bench <b>72.5 kg</b></span><span class="ki">Press <b>45 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Ven<br/>AM</div>
@@ -394,7 +403,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
 <div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
+<div class="ss-body">40 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
 <div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
 </div>
 </div>
@@ -409,7 +418,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 </div>
 <div class="wb">
-<div class="wbl"><b>// S3 — Bloc A</b> Fondation aérobie + hypertrophie. Sem. impaire : pas de créneaux AM en semaine.</div>
+<div class="wbl"><b>// S3 — Bloc A</b> Fondation aérobie + hypertrophie. Sem. impaire : créneaux AM disponibles lundi + jeudi uniquement (mar/mer/ven : midi seulement).</div>
 <div class="ss-list">
 <div class="ss">
 <div class="ss-day">Lun<br/>AM</div>
@@ -464,7 +473,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
 <div class="ss-title">Accessoires bas — nordic + KB + unilatéral</div>
-<div class="ss-body">Nordic <b>assisté 4×4</b> descente 5 sec (récup 2 min). KB swing 4×10 @ <b>24 kg</b> explosif (récup 90 sec). Bulgarian split squat 3×6/jambe @ <b>18 kg</b>. Good morning 3×8 @ <b>40 kg</b> tempo 3-1-1. Mollets unijambiste excentrique 3×12/jambe descente 3 sec.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
+<div class="ss-body">Nordic <b>assisté 4×4</b> descente 5 sec (récup 2 min). KB swing 4×10 @ <b>24 kg</b> explosif (récup 90 sec). Bulgarian split squat 3×6/jambe @ <b>18 kg</b>. Good morning 3×8 @ <b>40 kg</b> tempo 3-1-1. Mollets unijambiste excentrique 3×12/jambe descente 3 sec. <b>Haut n°2 court (10–12 min)</b> : strict press 3×8 @ 40 kg + face pull 3×15 + suspension grip 3×30 sec.<div class="recup">↩ Nordic : récup 2 min entre séries. KB swing : récup 90 sec.</div></div>
 <div class="ss-kp"><span class="ki">Nordic <b>assisté 4×4</b></span><span class="ki">KB <b><b>24 kg</b></b></span></div>
 </div>
 </div><div class="ss">
@@ -478,10 +487,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
-<div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
-<div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
+<div class="ss-type"><span class="t t-mob">OFF</span></div>
+<div class="ss-title">Repos complet — OFF hebdomadaire</div>
+<div class="ss-body">Repos total — V2 : un vrai jour off par quinzaine, pour les tendons et le sommeil. Option : marche 20–30 min si besoin de déverrouiller. Zéro cardio structuré.<div class="recup">↩ Sommeil prioritaire. Prochain jour dur : mardi midi.</div></div>
+<div class="ss-kp"><span class="ki">OFF</span></div>
 </div>
 </div>
 </div>
@@ -509,9 +518,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>5×8 @ 80 kg</b> <i>(décharge)</i> (récup 2 min 30).<br/>Front squat <b>3×5 @ 60 kg</b> (récup 2 min 30). RDL bilatéral <b>4×6 @ 67.5 kg</b> <i>(décharge)</i> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>3×8 @ 82.5 kg</b> <i>(décharge)</i> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>18 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>60 kg</b> (récup 60 sec).<br/>Nordic <b>assisté 4×4</b> descente 5 sec (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>80 kg</b></span><span class="ki">RDL <b>67.5 kg</b></span><span class="ki">Hip <b>82.5 kg</b></span></div>
+<div class="ss-title">Haut n°1 — tirage dominant (décharge)</div>
+<div class="ss-body">Journée jambes faciles. 🛡 Préhab coiffe 5 min. Pull-up lestés 4×6 @ BW (décharge, récup 2 min). Pendlay row 4×8 @ 57.5 kg (récup 90 sec). Yates row 3×8 @ 45 kg (récup 90 sec). Curl barre 3×10 @ 27.5 kg (récup 60 sec). Pallof press 3×10/côté.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Pull-up <b>4×6 BW</b></span><span class="ki">Pendlay <b>57.5 kg</b></span><span class="ki">Décharge</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>AM</div>
@@ -525,9 +534,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Mar<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Muscles négligés — Stabilisation hanche + pied</div>
-<div class="ss-body">Charges max 30 kg. Hip 90/90 actif <b>3×10/côté</b>. Hip transitionnel <b>3×8/côté</b>. <b>Mollet unijambiste excentrique 3×12/jambe</b> descente 3 sec (prévention Achille). Rollout ab wheel <b>4×10</b>. Dead bug lesté <b>3×8/côté @ 2 kg</b>. <b>L-sit 4×max sec</b> (objectif 15 sec). Copenhagen plank <b>3×20 sec/côté</b>.<div class="recup">↩ 45 sec entre séries max.</div></div>
-<div class="ss-kp"><span class="ki">Focus <b>Stabilisation hanche + pied</b></span><span class="ki">Durée <b>40 min</b></span><span class="ki">&lt;30 kg</span></div>
+<div class="ss-title">Half-body bas — progression linéaire</div>
+<div class="ss-body">≥ 3h après la qualité course du matin. 🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>5×8 @ 80 kg</b> <i>(décharge)</i> (récup 2 min 30).<br/>Front squat <b>3×5 @ 60 kg</b> (récup 2 min 30). RDL bilatéral <b>4×6 @ 67.5 kg</b> <i>(décharge)</i> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>3×8 @ 82.5 kg</b> <i>(décharge)</i> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>18 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>60 kg</b> (récup 60 sec).<br/>Nordic <b>assisté 4×4</b> descente 5 sec (récup 2 min). Préhab ciblée 8 min : hip 90/90 actif 2×8/côté + mollet excentrique 2×10/jambe + Copenhagen 2×20 sec/côté.<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Squat <b>80 kg</b></span><span class="ki">RDL <b>67.5 kg</b></span><span class="ki">Hip <b>82.5 kg</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mer<br/>AM</div>
@@ -557,9 +566,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Jeu<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body haut — progression linéaire</div>
-<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>4×10 @ 70 kg</b> <i>(décharge)</i> (récup 90 sec).<br/>Pull-up lestés <b>4×6 @ BW kg</b> <i>(décharge)</i> (récup 2 min).<br/>Strict press barre <b>4×8 @ 42.5 kg</b> <i>(décharge)</i> (récup 2 min).<br/>Pendlay row <b>4×8 @ 57.5 kg</b> <i>(décharge)</i> (récup 90 sec).<br/>Curl barre 3×10 @ <b>27.5 kg</b> (récup 60 sec). Skull crusher 3×12 @ <b>20 kg</b> (récup 60 sec).<br/>Dips lestés 3×8 @ <b>+10 kg</b> (récup 90 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
-<div class="ss-kp"><span class="ki">Bench <b>70 kg</b></span><span class="ki">Curl <b>27.5 kg</b></span><span class="ki">Skull <b>20 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
+<div class="ss-title">Haut n°2 — press + bras (décharge)</div>
+<div class="ss-body">🛡 Préhab coiffe 5 min. Développé couché 4×10 @ 70 kg (décharge, récup 90 sec). Strict press barre 4×8 @ 42.5 kg (récup 2 min). Skull crusher 3×12 @ 20 kg (récup 60 sec). Dips lestés 3×8 @ +10 kg (récup 90 sec). Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div> <b>Transfert Wall Ball sans ballon</b> : thruster barre 3×8–10 RPE 6–7 si prévu ici. Ne pas ajouter de wall ball en fin de muscu.</div>
+<div class="ss-kp"><span class="ki">Bench <b>70 kg</b></span><span class="ki">Press <b>42.5 kg</b></span><span class="ki">Décharge</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Ven<br/>AM</div>
@@ -590,7 +599,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
 <div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
+<div class="ss-body">40 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
 <div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
 </div>
 </div>
@@ -624,7 +633,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 </div>
 <div class="wb">
-<div class="wbl"><b>// S5 — Bloc B</b> Force maximale + VO2max pic. Sem. impaire : pas de créneaux AM en semaine.</div>
+<div class="wbl"><b>// S5 — Bloc B</b> Force maximale + VO2max pic. Sem. impaire : créneaux AM disponibles lundi + jeudi uniquement (mar/mer/ven : midi seulement).</div>
 <div class="ss-list">
 <div class="ss">
 <div class="ss-day">Lun<br/>AM</div>
@@ -679,7 +688,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-sp">SPÉ</span></div>
 <div class="ss-title">Sled force horizontale — microdose Pro</div>
-<div class="ss-body"><b>Sled force horizontale — microdose Pro</b><br/>Sled Push lourd ou tapis éteint : <b>6×10 m = 60 m</b>, récup 2’30, RPE 7–8, pas courts puissants.<br/>Sled Pull lourd ou tirage corde/poulie basse : <b>6×10 m = 60 m</b>, récup 2’30, RPE 7–8, corde tendue, bassin bas.<br/>Préhab courte : Copenhagen 2×20 sec/côté + mollets iso 2×30 sec.<br/><b>Aucun good morning, aucun broad jump, pas de nordic libre ici.</b><div class="recup">↩ Log tracker : temps moyen push/pull 10 m, charge/substitut, RPE jambes. Objectif : construire le pattern sans dette excessive.</div></div>
+<div class="ss-body"><b>Sled force horizontale — microdose Pro</b><br/>Sled Push lourd ou tapis éteint : <b>6×10 m = 60 m</b>, récup 2’30, RPE 7–8, pas courts puissants.<br/>Sled Pull lourd ou tirage corde/poulie basse : <b>6×10 m = 60 m</b>, récup 2’30, RPE 7–8, corde tendue, bassin bas.<br/>Préhab courte : Copenhagen 2×20 sec/côté + mollets iso 2×30 sec.<br/><b>Aucun good morning, aucun broad jump, pas de nordic libre ici.</b> <b>Haut n°2 court (10–12 min)</b> : strict press 3×8 @ 40 kg + face pull 3×15 + suspension grip 3×30 sec.<div class="recup">↩ Log tracker : temps moyen push/pull 10 m, charge/substitut, RPE jambes. Objectif : construire le pattern sans dette excessive.</div></div>
 <div class="ss-kp"><span class="ki">Sled push <b>60 m</b></span><span class="ki">Sled pull <b>60 m</b></span><span class="ki">RPE <b>7–8</b></span></div>
 </div>
 </div><div class="ss">
@@ -693,10 +702,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
-<div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
-<div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
+<div class="ss-type"><span class="t t-mob">OFF</span></div>
+<div class="ss-title">Repos complet — OFF hebdomadaire</div>
+<div class="ss-body">Repos total — V2 : un vrai jour off par quinzaine, pour les tendons et le sommeil. Option : marche 20–30 min si besoin de déverrouiller. Zéro cardio structuré.<div class="recup">↩ Sommeil prioritaire. Prochain jour dur : mardi midi.</div></div>
+<div class="ss-kp"><span class="ki">OFF</span></div>
 </div>
 </div>
 </div>
@@ -710,7 +719,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 </div>
 <div class="wb">
-<div class="wbl"><b>// S6 — Bloc B</b> Force maximale + VO2max pic. Sem. paire : tous créneaux AM disponibles.</div>
+<div class="wbl"><b>// S6 — Bloc B</b> Force maximale + VO2max pic. Sem. paire : tous créneaux AM · mardi = jour dur empilé (qualité course AM + bas lourd midi).</div>
 <div class="ss-list">
 <div class="ss">
 <div class="ss-day">Lun<br/>AM</div>
@@ -724,9 +733,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>5×5 @ 90 kg</b> (récup 3 min).<br/>Front squat <b>3×5 @ 70 kg</b> (récup 2 min 30). RDL bilatéral <b>4×6 @ 80 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>4×8 @ 100 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>22.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>65 kg</b> (récup 60 sec).<br/>Nordic <b>semi-libre 4×5</b> descente contrôlée (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>90 kg</b></span><span class="ki">RDL <b>80 kg</b></span><span class="ki">Hip <b>100 kg</b></span></div>
+<div class="ss-title">Haut n°1 — tirage dominant</div>
+<div class="ss-body">Journée jambes faciles. 🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15). Pull-up lestés 4×6 @ +7.5 kg (récup 2 min). Pendlay row 4×8 @ 70 kg (récup 90 sec). Yates row 3×10 @ 55 kg (récup 90 sec). Curl barre 3×10 @ 32.5 kg (récup 60 sec). Core anti-rotation : Pallof press 4×10/côté + Side plank 3×30 sec/côté.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Pull-up <b>+7.5 kg</b></span><span class="ki">Pendlay <b>70 kg</b></span><span class="ki">Tirage dominant</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>AM</div>
@@ -740,9 +749,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Mar<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Muscles négligés — Adducteurs + rotation + core</div>
-<div class="ss-body">Charges max 30 kg. Adducteur élastique <b>3×20/côté</b>. Sumo squat pause bas 3 sec <b>3×10 @ 30 kg</b>. <b>Good morning léger 3×10 @ 40 kg</b> tempo 3-1-1. Russian twist lesté <b>3×20 @ 6 kg</b>. Woodchop bande <b>3×12/côté</b>. Dead bug <b>3×10</b> + Bird dog <b>3×8/côté</b>.<div class="recup">↩ 45 sec entre séries max.</div></div>
-<div class="ss-kp"><span class="ki">Focus <b>Adducteurs + rotation + core</b></span><span class="ki">Durée <b>40 min</b></span><span class="ki">&lt;30 kg</span></div>
+<div class="ss-title">Half-body bas — progression linéaire</div>
+<div class="ss-body">≥ 3h après la qualité course du matin. 🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>5×5 @ 90 kg</b> (récup 3 min).<br/>Front squat <b>3×5 @ 70 kg</b> (récup 2 min 30). RDL bilatéral <b>4×6 @ 80 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>4×8 @ 100 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>22.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>65 kg</b> (récup 60 sec).<br/>Nordic <b>semi-libre 4×5</b> descente contrôlée (récup 2 min). Préhab ciblée 8 min : adducteurs élastique 2×15/côté + dead bug 2×10 + bird dog 2×8/côté.<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Squat <b>90 kg</b></span><span class="ki">RDL <b>80 kg</b></span><span class="ki">Hip <b>100 kg</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mer<br/>AM</div>
@@ -772,9 +781,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Jeu<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body haut — progression linéaire</div>
-<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>5×6 @ 80 kg</b> (récup 2 min 30).<br/>Pull-up lestés <b>4×6 @ +7.5kg kg</b> (récup 2 min).<br/>Strict press barre <b>4×6 @ 52.5 kg</b> (récup 2 min).<br/>Pendlay row <b>4×8 @ 70 kg</b> (récup 90 sec).<br/>Curl barre 3×10 @ <b>32.5 kg</b> (récup 60 sec). Skull crusher 3×12 @ <b>25 kg</b> (récup 60 sec).<br/>Dips lestés 3×8 @ <b>+10 kg</b> (récup 90 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
-<div class="ss-kp"><span class="ki">Bench <b>80 kg</b></span><span class="ki">Curl <b>32.5 kg</b></span><span class="ki">Skull <b>25 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
+<div class="ss-title">Haut n°2 — press + bras</div>
+<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15). Développé couché 5×6 @ 80 kg (récup 2 min 30). Strict press barre 4×6 @ 52.5 kg (récup 2 min). Skull crusher 3×12 @ 25 kg (récup 60 sec). Dips lestés 3×8 @ +10 kg (récup 90 sec). Core dense : Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div> <b>Transfert Wall Ball sans ballon</b> : thruster barre 3×8–10 RPE 6–7 si prévu ici. Ne pas ajouter de wall ball en fin de muscu.</div>
+<div class="ss-kp"><span class="ki">Bench <b>80 kg</b></span><span class="ki">Press <b>52.5 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Ven<br/>AM</div>
@@ -805,7 +814,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
 <div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
+<div class="ss-body">40 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
 <div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
 </div>
 </div>
@@ -820,7 +829,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 </div>
 <div class="wb">
-<div class="wbl"><b>// S7 — Bloc B</b> Force maximale + VO2max pic. Sem. impaire : pas de créneaux AM en semaine.</div>
+<div class="wbl"><b>// S7 — Bloc B</b> Force maximale + VO2max pic. Sem. impaire : créneaux AM disponibles lundi + jeudi uniquement (mar/mer/ven : midi seulement).</div>
 <div class="ss-list">
 <div class="ss">
 <div class="ss-day">Lun<br/>AM</div>
@@ -875,7 +884,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-sp">SPÉ</span></div>
 <div class="ss-title">Sled force horizontale — microdose Pro</div>
-<div class="ss-body"><b>Sled force horizontale — microdose Pro</b><br/>Sled Push lourd ou tapis éteint : <b>6×10 m = 60 m</b>, récup 2’30, RPE 7–8, pas courts puissants.<br/>Sled Pull lourd ou tirage corde/poulie basse : <b>6×10 m = 60 m</b>, récup 2’30, RPE 7–8, corde tendue, bassin bas.<br/>Préhab courte : Copenhagen 2×20 sec/côté + mollets iso 2×30 sec.<br/><b>Aucun good morning, aucun broad jump, pas de nordic libre ici.</b><div class="recup">↩ Log tracker : temps moyen push/pull 10 m, charge/substitut, RPE jambes. Objectif : construire le pattern sans dette excessive.</div></div>
+<div class="ss-body"><b>Sled force horizontale — microdose Pro</b><br/>Sled Push lourd ou tapis éteint : <b>6×10 m = 60 m</b>, récup 2’30, RPE 7–8, pas courts puissants.<br/>Sled Pull lourd ou tirage corde/poulie basse : <b>6×10 m = 60 m</b>, récup 2’30, RPE 7–8, corde tendue, bassin bas.<br/>Préhab courte : Copenhagen 2×20 sec/côté + mollets iso 2×30 sec.<br/><b>Aucun good morning, aucun broad jump, pas de nordic libre ici.</b> <b>Haut n°2 court (10–12 min)</b> : strict press 3×8 @ 40 kg + face pull 3×15 + suspension grip 3×30 sec.<div class="recup">↩ Log tracker : temps moyen push/pull 10 m, charge/substitut, RPE jambes. Objectif : construire le pattern sans dette excessive.</div></div>
 <div class="ss-kp"><span class="ki">Sled push <b>60 m</b></span><span class="ki">Sled pull <b>60 m</b></span><span class="ki">RPE <b>7–8</b></span></div>
 </div>
 </div><div class="ss">
@@ -889,10 +898,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
-<div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
-<div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
+<div class="ss-type"><span class="t t-mob">OFF</span></div>
+<div class="ss-title">Repos complet — OFF hebdomadaire</div>
+<div class="ss-body">Repos total — V2 : un vrai jour off par quinzaine, pour les tendons et le sommeil. Option : marche 20–30 min si besoin de déverrouiller. Zéro cardio structuré.<div class="recup">↩ Sommeil prioritaire. Prochain jour dur : mardi midi.</div></div>
+<div class="ss-kp"><span class="ki">OFF</span></div>
 </div>
 </div>
 </div>
@@ -920,9 +929,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>5×5 @ 85 kg</b> <i>(décharge)</i> (récup 3 min).<br/>Front squat <b>3×5 @ 67.5 kg</b> (récup 2 min 30). RDL bilatéral <b>3×5 @ 77.5 kg</b> <i>(décharge)</i> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>3×6 @ 95 kg</b> <i>(décharge)</i> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>22.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>65 kg</b> (récup 60 sec).<br/>Nordic <b>semi-libre 4×5</b> descente contrôlée (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>85 kg</b></span><span class="ki">RDL <b>77.5 kg</b></span><span class="ki">Hip <b>95 kg</b></span></div>
+<div class="ss-title">Haut n°1 — tirage dominant (décharge)</div>
+<div class="ss-body">Journée jambes faciles. 🛡 Préhab coiffe 5 min. Pull-up lestés 4×5 @ +5 kg (décharge, récup 2 min). Pendlay row 3×8 @ 65 kg (récup 90 sec). Yates row 3×8 @ 50 kg (récup 90 sec). Curl barre 3×10 @ 30 kg (récup 60 sec). Pallof press 3×10/côté.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Pull-up <b>+5 kg</b></span><span class="ki">Pendlay <b>65 kg</b></span><span class="ki">Décharge</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>AM</div>
@@ -936,9 +945,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Mar<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Muscles négligés — Pied + tibialis + gainage avancé</div>
-<div class="ss-body">Charges max 30 kg. <b>Tibialis anterior 3×25 reps</b>. Pied intrinsèques (serviette) <b>3×30 sec/pied</b>. Hip hinge drill bâton <b>3×10</b>. <b>Dragon flag progressif 4×max reps</b>. Copenhagen plank <b>3×25 sec/côté</b>. Anti-rotation hold <b>3×25 sec/côté</b>. <b>Hollow body 4×20 sec</b>.<div class="recup">↩ 45 sec entre séries max.</div></div>
-<div class="ss-kp"><span class="ki">Focus <b>Pied + tibialis + gainage avancé</b></span><span class="ki">Durée <b>40 min</b></span><span class="ki">&lt;30 kg</span></div>
+<div class="ss-title">Half-body bas — progression linéaire</div>
+<div class="ss-body">≥ 3h après la qualité course du matin. 🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>5×5 @ 85 kg</b> <i>(décharge)</i> (récup 3 min).<br/>Front squat <b>3×5 @ 67.5 kg</b> (récup 2 min 30). RDL bilatéral <b>3×5 @ 77.5 kg</b> <i>(décharge)</i> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>3×6 @ 95 kg</b> <i>(décharge)</i> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>22.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>65 kg</b> (récup 60 sec).<br/>Nordic <b>semi-libre 4×5</b> descente contrôlée (récup 2 min). Préhab ciblée 8 min : tibialis 2×25 + pied intrinsèques 2×30 sec + Copenhagen 2×20 sec/côté.<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Squat <b>85 kg</b></span><span class="ki">RDL <b>77.5 kg</b></span><span class="ki">Hip <b>95 kg</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mer<br/>AM</div>
@@ -968,9 +977,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Jeu<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body haut — progression linéaire</div>
-<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>5×6 @ 77.5 kg</b> <i>(décharge)</i> (récup 2 min 30).<br/>Pull-up lestés <b>4×5 @ +5kg kg</b> <i>(décharge)</i> (récup 2 min).<br/>Strict press barre <b>4×6 @ 47.5 kg</b> <i>(décharge)</i> (récup 2 min).<br/>Pendlay row <b>3×8 @ 65 kg</b> <i>(décharge)</i> (récup 90 sec).<br/>Curl barre 3×10 @ <b>30 kg</b> (récup 60 sec). Skull crusher 3×12 @ <b>22.5 kg</b> (récup 60 sec).<br/>Dips lestés 3×8 @ <b>+10 kg</b> (récup 90 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
-<div class="ss-kp"><span class="ki">Bench <b>77.5 kg</b></span><span class="ki">Curl <b>30 kg</b></span><span class="ki">Skull <b>22.5 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
+<div class="ss-title">Haut n°2 — press + bras (décharge)</div>
+<div class="ss-body">🛡 Préhab coiffe 5 min. Développé couché 5×6 @ 77.5 kg (décharge, récup 2 min 30). Strict press barre 4×6 @ 47.5 kg (récup 2 min). Skull crusher 3×12 @ 22.5 kg (récup 60 sec). Dips lestés 3×8 @ +10 kg (récup 90 sec). Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div> <b>Transfert Wall Ball sans ballon</b> : thruster barre 3×8–10 RPE 6–7 si prévu ici. Ne pas ajouter de wall ball en fin de muscu.</div>
+<div class="ss-kp"><span class="ki">Bench <b>77.5 kg</b></span><span class="ki">Press <b>47.5 kg</b></span><span class="ki">Décharge</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Ven<br/>AM</div>
@@ -1001,7 +1010,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
 <div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
+<div class="ss-body">40 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
 <div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
 </div>
 </div>
@@ -1035,7 +1044,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 </div>
 <div class="wb">
-<div class="wbl"><b>// S9 — Bloc C</b> 5-3-1 Wendler + seuil lactique. Sem. impaire : pas de créneaux AM en semaine.</div>
+<div class="wbl"><b>// S9 — Bloc C</b> 5-3-1 Wendler + seuil lactique. Sem. impaire : créneaux AM disponibles lundi + jeudi uniquement (mar/mer/ven : midi seulement).</div>
 <div class="ss-list">
 <div class="ss">
 <div class="ss-day">Lun<br/>AM</div>
@@ -1082,15 +1091,15 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
 <div class="ss-title">Half-body haut — progression linéaire</div>
-<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>1×5 @ 75% · 1×5 @ 85% · 1×5+ @ 95%</b> (récup 2 min 30).<br/>Pull-up lestés <b>4×5 @ +12.5kg kg</b> (récup 2 min).<br/>Strict press barre <b>4×5 @ 55 kg</b> (récup 2 min).<br/>Pendlay row <b>4×6 @ 75 kg</b> (récup 90 sec).<br/>Curl barre 3×10 @ <b>32.5 kg</b> (récup 60 sec). Skull crusher 3×12 @ <b>25 kg</b> (récup 60 sec).<br/>Dips lestés 3×8 @ <b>+10 kg</b> (récup 90 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
-<div class="ss-kp"><span class="ki">Bench <b>5-3-1 kg</b></span><span class="ki">Curl <b>32.5 kg</b></span><span class="ki">Skull <b>25 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
+<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>1×5 @ 75% · 1×5 @ 85% · 1×5+ @ 95%</b> (récup 2 min 30).<br/>Pull-up lestés <b>4×5 @ +12.5kg kg</b> (récup 2 min).<br/>Strict press barre <b>4×5 @ 55 kg</b> (récup 2 min).<br/>Pendlay row <b>4×6 @ 75 kg</b> (récup 90 sec).<br/>Farmer carry chrono <b>4×50 m @ 2×30 kg</b> (récup 90 sec). Dead hang grip 3×40 sec (récup 60 sec).<br/>Bloc C : curl, skull et dips sortent — la spécificité commence.<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
+<div class="ss-kp"><span class="ki">Bench <b>5-3-1 kg</b></span><span class="ki">Farmer <b>4×50 m</b></span><span class="ki">Grip <b>dead hang</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-sp">SPÉ</span></div>
 <div class="ss-title">Sled transfert — race pace contrôlé</div>
-<div class="ss-body"><b>Sled transfert force → race</b><br/>Sled Push charge course ou tapis éteint : <b>6×12,5 m = 75 m</b>, récup 90 sec, chrono chaque longueur.<br/>Sled Pull charge course ou tirage corde : <b>6×12,5 m = 75 m</b>, récup 90 sec, traction régulière sans pause longue.<br/>Finisher protecteur : pont ischio iso 3×25 sec + mollets iso 3×30 sec. BBJ technique : 3×10 m lents, focus rythme/respiration (récup 60 sec).<br/><b>Règle : dérive &gt;15 % sur deux longueurs = arrêt ou baisse charge.</b><div class="recup">↩ Log tracker : meilleur / pire 12,5 m, dérive, RPE, sensation relance.</div></div>
+<div class="ss-body"><b>Sled transfert force → race</b><br/>Sled Push charge course ou tapis éteint : <b>6×12,5 m = 75 m</b>, récup 90 sec, chrono chaque longueur.<br/>Sled Pull charge course ou tirage corde : <b>6×12,5 m = 75 m</b>, récup 90 sec, traction régulière sans pause longue.<br/>Finisher protecteur : pont ischio iso 3×25 sec + mollets iso 3×30 sec. BBJ technique : 3×10 m lents, focus rythme/respiration (récup 60 sec).<br/><b>Règle : dérive &gt;15 % sur deux longueurs = arrêt ou baisse charge.</b> <b>Haut n°2 court (10–12 min)</b> : push press 3×6 @ 45 kg + farmer hold 3×40 sec @ 2×30 kg.<div class="recup">↩ Log tracker : meilleur / pire 12,5 m, dérive, RPE, sensation relance.</div></div>
 <div class="ss-kp"><span class="ki">Push <b>75 m</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">Dérive <b>&lt;15%</b></span></div>
 </div>
 </div><div class="ss">
@@ -1104,10 +1113,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
-<div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
-<div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
+<div class="ss-type"><span class="t t-mob">OFF</span></div>
+<div class="ss-title">Repos complet — OFF hebdomadaire</div>
+<div class="ss-body">Repos total — V2 : un vrai jour off par quinzaine, pour les tendons et le sommeil. Option : marche 20–30 min si besoin de déverrouiller. Zéro cardio structuré.<div class="recup">↩ Sommeil prioritaire. Prochain jour dur : mardi midi.</div></div>
+<div class="ss-kp"><span class="ki">OFF</span></div>
 </div>
 </div>
 </div>
@@ -1121,7 +1130,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 </div>
 <div class="wb">
-<div class="wbl"><b>// S10 — Bloc C</b> 5-3-1 Wendler + seuil lactique. Sem. paire : tous créneaux AM disponibles.</div>
+<div class="wbl"><b>// S10 — Bloc C</b> 5-3-1 Wendler + seuil lactique. Sem. paire : tous créneaux AM · mardi = jour dur empilé (qualité course AM + bas lourd midi).</div>
 <div class="ss-list">
 <div class="ss">
 <div class="ss-day">Lun<br/>AM</div>
@@ -1135,9 +1144,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>1×3 @ 80% · 1×3 @ 90% · 1×3+ @ 100%</b> (récup 3 min).<br/>Front squat <b>3×5 @ 75 kg</b> (récup 2 min 30). RDL bilatéral <b>4×5 @ 87.5 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>4×6 @ 110 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>assisté 2×3</b> propre, sans courbature recherchée (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>5-3-1</b></span><span class="ki">RDL <b>contrôlé</b></span><span class="ki">Nordic <b>assisté</b></span></div>
+<div class="ss-title">Haut n°1 — force spécifique tirage/grip</div>
+<div class="ss-body">Journée jambes faciles. 🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15). Pull-up lestés 4×5 @ +12.5 kg (récup 2 min). Pendlay row 4×6 @ 77.5 kg (récup 2 min). Farmer carry chrono 4×50 m @ 2×30 kg (récup 90 sec). Dead hang grip 3×40 sec. Pallof press 4×10/côté. Bloc C : curl et skull crusher sortent du programme — la spécificité commence.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Pull-up <b>+12.5 kg</b></span><span class="ki">Farmer <b>4×50 m</b></span><span class="ki">Grip</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>AM</div>
@@ -1151,9 +1160,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Mar<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Muscles négligés — Fessiers moyens + stabilisation</div>
-<div class="ss-body">Charges max 30 kg. Abducteur bande <b>3×20/côté</b> (45 sec). Clamshell lesté <b>3×15/côté @ 5 kg</b> (45 sec). <b>Tibialis anterior 3×20 reps</b> (prévention douleurs tibiales run). Pallof press bande lourde <b>4×12/côté</b> (60 sec). Face pull <b>3×20</b> + External rotation bande <b>3×15/côté</b>. Planche RKC <b>4×20 sec</b> + Side plank <b>3×35 sec/côté</b>. Fentes marchées lestées <b>2×20 m @ 2×12 kg</b> — intro station lunges.<div class="recup">↩ 45 sec entre séries max.</div></div>
-<div class="ss-kp"><span class="ki">Focus <b>Fessiers moyens + stabilisation</b></span><span class="ki">Durée <b>40 min</b></span><span class="ki">&lt;30 kg</span></div>
+<div class="ss-title">Half-body bas — progression linéaire</div>
+<div class="ss-body">≥ 3h après la qualité course du matin. 🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>1×3 @ 80% · 1×3 @ 90% · 1×3+ @ 100%</b> (récup 3 min).<br/>Front squat <b>3×5 @ 75 kg</b> (récup 2 min 30). RDL bilatéral <b>4×5 @ 87.5 kg</b> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>4×6 @ 110 kg</b> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>assisté 2×3</b> propre, sans courbature recherchée (récup 2 min). Préhab ciblée 8 min : abducteurs bande 2×15/côté + tibialis 2×20. Fentes marchées lestées 2×20 m @ 2×12 kg — intro station lunges.<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Squat <b>5-3-1</b></span><span class="ki">RDL <b>contrôlé</b></span><span class="ki">Nordic <b>assisté</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mer<br/>AM</div>
@@ -1183,9 +1192,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Jeu<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body haut — progression linéaire</div>
-<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>1×3 @ 80% · 1×3 @ 90% · 1×3+ @ 100%</b> (récup 2 min 30).<br/>Pull-up lestés <b>4×5 @ +12.5kg kg</b> (récup 2 min).<br/>Strict press barre <b>4×5 @ 57.5 kg</b> (récup 2 min).<br/>Pendlay row <b>4×6 @ 77.5 kg</b> (récup 90 sec).<br/>Curl barre 3×10 @ <b>35 kg</b> (récup 60 sec). Skull crusher 3×12 @ <b>27.5 kg</b> (récup 60 sec).<br/>Dips lestés 3×8 @ <b>+10 kg</b> (récup 90 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
-<div class="ss-kp"><span class="ki">Bench <b>5-3-1 kg</b></span><span class="ki">Curl <b>35 kg</b></span><span class="ki">Skull <b>27.5 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
+<div class="ss-title">Haut n°2 — force press</div>
+<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15). Développé couché 1×3 @ 80% · 1×3 @ 90% · 1×3+ @ 100% (récup 2 min 30). Strict press barre 4×5 @ 57.5 kg (récup 2 min). Core dense : Rollout 3×12 + L-sit 3×20 sec + Hollow 3×30 sec.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div> <b>Transfert Wall Ball sans ballon</b> : thruster barre 3×8–10 RPE 6–7 si prévu ici. Ne pas ajouter de wall ball en fin de muscu.</div>
+<div class="ss-kp"><span class="ki">Bench <b>5-3-1</b></span><span class="ki">Press <b>57.5 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Ven<br/>AM</div>
@@ -1216,7 +1225,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
 <div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
+<div class="ss-body">40 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
 <div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
 </div>
 </div>
@@ -1231,7 +1240,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 </div>
 <div class="wb">
-<div class="wbl"><b>// S11 — Bloc C</b> 5-3-1 Wendler + seuil lactique. Sem. impaire : pas de créneaux AM en semaine.</div>
+<div class="wbl"><b>// S11 — Bloc C</b> 5-3-1 Wendler + seuil lactique. Sem. impaire : créneaux AM disponibles lundi + jeudi uniquement (mar/mer/ven : midi seulement).</div>
 <div class="ss-list">
 <div class="ss">
 <div class="ss-day">Lun<br/>AM</div>
@@ -1278,15 +1287,15 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
 <div class="ss-title">Half-body haut — progression linéaire</div>
-<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>1×5 @ 75% · 1×3 @ 85% · 1×1+ @ 95% → PR</b> (récup 2 min 30).<br/>Pull-up lestés <b>4×5 @ +15kg kg</b> (récup 2 min).<br/>Strict press barre <b>4×4 @ 60 kg</b> (récup 2 min).<br/>Pendlay row <b>4×5 @ 80 kg</b> (récup 90 sec).<br/>Curl barre 3×10 @ <b>35 kg</b> (récup 60 sec). Skull crusher 3×12 @ <b>27.5 kg</b> (récup 60 sec).<br/>Dips lestés 3×8 @ <b>+10 kg</b> (récup 90 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
-<div class="ss-kp"><span class="ki">Bench <b>5-3-1 kg</b></span><span class="ki">Curl <b>35 kg</b></span><span class="ki">Skull <b>27.5 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
+<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>1×5 @ 75% · 1×3 @ 85% · 1×1+ @ 95% → PR</b> (récup 2 min 30).<br/>Pull-up lestés <b>4×5 @ +15kg kg</b> (récup 2 min).<br/>Strict press barre <b>4×4 @ 60 kg</b> (récup 2 min).<br/>Pendlay row <b>4×5 @ 80 kg</b> (récup 90 sec).<br/>Farmer carry chrono <b>4×50 m @ 2×32 kg</b> (récup 90 sec). Dead hang grip 3×45 sec (récup 60 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
+<div class="ss-kp"><span class="ki">Bench <b>5-3-1 kg</b></span><span class="ki">Farmer <b>4×50 m</b></span><span class="ki">Grip <b>dead hang</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-sp">SPÉ</span></div>
 <div class="ss-title">Sled transfert — race pace contrôlé</div>
-<div class="ss-body"><b>Sled transfert force → race</b><br/>Sled Push charge course ou tapis éteint : <b>6×12,5 m = 75 m</b>, récup 90 sec, chrono chaque longueur.<br/>Sled Pull charge course ou tirage corde : <b>6×12,5 m = 75 m</b>, récup 90 sec, traction régulière sans pause longue.<br/>Finisher protecteur : pont ischio iso 3×25 sec + mollets iso 3×30 sec. BBJ technique : 3×10 m lents, focus rythme/respiration (récup 60 sec).<br/><b>Règle : dérive &gt;15 % sur deux longueurs = arrêt ou baisse charge.</b><div class="recup">↩ Log tracker : meilleur / pire 12,5 m, dérive, RPE, sensation relance.</div></div>
+<div class="ss-body"><b>Sled transfert force → race</b><br/>Sled Push charge course ou tapis éteint : <b>6×12,5 m = 75 m</b>, récup 90 sec, chrono chaque longueur.<br/>Sled Pull charge course ou tirage corde : <b>6×12,5 m = 75 m</b>, récup 90 sec, traction régulière sans pause longue.<br/>Finisher protecteur : pont ischio iso 3×25 sec + mollets iso 3×30 sec. BBJ technique : 3×10 m lents, focus rythme/respiration (récup 60 sec).<br/><b>Règle : dérive &gt;15 % sur deux longueurs = arrêt ou baisse charge.</b> <b>Haut n°2 court (10–12 min)</b> : push press 3×6 @ 45 kg + farmer hold 3×40 sec @ 2×30 kg.<div class="recup">↩ Log tracker : meilleur / pire 12,5 m, dérive, RPE, sensation relance.</div></div>
 <div class="ss-kp"><span class="ki">Push <b>75 m</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">Dérive <b>&lt;15%</b></span></div>
 </div>
 </div><div class="ss">
@@ -1300,10 +1309,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
-<div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
-<div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
+<div class="ss-type"><span class="t t-mob">OFF</span></div>
+<div class="ss-title">Repos complet — OFF hebdomadaire</div>
+<div class="ss-body">Repos total — V2 : un vrai jour off par quinzaine, pour les tendons et le sommeil. Option : marche 20–30 min si besoin de déverrouiller. Zéro cardio structuré.<div class="recup">↩ Sommeil prioritaire. Prochain jour dur : mardi midi.</div></div>
+<div class="ss-kp"><span class="ki">OFF</span></div>
 </div>
 </div>
 </div>
@@ -1331,9 +1340,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body bas — progression linéaire</div>
-<div class="ss-body">🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>3×3 @ 85 kg</b> <i>(décharge)</i> (récup 3 min).<br/>Front squat <b>3×5 @ 70 kg</b> (récup 2 min 30). RDL bilatéral <b>3×4 @ 82.5 kg</b> <i>(décharge)</i> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>3×5 @ 100 kg</b> <i>(décharge)</i> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>assisté 2×3</b> propre, sans courbature recherchée (récup 2 min).<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
-<div class="ss-kp"><span class="ki">Squat <b>5-3-1</b></span><span class="ki">RDL <b>contrôlé</b></span><span class="ki">Nordic <b>assisté</b></span></div>
+<div class="ss-title">Haut n°1 — force spécifique tirage/grip (décharge)</div>
+<div class="ss-body">Journée jambes faciles. 🛡 Préhab coiffe 5 min. Pull-up lestés 3×5 @ +10 kg (décharge, récup 2 min). Pendlay row 3×6 @ 72.5 kg (récup 2 min). Farmer carry 3×50 m @ 2×28 kg (récup 90 sec). Dead hang grip 3×30 sec.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Pull-up <b>+10 kg</b></span><span class="ki">Farmer <b>3×50 m</b></span><span class="ki">Décharge</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>AM</div>
@@ -1347,9 +1356,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Mar<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Muscles négligés — Stabilisation hanche + pied</div>
-<div class="ss-body">Charges max 30 kg. Hip 90/90 actif <b>3×10/côté</b>. Hip transitionnel <b>3×8/côté</b>. <b>Mollet unijambiste excentrique 3×12/jambe</b> descente 3 sec (prévention Achille). Rollout ab wheel <b>4×10</b>. Dead bug lesté <b>3×8/côté @ 2 kg</b>. <b>L-sit 4×max sec</b> (objectif 15 sec). Copenhagen plank <b>3×20 sec/côté</b>. Fentes marchées lestées <b>2×20 m @ 2×16 kg</b> — progression station lunges.<div class="recup">↩ 45 sec entre séries max.</div></div>
-<div class="ss-kp"><span class="ki">Focus <b>Stabilisation hanche + pied</b></span><span class="ki">Durée <b>40 min</b></span><span class="ki">&lt;30 kg</span></div>
+<div class="ss-title">Half-body bas — progression linéaire</div>
+<div class="ss-body">≥ 3h après la qualité course du matin. 🛡 Préhab 5 min : dead bug 2×10 + bird dog 2×8/côté + hip hinge 3×8.<br/>Back squat <b>3×3 @ 85 kg</b> <i>(décharge)</i> (récup 3 min).<br/>Front squat <b>3×5 @ 70 kg</b> (récup 2 min 30). RDL bilatéral <b>3×4 @ 82.5 kg</b> <i>(décharge)</i> tempo 3-1-1 (récup 2 min 30).<br/>Hip thrust <b>3×5 @ 100 kg</b> <i>(décharge)</i> (récup 90 sec).<br/>Bulgarian split squat 3×8/jambe @ <b>27.5 kg</b> (récup 90 sec).<br/>Mollets debout 4×15 @ <b>70 kg</b> (récup 60 sec).<br/>Nordic <b>assisté 2×3</b> propre, sans courbature recherchée (récup 2 min). Préhab ciblée 8 min : hip 90/90 2×8/côté + Copenhagen 2×20 sec/côté. Fentes marchées lestées 2×20 m @ 2×16 kg — progression station lunges.<div class="recup">↩ Composés 2–3 min entre séries. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Squat <b>5-3-1</b></span><span class="ki">RDL <b>contrôlé</b></span><span class="ki">Nordic <b>assisté</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mer<br/>AM</div>
@@ -1379,9 +1388,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Jeu<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body haut — progression linéaire</div>
-<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>4×5 @ 77.5 kg</b> <i>(décharge)</i> (récup 2 min 30).<br/>Pull-up lestés <b>3×5 @ +10kg kg</b> <i>(décharge)</i> (récup 2 min).<br/>Strict press barre <b>3×5 @ 52.5 kg</b> <i>(décharge)</i> (récup 2 min).<br/>Pendlay row <b>3×6 @ 72.5 kg</b> <i>(décharge)</i> (récup 90 sec).<br/>Curl barre 3×10 @ <b>32.5 kg</b> (récup 60 sec). Skull crusher 3×12 @ <b>25 kg</b> (récup 60 sec).<br/>Dips lestés 3×8 @ <b>+10 kg</b> (récup 90 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
-<div class="ss-kp"><span class="ki">Bench <b>77.5 kg</b></span><span class="ki">Curl <b>32.5 kg</b></span><span class="ki">Skull <b>25 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
+<div class="ss-title">Haut n°2 — force press (décharge)</div>
+<div class="ss-body">🛡 Préhab coiffe 5 min. Développé couché 4×5 @ 77.5 kg (décharge, récup 2 min 30). Strict press barre 3×5 @ 52.5 kg (récup 2 min). Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div> <b>Transfert Wall Ball sans ballon</b> : thruster barre 3×8–10 RPE 6–7 si prévu ici. Ne pas ajouter de wall ball en fin de muscu.</div>
+<div class="ss-kp"><span class="ki">Bench <b>77.5 kg</b></span><span class="ki">Press <b>52.5 kg</b></span><span class="ki">Décharge</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Ven<br/>AM</div>
@@ -1412,7 +1421,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
 <div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
+<div class="ss-body">40 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
 <div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
 </div>
 </div>
@@ -1496,10 +1505,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
-<div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
-<div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
+<div class="ss-type"><span class="t t-mob">OFF</span></div>
+<div class="ss-title">Repos complet — OFF hebdomadaire</div>
+<div class="ss-body">Repos total — V2 : un vrai jour off par quinzaine, pour les tendons et le sommeil. Option : marche 20–30 min si besoin de déverrouiller. Zéro cardio structuré.<div class="recup">↩ Sommeil prioritaire. Prochain jour dur : mardi midi.</div></div>
+<div class="ss-kp"><span class="ki">OFF</span></div>
 </div>
 </div>
 </div>
@@ -1527,9 +1536,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Force entretien bas — sans excentrique risqué + sled</div>
-<div class="ss-body"><b>Force entretien bas — transfert HYROX sans dette excessive</b><br/>Back squat ou trap bar : <b>3×3 RPE 6–7</b>, récup 2’30.<br/>Hip thrust : <b>3×5 RPE 6–7</b>, récup 90 sec.<br/>Fentes marchées lestées : <b>2–3×20 m</b> sandbag 20→30 kg progressif sur le bloc, amplitude propre — prépare la station lunges.<br/>Sled Push technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/>Sled Pull technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/><b>Aucun RDL, aucun nordic libre, aucun good morning, aucun broad jump.</b><div class="recup">↩ Log : temps push/pull, RPE jambes, raideur ischios/mollets. Si raideur &gt;3/10 : remplacer par vélo Z2 40 min + isométrie.</div></div>
-<div class="ss-kp"><span class="ki">Force <b>entretien</b></span><span class="ki">Sled <b>50+50 m</b></span><span class="ki">No excentrique</span></div>
+<div class="ss-title">Haut n°1 — endurance de force tirage</div>
+<div class="ss-body">Journée jambes faciles. 🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15). Tractions 4×8 @ BW (récup 90 sec). Rowing Yates 4×12 @ 60 kg (récup 75 sec). Face pull 3×20. Farmer hold 3×45 sec @ 2×32 kg. Pallof press 3×12/côté.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Tractions <b>4×8</b></span><span class="ki">Hold <b>2×32 kg</b></span><span class="ki">Endurance de force</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>AM</div>
@@ -1543,9 +1552,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Mar<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Préhab isométrique + transfert sled pull</div>
-<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
-<div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
+<div class="ss-title">Force entretien bas — sans excentrique risqué + sled</div>
+<div class="ss-body">≥ 3h après la qualité course du matin. <b>Force entretien bas — transfert HYROX sans dette excessive</b><br/>Back squat ou trap bar : <b>3×3 RPE 6–7</b>, récup 2’30.<br/>Hip thrust : <b>3×5 RPE 6–7</b>, récup 90 sec.<br/>Fentes marchées lestées : <b>2–3×20 m</b> sandbag 20→30 kg progressif sur le bloc, amplitude propre — prépare la station lunges.<br/>Sled Push technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/>Sled Pull technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/><b>Aucun RDL, aucun nordic libre, aucun good morning, aucun broad jump.</b> Préhab iso : pont ischio 3×25 sec + mollets iso 3×30 sec.<div class="recup">↩ Log : temps push/pull, RPE jambes, raideur ischios/mollets. Si raideur &gt;3/10 : remplacer par vélo Z2 40 min + isométrie.</div></div>
+<div class="ss-kp"><span class="ki">Force <b>entretien</b></span><span class="ki">Sled <b>50+50 m</b></span><span class="ki">No excentrique</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mer<br/>AM</div>
@@ -1575,9 +1584,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Jeu<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body haut — progression linéaire</div>
-<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>3×5 @ 82.5 kg</b> (récup 2 min 30).<br/>Pull-up lestés <b>3×5 @ +12.5kg kg</b> (récup 2 min).<br/>Strict press barre <b>3×5 @ 57.5 kg</b> (récup 2 min).<br/>Pendlay row <b>3×6 @ 77.5 kg</b> (récup 90 sec).<br/>Curl barre 3×10 @ <b>35 kg</b> (récup 60 sec). Skull crusher 3×12 @ <b>27.5 kg</b> (récup 60 sec).<br/>Dips lestés 3×8 @ <b>+10 kg</b> (récup 90 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
-<div class="ss-kp"><span class="ki">Bench <b>82.5 kg</b></span><span class="ki">Curl <b>35 kg</b></span><span class="ki">Skull <b>27.5 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
+<div class="ss-title">Haut n°2 — press endurance + transfert WB</div>
+<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15). Développé couché entretien 2×5 @ 80 kg (récup 2 min). Push press 4×12 @ 40 kg (récup 90 sec). Thruster barre transfert WB 3×10 @ 30 kg RPE 6–7. Gainage : Rollout 3×12 + Hollow 3×30 sec + L-sit 3×20 sec.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Push press <b>4×12</b></span><span class="ki">Thruster <b>transfert WB</b></span><span class="ki">Bench <b>entretien</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Ven<br/>AM</div>
@@ -1608,7 +1617,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
 <div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
+<div class="ss-body">40 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
 <div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
 </div>
 </div>
@@ -1643,7 +1652,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 </div>
 <div class="wb">
-<div class="wbl"><b>// S15 — Bloc D</b> Spécificité race. Sem. impaire : pas de créneaux AM en semaine.</div>
+<div class="wbl"><b>// S15 — Bloc D</b> Spécificité race. Sem. impaire : créneaux AM disponibles lundi + jeudi uniquement (mar/mer/ven : midi seulement).</div>
 <div class="ss-list">
 <div class="ss">
 <div class="ss-day">Lun<br/>AM</div>
@@ -1689,16 +1698,16 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Jeu<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body haut — progression linéaire</div>
-<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>3×5 @ 82.5 kg</b> (récup 2 min 30).<br/>Pull-up lestés <b>3×5 @ +12.5kg kg</b> (récup 2 min).<br/>Strict press barre <b>3×5 @ 57.5 kg</b> (récup 2 min).<br/>Pendlay row <b>3×6 @ 77.5 kg</b> (récup 90 sec).<br/>Curl barre 3×10 @ <b>35 kg</b> (récup 60 sec). Skull crusher 3×12 @ <b>27.5 kg</b> (récup 60 sec).<br/>Dips lestés 3×8 @ <b>+10 kg</b> (récup 90 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
-<div class="ss-kp"><span class="ki">Bench <b>82.5 kg</b></span><span class="ki">Curl <b>35 kg</b></span><span class="ki">Skull <b>27.5 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
+<div class="ss-title">Haut n°1 — endurance de force tirage</div>
+<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15). Tractions 4×8 @ BW (récup 90 sec). Rowing Yates 4×12 @ 60 kg (récup 75 sec). Développé couché entretien 2×5 @ 80 kg (récup 2 min). Push press 3×10 @ 40 kg (récup 90 sec). Farmer hold 3×45 sec @ 2×32 kg. Gainage : Pallof 3×12/côté + Hollow 3×30 sec.<div class="recup">↩ Récup 90 sec–2 min. Protéines 40 g dans 30 min. Pas de wall ball en fin de muscu.</div></div>
+<div class="ss-kp"><span class="ki">Tractions <b>4×8</b></span><span class="ki">Hold <b>2×32 kg</b></span><span class="ki">Endurance de force</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
 <div class="ss-title">Préhab isométrique + transfert sled pull</div>
-<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
+<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b> <b>Haut n°2 court (10–12 min)</b> : push press 3×10 @ 40 kg + tirage élastique 3×15 + dead hang 3×30 sec.<div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
 <div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
 </div>
 </div><div class="ss">
@@ -1712,10 +1721,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
-<div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
-<div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
+<div class="ss-type"><span class="t t-mob">OFF</span></div>
+<div class="ss-title">Repos complet — OFF hebdomadaire</div>
+<div class="ss-body">Repos total — V2 : un vrai jour off par quinzaine, pour les tendons et le sommeil. Option : marche 20–30 min si besoin de déverrouiller. Zéro cardio structuré.<div class="recup">↩ Sommeil prioritaire. Prochain jour dur : mardi midi.</div></div>
+<div class="ss-kp"><span class="ki">OFF</span></div>
 </div>
 </div>
 </div>
@@ -1729,7 +1738,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 </div>
 <div class="wb">
-<div class="wbl"><b>// S16 — Bloc D</b> Spécificité race. Sem. paire : tous créneaux AM disponibles.</div>
+<div class="wbl"><b>// S16 — Bloc D</b> Spécificité race. Sem. paire : tous créneaux AM · mardi = jour dur empilé (qualité course AM + bas lourd midi).</div>
 <div class="ss-list">
 <div class="ss">
 <div class="ss-day">Lun<br/>AM</div>
@@ -1743,9 +1752,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Force entretien bas — sans excentrique risqué + sled</div>
-<div class="ss-body"><b>Force entretien bas — transfert HYROX sans dette excessive</b><br/>Back squat ou trap bar : <b>3×3 RPE 6–7</b>, récup 2’30.<br/>Hip thrust : <b>3×5 RPE 6–7</b>, récup 90 sec.<br/>Fentes marchées lestées : <b>2–3×20 m</b> sandbag 20→30 kg progressif sur le bloc, amplitude propre — prépare la station lunges.<br/>Sled Push technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/>Sled Pull technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/><b>Aucun RDL, aucun nordic libre, aucun good morning, aucun broad jump.</b><div class="recup">↩ Log : temps push/pull, RPE jambes, raideur ischios/mollets. Si raideur &gt;3/10 : remplacer par vélo Z2 40 min + isométrie.</div></div>
-<div class="ss-kp"><span class="ki">Force <b>entretien</b></span><span class="ki">Sled <b>50+50 m</b></span><span class="ki">No excentrique</span></div>
+<div class="ss-title">Haut n°1 — endurance de force tirage</div>
+<div class="ss-body">Journée jambes faciles. 🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15). Tractions 4×8 @ BW (récup 90 sec). Rowing Yates 4×12 @ 60 kg (récup 75 sec). Face pull 3×20. Farmer hold 3×45 sec @ 2×32 kg. Pallof press 3×12/côté.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Tractions <b>4×8</b></span><span class="ki">Hold <b>2×32 kg</b></span><span class="ki">Endurance de force</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>AM</div>
@@ -1759,9 +1768,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Mar<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Préhab isométrique + transfert sled pull</div>
-<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
-<div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
+<div class="ss-title">Force entretien bas — sans excentrique risqué + sled</div>
+<div class="ss-body">≥ 3h après la qualité course du matin. <b>Force entretien bas — transfert HYROX sans dette excessive</b><br/>Back squat ou trap bar : <b>3×3 RPE 6–7</b>, récup 2’30.<br/>Hip thrust : <b>3×5 RPE 6–7</b>, récup 90 sec.<br/>Fentes marchées lestées : <b>2–3×20 m</b> sandbag 20→30 kg progressif sur le bloc, amplitude propre — prépare la station lunges.<br/>Sled Push technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/>Sled Pull technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/><b>Aucun RDL, aucun nordic libre, aucun good morning, aucun broad jump.</b> Préhab iso : pont ischio 3×25 sec + mollets iso 3×30 sec.<div class="recup">↩ Log : temps push/pull, RPE jambes, raideur ischios/mollets. Si raideur &gt;3/10 : remplacer par vélo Z2 40 min + isométrie.</div></div>
+<div class="ss-kp"><span class="ki">Force <b>entretien</b></span><span class="ki">Sled <b>50+50 m</b></span><span class="ki">No excentrique</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mer<br/>AM</div>
@@ -1791,9 +1800,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Jeu<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body haut — progression linéaire</div>
-<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>3×5 @ 82.5 kg</b> (récup 2 min 30).<br/>Pull-up lestés <b>3×5 @ +12.5kg kg</b> (récup 2 min).<br/>Strict press barre <b>3×5 @ 57.5 kg</b> (récup 2 min).<br/>Pendlay row <b>3×6 @ 77.5 kg</b> (récup 90 sec).<br/>Curl barre 3×10 @ <b>35 kg</b> (récup 60 sec). Skull crusher 3×12 @ <b>27.5 kg</b> (récup 60 sec).<br/>Dips lestés 3×8 @ <b>+10 kg</b> (récup 90 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
-<div class="ss-kp"><span class="ki">Bench <b>82.5 kg</b></span><span class="ki">Curl <b>35 kg</b></span><span class="ki">Skull <b>27.5 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
+<div class="ss-title">Haut n°2 — press endurance + transfert WB</div>
+<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15). Développé couché entretien 2×5 @ 80 kg (récup 2 min). Push press 4×12 @ 40 kg (récup 90 sec). Thruster barre transfert WB 3×10 @ 30 kg RPE 6–7. Gainage : Rollout 3×12 + Hollow 3×30 sec + L-sit 3×20 sec.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Push press <b>4×12</b></span><span class="ki">Thruster <b>transfert WB</b></span><span class="ki">Bench <b>entretien</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Ven<br/>AM</div>
@@ -1824,7 +1833,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
 <div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
+<div class="ss-body">40 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
 <div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
 </div>
 </div>
@@ -1839,7 +1848,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 </div>
 <div class="wb">
-<div class="wbl"><b>// S17 — Bloc D</b> Spécificité race. Sem. impaire : pas de créneaux AM en semaine.</div>
+<div class="wbl"><b>// S17 — Bloc D</b> Spécificité race. Sem. impaire : créneaux AM disponibles lundi + jeudi uniquement (mar/mer/ven : midi seulement).</div>
 <div class="ss-list">
 <div class="ss">
 <div class="ss-day">Lun<br/>AM</div>
@@ -1885,16 +1894,16 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Jeu<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body haut — progression linéaire</div>
-<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>3×5 @ 82.5 kg</b> (récup 2 min 30).<br/>Pull-up lestés <b>3×5 @ +12.5kg kg</b> (récup 2 min).<br/>Strict press barre <b>3×5 @ 57.5 kg</b> (récup 2 min).<br/>Pendlay row <b>3×6 @ 77.5 kg</b> (récup 90 sec).<br/>Curl barre 3×10 @ <b>35 kg</b> (récup 60 sec). Skull crusher 3×12 @ <b>27.5 kg</b> (récup 60 sec).<br/>Dips lestés 3×8 @ <b>+10 kg</b> (récup 90 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
-<div class="ss-kp"><span class="ki">Bench <b>82.5 kg</b></span><span class="ki">Curl <b>35 kg</b></span><span class="ki">Skull <b>27.5 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
+<div class="ss-title">Haut n°1 — endurance de force tirage</div>
+<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15). Tractions 4×8 @ BW (récup 90 sec). Rowing Yates 4×12 @ 60 kg (récup 75 sec). Développé couché entretien 2×5 @ 80 kg (récup 2 min). Push press 3×10 @ 40 kg (récup 90 sec). Farmer hold 3×45 sec @ 2×32 kg. Gainage : Pallof 3×12/côté + Hollow 3×30 sec.<div class="recup">↩ Récup 90 sec–2 min. Protéines 40 g dans 30 min. Pas de wall ball en fin de muscu.</div></div>
+<div class="ss-kp"><span class="ki">Tractions <b>4×8</b></span><span class="ki">Hold <b>2×32 kg</b></span><span class="ki">Endurance de force</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
 <div class="ss-title">Préhab isométrique + transfert sled pull</div>
-<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
+<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b> <b>Haut n°2 court (10–12 min)</b> : push press 3×10 @ 40 kg + tirage élastique 3×15 + dead hang 3×30 sec.<div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
 <div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
 </div>
 </div><div class="ss">
@@ -1908,10 +1917,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
-<div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
-<div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
+<div class="ss-type"><span class="t t-mob">OFF</span></div>
+<div class="ss-title">Repos complet — OFF hebdomadaire</div>
+<div class="ss-body">Repos total — V2 : un vrai jour off par quinzaine, pour les tendons et le sommeil. Option : marche 20–30 min si besoin de déverrouiller. Zéro cardio structuré.<div class="recup">↩ Sommeil prioritaire. Prochain jour dur : mardi midi.</div></div>
+<div class="ss-kp"><span class="ki">OFF</span></div>
 </div>
 </div>
 </div>
@@ -1939,9 +1948,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Force entretien bas — sans excentrique risqué + sled</div>
-<div class="ss-body"><b>Force entretien bas — transfert HYROX sans dette excessive</b><br/>Back squat ou trap bar : <b>3×3 RPE 6–7</b>, récup 2’30.<br/>Hip thrust : <b>3×5 RPE 6–7</b>, récup 90 sec.<br/>Fentes marchées lestées : <b>2–3×20 m</b> sandbag 20→30 kg progressif sur le bloc, amplitude propre — prépare la station lunges.<br/>Sled Push technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/>Sled Pull technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/><b>Aucun RDL, aucun nordic libre, aucun good morning, aucun broad jump.</b><div class="recup">↩ Log : temps push/pull, RPE jambes, raideur ischios/mollets. Si raideur &gt;3/10 : remplacer par vélo Z2 40 min + isométrie.</div></div>
-<div class="ss-kp"><span class="ki">Force <b>entretien</b></span><span class="ki">Sled <b>50+50 m</b></span><span class="ki">No excentrique</span></div>
+<div class="ss-title">Haut n°1 — endurance tirage (décharge)</div>
+<div class="ss-body">Journée jambes faciles. 🛡 Préhab coiffe 5 min. Tractions 3×6 @ BW (récup 90 sec). Rowing Yates 3×10 @ 55 kg (récup 75 sec). Face pull 3×15. Farmer hold 3×30 sec @ 2×28 kg.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Tractions <b>3×6</b></span><span class="ki">Décharge</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>AM</div>
@@ -1955,9 +1964,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Mar<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Préhab isométrique + transfert sled pull</div>
-<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
-<div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
+<div class="ss-title">Force entretien bas — sans excentrique risqué + sled</div>
+<div class="ss-body">≥ 3h après la qualité course du matin. <b>Force entretien bas — transfert HYROX sans dette excessive</b><br/>Back squat ou trap bar : <b>3×3 RPE 6–7</b>, récup 2’30.<br/>Hip thrust : <b>3×5 RPE 6–7</b>, récup 90 sec.<br/>Fentes marchées lestées : <b>2–3×20 m</b> sandbag 20→30 kg progressif sur le bloc, amplitude propre — prépare la station lunges.<br/>Sled Push technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/>Sled Pull technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/><b>Aucun RDL, aucun nordic libre, aucun good morning, aucun broad jump.</b> Préhab iso : pont ischio 3×25 sec + mollets iso 3×30 sec.<div class="recup">↩ Log : temps push/pull, RPE jambes, raideur ischios/mollets. Si raideur &gt;3/10 : remplacer par vélo Z2 40 min + isométrie.</div></div>
+<div class="ss-kp"><span class="ki">Force <b>entretien</b></span><span class="ki">Sled <b>50+50 m</b></span><span class="ki">No excentrique</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mer<br/>AM</div>
@@ -1987,9 +1996,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Jeu<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body haut — progression linéaire</div>
-<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>3×5 @ 82.5 kg</b> (récup 2 min 30).<br/>Pull-up lestés <b>3×5 @ +12.5kg kg</b> (récup 2 min).<br/>Strict press barre <b>3×5 @ 57.5 kg</b> (récup 2 min).<br/>Pendlay row <b>3×6 @ 77.5 kg</b> (récup 90 sec).<br/>Curl barre 3×10 @ <b>35 kg</b> (récup 60 sec). Skull crusher 3×12 @ <b>27.5 kg</b> (récup 60 sec).<br/>Dips lestés 3×8 @ <b>+10 kg</b> (récup 90 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
-<div class="ss-kp"><span class="ki">Bench <b>82.5 kg</b></span><span class="ki">Curl <b>35 kg</b></span><span class="ki">Skull <b>27.5 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
+<div class="ss-title">Haut n°2 — press endurance (décharge)</div>
+<div class="ss-body">🛡 Préhab coiffe 5 min. Push press 3×10 @ 35 kg (récup 90 sec). Thruster barre 2×8 @ 25 kg RPE 6. Gainage court : Rollout 2×10 + Hollow 2×25 sec.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Push press <b>3×10</b></span><span class="ki">Décharge</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Ven<br/>AM</div>
@@ -2020,7 +2029,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
 <div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
+<div class="ss-body">40 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
 <div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
 </div>
 </div>
@@ -2054,7 +2063,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 </div>
 <div class="wb">
-<div class="wbl"><b>// S19 — Bloc E</b> Simulation complète. Sem. impaire : pas de créneaux AM en semaine.</div>
+<div class="wbl"><b>// S19 — Bloc E</b> Simulation complète. Sem. impaire : créneaux AM disponibles lundi + jeudi uniquement (mar/mer/ven : midi seulement).</div>
 <div class="ss-list">
 <div class="ss">
 <div class="ss-day">Lun<br/>AM</div>
@@ -2100,16 +2109,16 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Jeu<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body haut — progression linéaire</div>
-<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>3×4 @ 82.5 kg</b> (récup 2 min 30).<br/>Pull-up lestés <b>3×5 @ +12.5kg kg</b> (récup 2 min).<br/>Strict press barre <b>3×4 @ 57.5 kg</b> (récup 2 min).<br/>Pendlay row <b>3×5 @ 77.5 kg</b> (récup 90 sec).<br/>Curl barre 3×10 @ <b>35 kg</b> (récup 60 sec). Skull crusher 3×12 @ <b>27.5 kg</b> (récup 60 sec).<br/>Dips lestés 3×8 @ <b>+10 kg</b> (récup 90 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
-<div class="ss-kp"><span class="ki">Bench <b>82.5 kg</b></span><span class="ki">Curl <b>35 kg</b></span><span class="ki">Skull <b>27.5 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
+<div class="ss-title">Haut n°1 — endurance tirage (volume réduit peak)</div>
+<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15). Tractions 3×8 @ BW (récup 90 sec). Rowing Yates 3×10 @ 60 kg (récup 75 sec). Développé couché entretien 2×5 @ 80 kg (récup 2 min). Push press 3×8 @ 40 kg (récup 90 sec). Farmer hold 3×30 sec @ 2×32 kg. Pallof 3×10/côté.<div class="recup">↩ Récup 90 sec–2 min. Protéines 40 g dans 30 min. Pas de wall ball en fin de muscu.</div></div>
+<div class="ss-kp"><span class="ki">Tractions <b>3×8</b></span><span class="ki">Peak — volume réduit</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
 <div class="ss-title">Préhab isométrique + transfert sled pull</div>
-<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
+<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b> <b>Haut n°2 court (10–12 min)</b> : push press 3×10 @ 40 kg + tirage élastique 3×15 + dead hang 3×30 sec.<div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
 <div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
 </div>
 </div><div class="ss">
@@ -2123,10 +2132,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
-<div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
-<div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
+<div class="ss-type"><span class="t t-mob">OFF</span></div>
+<div class="ss-title">Repos complet — OFF hebdomadaire</div>
+<div class="ss-body">Repos total — V2 : un vrai jour off par quinzaine, pour les tendons et le sommeil. Option : marche 20–30 min si besoin de déverrouiller. Zéro cardio structuré.<div class="recup">↩ Sommeil prioritaire. Prochain jour dur : mardi midi.</div></div>
+<div class="ss-kp"><span class="ki">OFF</span></div>
 </div>
 </div>
 </div>
@@ -2140,7 +2149,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 </div>
 <div class="wb">
-<div class="wbl"><b>// S20 — Bloc E</b> Simulation complète. Sem. paire : tous créneaux AM disponibles.</div>
+<div class="wbl"><b>// S20 — Bloc E</b> Simulation complète. Sem. paire : tous créneaux AM · mardi = jour dur empilé (qualité course AM + bas lourd midi).</div>
 <div class="ss-list">
 <div class="ss">
 <div class="ss-day">Lun<br/>AM</div>
@@ -2154,9 +2163,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Lun<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Force entretien bas — sans excentrique risqué + sled</div>
-<div class="ss-body"><b>Force entretien bas — transfert HYROX sans dette excessive</b><br/>Back squat ou trap bar : <b>3×3 RPE 6–7</b>, récup 2’30.<br/>Hip thrust : <b>3×5 RPE 6–7</b>, récup 90 sec.<br/>Fentes marchées lestées : <b>2–3×20 m</b> sandbag 20→30 kg progressif sur le bloc, amplitude propre — prépare la station lunges.<br/>Sled Push technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/>Sled Pull technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/><b>Aucun RDL, aucun nordic libre, aucun good morning, aucun broad jump.</b><div class="recup">↩ Log : temps push/pull, RPE jambes, raideur ischios/mollets. Si raideur &gt;3/10 : remplacer par vélo Z2 40 min + isométrie.</div></div>
-<div class="ss-kp"><span class="ki">Force <b>entretien</b></span><span class="ki">Sled <b>50+50 m</b></span><span class="ki">No excentrique</span></div>
+<div class="ss-title">Haut n°1 — endurance de force tirage</div>
+<div class="ss-body">Journée jambes faciles. 🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15). Tractions 4×8 @ BW (récup 90 sec). Rowing Yates 4×12 @ 62.5 kg (récup 75 sec). Face pull 3×20. Farmer hold 3×45 sec @ 2×32 kg. Pallof press 3×12/côté.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Tractions <b>4×8</b></span><span class="ki">Hold <b>2×32 kg</b></span><span class="ki">Endurance de force</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mar<br/>AM</div>
@@ -2170,9 +2179,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Mar<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Préhab isométrique + transfert sled pull</div>
-<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
-<div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
+<div class="ss-title">Force entretien bas — sans excentrique risqué + sled</div>
+<div class="ss-body">≥ 3h après la qualité course du matin. <b>Force entretien bas — transfert HYROX sans dette excessive</b><br/>Back squat ou trap bar : <b>3×3 RPE 6–7</b>, récup 2’30.<br/>Hip thrust : <b>3×5 RPE 6–7</b>, récup 90 sec.<br/>Fentes marchées lestées : <b>2–3×20 m</b> sandbag 20→30 kg progressif sur le bloc, amplitude propre — prépare la station lunges.<br/>Sled Push technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/>Sled Pull technique/race : <b>4×12,5 m = 50 m</b>, récup 75–90 sec.<br/><b>Aucun RDL, aucun nordic libre, aucun good morning, aucun broad jump.</b> Préhab iso : pont ischio 3×25 sec + mollets iso 3×30 sec.<div class="recup">↩ Log : temps push/pull, RPE jambes, raideur ischios/mollets. Si raideur &gt;3/10 : remplacer par vélo Z2 40 min + isométrie.</div></div>
+<div class="ss-kp"><span class="ki">Force <b>entretien</b></span><span class="ki">Sled <b>50+50 m</b></span><span class="ki">No excentrique</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Mer<br/>AM</div>
@@ -2202,9 +2211,9 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Jeu<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body haut — progression linéaire</div>
-<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>3×4 @ 82.5 kg</b> (récup 2 min 30).<br/>Pull-up lestés <b>3×5 @ +12.5kg kg</b> (récup 2 min).<br/>Strict press barre <b>3×4 @ 57.5 kg</b> (récup 2 min).<br/>Pendlay row <b>3×5 @ 77.5 kg</b> (récup 90 sec).<br/>Curl barre 3×10 @ <b>35 kg</b> (récup 60 sec). Skull crusher 3×12 @ <b>27.5 kg</b> (récup 60 sec).<br/>Dips lestés 3×8 @ <b>+10 kg</b> (récup 90 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
-<div class="ss-kp"><span class="ki">Bench <b>82.5 kg</b></span><span class="ki">Curl <b>35 kg</b></span><span class="ki">Skull <b>27.5 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
+<div class="ss-title">Haut n°2 — press endurance + transfert WB</div>
+<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15). Développé couché entretien 2×5 @ 80 kg (récup 2 min). Push press 4×12 @ 42.5 kg (récup 90 sec). Thruster barre transfert WB 3×10 @ 30 kg RPE 6–7. Gainage : Rollout 3×12 + Hollow 3×30 sec + L-sit 3×20 sec.<div class="recup">↩ Composés 2 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div></div>
+<div class="ss-kp"><span class="ki">Push press <b>4×12</b></span><span class="ki">Thruster <b>transfert WB</b></span><span class="ki">Bench <b>entretien</b></span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Ven<br/>AM</div>
@@ -2235,7 +2244,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-content">
 <div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
 <div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
+<div class="ss-body">40 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
 <div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
 </div>
 </div>
@@ -2250,7 +2259,7 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div>
 </div>
 <div class="wb">
-<div class="wbl"><b>// S21 — Bloc E</b> Simulation complète. Sem. impaire : pas de créneaux AM en semaine.</div>
+<div class="wbl"><b>// S21 — Bloc E</b> Simulation complète. Sem. impaire : créneaux AM disponibles lundi + jeudi uniquement (mar/mer/ven : midi seulement).</div>
 <div class="ss-list">
 <div class="ss">
 <div class="ss-day">Lun<br/>AM</div>
@@ -2296,16 +2305,16 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 <div class="ss-day">Jeu<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
-<div class="ss-title">Half-body haut — progression linéaire</div>
-<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15).<br/>Développé couché <b>3×4 @ 82.5 kg</b> (récup 2 min 30).<br/>Pull-up lestés <b>3×5 @ +12.5kg kg</b> (récup 2 min).<br/>Strict press barre <b>3×4 @ 57.5 kg</b> (récup 2 min).<br/>Pendlay row <b>3×5 @ 77.5 kg</b> (récup 90 sec).<br/>Curl barre 3×10 @ <b>35 kg</b> (récup 60 sec). Skull crusher 3×12 @ <b>27.5 kg</b> (récup 60 sec).<br/>Dips lestés 3×8 @ <b>+10 kg</b> (récup 90 sec).<br/><b>Core dense</b> : Pallof press 4×10/côté + Rollout 3×10 + L-sit 3×15 sec.<div class="recup">↩ Composés 2–3 min. Isolations 60 sec. Protéines 40 g dans 30 min.</div><br/><b>Transfert Wall Ball sans ballon</b> : thruster DB/barre intégré seulement si prévu au créneau muscu, 3×8–10 RPE 6–7. Ne pas ajouter de wall ball en fin de muscu.</div>
-<div class="ss-kp"><span class="ki">Bench <b>82.5 kg</b></span><span class="ki">Curl <b>35 kg</b></span><span class="ki">Skull <b>27.5 kg</b></span><span class="ki">Thruster <b>substitut WB</b></span></div>
+<div class="ss-title">Haut n°1 — endurance tirage (volume réduit peak)</div>
+<div class="ss-body">🛡 Préhab coiffe 5 min (face pull 3×20 + ext. rotation 3×15). Tractions 3×8 @ BW (récup 90 sec). Rowing Yates 3×10 @ 60 kg (récup 75 sec). Développé couché entretien 2×5 @ 75 kg (récup 2 min). Push press 3×8 @ 40 kg (récup 90 sec). Farmer hold 3×30 sec @ 2×32 kg. Pallof 3×10/côté.<div class="recup">↩ Récup 90 sec–2 min. Protéines 40 g dans 30 min. Pas de wall ball en fin de muscu.</div></div>
+<div class="ss-kp"><span class="ki">Tractions <b>3×8</b></span><span class="ki">Peak — volume réduit</span></div>
 </div>
 </div><div class="ss">
 <div class="ss-day">Ven<br/>midi</div>
 <div class="ss-content">
 <div class="ss-type"><span class="t t-str">MUSC</span></div>
 <div class="ss-title">Préhab isométrique + transfert sled pull</div>
-<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b><div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
+<div class="ss-body"><b>Préhab bas — isométrie + transfert sled pull</b><br/>Pont ischio isométrique 4×25 sec · Copenhagen court 3×20 sec/côté · mollets iso 4×30 sec · tibialis 2×20.<br/>Tirage corde/poulie basse type sled pull : <b>6×12,5 m = 75 m</b>, récup 60–75 sec, tirage régulier.<br/>Option jambes fraîches : tapis éteint très léger 4×15 sec.<br/><b>Aucun nordic libre, aucun good morning, aucun broad jump volume.</b> <b>Haut n°2 court (10–12 min)</b> : push press 3×10 @ 40 kg + tirage élastique 3×15 + dead hang 3×30 sec.<div class="recup">↩ Log : ressenti ischios/mollets + temps tirage si possible.</div></div>
 <div class="ss-kp"><span class="ki">Préhab <b>iso</b></span><span class="ki">Pull <b>75 m</b></span><span class="ki">No DOMS</span></div>
 </div>
 </div><div class="ss">
@@ -2319,10 +2328,10 @@ body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:
 </div><div class="ss">
 <div class="ss-day">Dim<br/>AM</div>
 <div class="ss-content">
-<div class="ss-type"><span class="t t-ergo">VÉLO</span></div>
-<div class="ss-title">Vélo Z1/Z2 récup — drainage sans impact</div>
-<div class="ss-body">40–50 min vélo très facile, cadence souple 85–95 rpm. RPE 2–3. Objectif : drainage post séance clé sans impact course.</div>
-<div class="ss-kp"><span class="ki">RPE <b>2–3</b></span></div>
+<div class="ss-type"><span class="t t-mob">OFF</span></div>
+<div class="ss-title">Repos complet — OFF hebdomadaire</div>
+<div class="ss-body">Repos total — V2 : un vrai jour off par quinzaine, pour les tendons et le sommeil. Option : marche 20–30 min si besoin de déverrouiller. Zéro cardio structuré.<div class="recup">↩ Sommeil prioritaire. Prochain jour dur : mardi midi.</div></div>
+<div class="ss-kp"><span class="ki">OFF</span></div>
 </div>
 </div>
 </div>
@@ -2824,6 +2833,85 @@ document.addEventListener('click', function(e) {
       setTimeout(() => wh.scrollIntoView({behavior:'smooth',block:'start'}), 60);
   }
 });
+</script>
+<script id="plan-today-nav">
+(function(){
+  var START = new Date(2026, 5, 1);            // Lundi S1 = 01 juin 2026
+  var DAYS  = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  function init(){
+    var now = new Date();
+    var idx = Math.floor((now - START) / (7 * 864e5));
+    if (idx < 0)  idx = 0;
+    if (idx > 23) idx = 23;
+    var weeks = document.querySelectorAll('.wk');
+    if (!weeks.length || !weeks[idx]) return;
+    var wk = weeks[idx];
+
+    // 1. Activer la bonne phase
+    var ph = wk.closest('.phase-section');
+    if (ph && !ph.classList.contains('on') && typeof showPhase === 'function') {
+      showPhase(ph.id.replace('phase-', ''));
+    }
+    // 2. Ouvrir le bloc
+    var bb = wk.closest('.bloc-body');
+    if (bb && !bb.classList.contains('open')) {
+      bb.classList.add('open');
+      var bh = bb.previousElementSibling;
+      if (bh) {
+        bh.classList.remove('closed');
+        var bar = bh.querySelector('.bloc-ar');
+        if (bar) bar.classList.add('open');
+      }
+    }
+    // 3. Ouvrir la semaine
+    var wh = wk.querySelector('.wh');
+    var wbdy = wk.querySelector('.wb');
+    if (wbdy && !wbdy.classList.contains('open')) {
+      wbdy.classList.add('open');
+      var a = wh && wh.querySelector('.ar');
+      if (a) a.classList.add('open');
+    }
+    // 4. Surligner les séances du jour
+    var dj = DAYS[now.getDay()];
+    var todays = [];
+    wk.querySelectorAll('.ss').forEach(function(ss){
+      var d = ss.querySelector('.ss-day');
+      if (d && d.textContent.trim().indexOf(dj) === 0) {
+        ss.classList.add('today');
+        todays.push(ss);
+      }
+    });
+    // 5. Bandeau récap sous le header
+    var hdr = document.querySelector('.hdr');
+    var bn = document.createElement('div');
+    bn.id = 'today-banner';
+    var wn = wk.querySelector('.wn');
+    var names = todays.map(function(ss){
+      var d = ss.querySelector('.ss-day');
+      var t = ss.querySelector('.ss-title');
+      var slot = d ? d.textContent.replace(/\s+/g, ' ').trim().split(' ').pop() : '';
+      return (slot ? slot + ' · ' : '') + (t ? t.textContent.trim() : '');
+    });
+    bn.innerHTML = '📍 <b>' + (wn ? wn.textContent.trim() : '') + ' — ' + dj + '</b><br>' +
+                   (names.length ? names.join('<br>') : 'Aucune séance aujourd\u2019hui');
+    if (hdr && hdr.parentNode) hdr.parentNode.insertBefore(bn, hdr.nextSibling);
+    // 6. Bouton flottant + scroll auto
+    var btn = document.createElement('button');
+    btn.id = 'today-btn';
+    btn.type = 'button';
+    btn.textContent = '📍 Aujourd\u2019hui';
+    document.body.appendChild(btn);
+    function go(){
+      var target = todays[0] || wh || wk;
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    btn.addEventListener('click', go);
+    bn.addEventListener('click', go);
+    setTimeout(go, 300);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
 </script>
 </body>
 </html>
