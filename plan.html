@@ -2705,6 +2705,7 @@ window.addEventListener('load',()=>{
     var m, re=/(\d{2,3})\s*%\s*VMA/gi;
     while((m=re.exec(txt))){ var pct=parseInt(m[1],10); if(pct>=50&&pct<=130) out.push(pct); }
     if(out.length) return unique(out);
+    if(/(priming|rappel qualité)/.test(low)) return [105];
     if(low.indexOf('vma')!==-1){
       if(/\b(30\s*\/\s*30|45\s*\/\s*15|court|primer)\b/.test(low)) return [105];
       if(/\b(6×4|6x4|4\s*min|3\s*min)\b/.test(low)) return [100];
@@ -2712,6 +2713,11 @@ window.addEventListener('load',()=>{
     }
     if(low.indexOf('seuil')!==-1) return [90];
     if(low.indexOf('tempo')!==-1) return [85];
+    // Allure course HYROX sous fatigue : plus lente que le seuil pur.
+    if(/rappel race/.test(low)) return [88];
+    if(/allure race/.test(low)) return [90];
+    // Sorties faciles : Z2, footing, sortie longue, consolidation base course.
+    if(/(sortie longue|footing|consolidation base course|\bz2\b|z1\s*\/\s*z2|fondamental)/.test(low)) return [75];
     return [];
   }
   function fullSessionText(el){

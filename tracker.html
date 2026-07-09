@@ -220,8 +220,16 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
 
   <!-- VO2max indirecte -->
   <div class="card">
-    <div class="card-title">VO2max indirecte (5 km) <span>Cible 22'00</span></div>
+    <div class="card-title">VO2max indirecte (5 km) <span>Cible 20'00 (objectif 1h10)</span></div>
     <div id="vo2-progression"></div>
+  </div>
+
+  <!-- Projection temps course HYROX -->
+  <div class="card">
+    <div class="card-title">Projection temps course <span>Objectif 1h10</span></div>
+    <div id="race-projection"></div>
+    <div id="race-projection-detail" style="display:none;margin-top:.5rem"></div>
+    <button class="btn btn-sec btn-sm" id="proj-toggle" onclick="toggleProjectionDetail()" style="margin-top:.4rem;width:100%">Voir/éditer le détail par station</button>
   </div>
 
   <!-- Analyse RPE -->
@@ -929,7 +937,7 @@ function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
 
 // Cibles par type de test
 const CIBLES = {
-  '5km': {label:'5 km', target:'22:00', unit:'mm:ss', better:'lower'},
+  '5km': {label:'5 km', target:'20:00', unit:'mm:ss', better:'lower'},
   'wb100': {label:'100 WB', target:'5:30', unit:'mm:ss', better:'lower'},
   'bbj80': {label:'80m BBJ', target:'4:30', unit:'mm:ss', better:'lower'},
   'farmer': {label:'Farmer 100m', target:'2:00', unit:'mm:ss', better:'lower'},
@@ -1306,6 +1314,7 @@ function renderDashboard() {
   renderRunChart(db);
   renderWBProgression(db);
   renderVO2Progression(db);
+  renderRaceProjection(db);
   renderRPEAnalysis(db);
 }
 
@@ -1514,15 +1523,15 @@ function renderVO2Progression(db) {
   const allTests = [baseline, ...tests];
 
   if (allTests.length < 2) {
-    el.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Référence : 24&#39;40 (16 mai). Prochain test fin bloc B (fin juillet).</div>';
+    el.innerHTML = '<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">Référence : 24&#39;40 (16 mai). Objectif recalé 1h10 : sub-20\'00. Prochain test : ven 21 août (S12).</div>';
     return;
   }
 
   el.innerHTML = allTests.map((t,i) => {
     const s = timeToSec(t.result);
-    const target = timeToSec('22:00');
+    const target = timeToSec('20:00');
     const prev = i > 0 ? timeToSec(allTests[i-1].result) : null;
-    const pct = s ? Math.round((1-(s-target)/(timeToSec('26:00')-target))*100) : 0;
+    const pct = s ? Math.round((1-(s-target)/(timeToSec('24:40')-target))*100) : 0;
     const delta = (prev && s) ? (s < prev ? '−' + secToTime(prev-s) + ' ✅' : '+' + secToTime(s-prev)) : '';
     const cls = s && s <= target ? 'etag-ok' : s && s <= 23*60 ? 'etag-warn' : 'etag-bad';
     return `
@@ -1531,10 +1540,144 @@ function renderVO2Progression(db) {
         <div class="entry-content">
           <div class="entry-title">${t.result} — 5 km</div>
           <div class="entry-meta">${fmtDate(t.date)}${t.comment ? ' · ' + t.comment : ''} ${delta ? '· ' + delta : ''}</div>
-          <div class="entry-tags"><span class="etag ${cls}">${Math.max(0,pct)}% cible 22'00</span></div>
+          <div class="entry-tags"><span class="etag ${cls}">${Math.max(0,pct)}% cible 20'00</span></div>
         </div>
       </div>`;
   }).join('');
+}
+
+// ════════════════════════════════════
+// PROJECTION TEMPS COURSE HYROX (objectif 1h10)
+// Budget station par station : voir plan d'entraînement / audit expert.
+// Le run est projeté depuis le dernier test 5 km ; les autres stations utilisent
+// les tests loggés quand ils existent, sinon des valeurs par défaut éditables.
+// ════════════════════════════════════
+const PROJ_DEFAULTS_KEY = 'hyrox_proj_defaults_v1';
+const PROJ_STATIONS = [
+  {key:'ski',       label:'SkiErg 1000 m',        default:'3:57'},
+  {key:'sled_push', label:'Sled Push 50 m',       default:'2:45'},
+  {key:'sled_pull', label:'Sled Pull 50 m',       default:'3:50'},
+  {key:'bbj',       label:'BBJ 80 m',             default:'4:10'},
+  {key:'row',       label:'Row 1000 m',           default:'4:00'},
+  {key:'farmer',    label:'Farmers 200 m',        default:'2:00'},
+  {key:'lunges',    label:'Lunges 100 m',         default:'4:10'},
+  {key:'wb',        label:'Wall Balls 100 reps',  default:'4:30'},
+  {key:'roxzone',   label:'Roxzone (transitions)',default:'4:30'}
+];
+const PROJ_RACE_FATIGUE_FACTOR = 0.90; // allure course moyenne ≈ 90% de la vitesse du test 5 km
+
+function loadProjDefaults() {
+  try { return JSON.parse(localStorage.getItem(PROJ_DEFAULTS_KEY) || '{}') || {}; } catch(e) { return {}; }
+}
+function saveProjDefaults(vals) { localStorage.setItem(PROJ_DEFAULTS_KEY, JSON.stringify(vals)); }
+
+function projLatestTest(db, type) {
+  const tests = (db.tests||[]).filter(t=>t.type===type).sort((a,b)=>a.date.localeCompare(b.date));
+  return tests.length ? tests[tests.length-1] : null;
+}
+
+function computeRaceProjection(db) {
+  const overrides = loadProjDefaults();
+  const test5km = projLatestTest(db, '5km');
+  let runSec = null, runDetail = '';
+  if (test5km) {
+    const testSec = timeToSec(test5km.result);
+    if (testSec) {
+      const paceTestSec = testSec/5;
+      const paceRaceSec = paceTestSec / PROJ_RACE_FATIGUE_FACTOR;
+      runSec = Math.round(paceRaceSec * 8);
+      runDetail = `depuis test 5 km du ${fmtDate(test5km.date)} (${test5km.result}) · allure course estimée ${secToTime(Math.round(paceRaceSec))}/km sur 8 km`;
+    }
+  }
+
+  const wbTest = projLatestTest(db, 'wb100');
+  const bbjTest = projLatestTest(db, 'bbj80');
+  const farmerTest = projLatestTest(db, 'farmer');
+
+  const rows = PROJ_STATIONS.map(st => {
+    let sec, source, editable = true;
+    if (st.key === 'wb' && wbTest) { sec = timeToSec(wbTest.result); source = `test 100 WB (${fmtDate(wbTest.date)})`; editable = false; }
+    else if (st.key === 'bbj' && bbjTest) { sec = timeToSec(bbjTest.result); source = `test 80m BBJ (${fmtDate(bbjTest.date)})`; editable = false; }
+    else if (st.key === 'farmer' && farmerTest) {
+      const s100 = timeToSec(farmerTest.result);
+      sec = s100 ? Math.round(s100*2) : null;
+      source = `test 100m×2 (${fmtDate(farmerTest.date)}, 2×28 kg — approx., poids course 2×32 kg)`;
+      editable = false;
+    } else {
+      const raw = overrides[st.key] || st.default;
+      sec = timeToSec(raw);
+      source = 'défaut budget 1h10 (éditable)';
+    }
+    return {key:st.key, label:st.label, sec:sec||0, source, editable};
+  });
+
+  const stationsTotal = rows.reduce((s,r)=>s+(r.sec||0), 0);
+  const total = (runSec||0) + stationsTotal;
+  return {runSec, runDetail, rows, stationsTotal, total, hasRun: !!runSec};
+}
+
+function renderRaceProjection(db) {
+  const el = document.getElementById('race-projection');
+  if (!el) return;
+  const proj = computeRaceProjection(db);
+  const targetSec = 70*60;
+
+  if (!proj.hasRun) {
+    el.innerHTML = `<div style="font-size:11px;color:var(--tx4);text-align:center;padding:.5rem">
+      Log un test 5 km (onglet ➕ Log → Test chrono) pour activer la projection.<br>
+      En attendant, le détail par station ci-dessous utilise les valeurs par défaut du budget 1h10.
+    </div>`;
+  } else {
+    const delta = proj.total - targetSec;
+    const cls = delta <= 0 ? 'etag-ok' : delta <= 3*60 ? 'etag-warn' : 'etag-bad';
+    const deltaTxt = delta <= 0 ? `−${secToTime(Math.abs(delta))} sous 1h10 ✅` : `+${secToTime(delta)} au-dessus de 1h10`;
+    el.innerHTML = `
+      <div class="entry">
+        <div class="entry-icon">🏁</div>
+        <div class="entry-content">
+          <div class="entry-title" style="font-size:1.1rem">${secToTime(proj.total)}</div>
+          <div class="entry-meta">Run 8 km : ${secToTime(proj.runSec)} · Stations + Roxzone : ${secToTime(proj.stationsTotal)}</div>
+          <div class="entry-meta" style="margin-top:2px">${proj.runDetail}</div>
+          <div class="entry-tags"><span class="etag ${cls}">${deltaTxt}</span></div>
+        </div>
+      </div>`;
+  }
+  renderRaceProjectionDetail(db);
+}
+
+function renderRaceProjectionDetail(db) {
+  const el = document.getElementById('race-projection-detail');
+  if (!el) return;
+  const proj = computeRaceProjection(db);
+  el.innerHTML = proj.rows.map(r => `
+    <div class="field-row" style="align-items:center;margin-bottom:.3rem">
+      <div style="flex:1;font-family:monospace;font-size:10.5px;color:var(--tx3)">${r.label}<br><span style="font-size:9px;color:var(--tx4)">${r.source}</span></div>
+      <input type="text" ${r.editable ? '' : 'disabled'} value="${secToTime(r.sec)}" data-proj-key="${r.key}"
+        oninput="onProjInput(this)"
+        style="width:64px;background:var(--bg3);border:1px solid var(--bo2);border-radius:5px;padding:.3rem .35rem;color:${r.editable?'var(--tx)':'var(--tx4)'};font-family:monospace;font-size:11px;text-align:center;outline:none">
+    </div>`).join('') + `
+    <button class="btn btn-sec btn-sm" onclick="resetProjDefaults()" style="width:100%;margin-top:.3rem">↺ Réinitialiser les valeurs par défaut</button>`;
+}
+
+function onProjInput(inputEl) {
+  const key = inputEl.getAttribute('data-proj-key');
+  const overrides = loadProjDefaults();
+  overrides[key] = inputEl.value;
+  saveProjDefaults(overrides);
+  renderRaceProjection(loadDB());
+}
+
+function resetProjDefaults() {
+  saveProjDefaults({});
+  renderRaceProjection(loadDB());
+}
+
+function toggleProjectionDetail() {
+  const d = document.getElementById('race-projection-detail');
+  const btn = document.getElementById('proj-toggle');
+  const open = d.style.display !== 'none';
+  d.style.display = open ? 'none' : 'block';
+  btn.textContent = open ? 'Voir/éditer le détail par station' : 'Masquer le détail par station';
 }
 
 function renderRPEAnalysis(db) {
