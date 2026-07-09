@@ -2420,7 +2420,9 @@ function planNormalizeSupabaseRow(row){
   if(rowData && typeof rowData==='string'){
     try{ var parsed=JSON.parse(rowData); if(parsed && typeof parsed==='object') rowData=parsed; }catch(e){ /* pas du JSON, on ignore */ }
   }
-  data = (rowData && typeof rowData==='object' && !Array.isArray(rowData)) ? rowData : row;
+  // Un objet {} est "truthy" en JS : un data vide ne doit PAS écraser les vraies colonnes top-level.
+  var hasRealData = rowData && typeof rowData==='object' && !Array.isArray(rowData) && Object.keys(rowData).length>0;
+  data = hasRealData ? rowData : row;
   for(k in data){ if(Object.prototype.hasOwnProperty.call(data,k)) out[k]=data[k]; }
   if(row.id!==undefined && row.id!==null) out.supabase_id=row.id;
   return out;
