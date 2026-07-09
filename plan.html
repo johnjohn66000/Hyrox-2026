@@ -2416,7 +2416,11 @@ function planSyncStatus(msg, ok){
 function planNormalizeSupabaseRow(row){
   var out={}, data, k;
   if(!row || typeof row!=='object') return row;
-  data = (row.data && typeof row.data==='object' && !Array.isArray(row.data)) ? row.data : row;
+  var rowData=row.data;
+  if(rowData && typeof rowData==='string'){
+    try{ var parsed=JSON.parse(rowData); if(parsed && typeof parsed==='object') rowData=parsed; }catch(e){ /* pas du JSON, on ignore */ }
+  }
+  data = (rowData && typeof rowData==='object' && !Array.isArray(rowData)) ? rowData : row;
   for(k in data){ if(Object.prototype.hasOwnProperty.call(data,k)) out[k]=data[k]; }
   if(row.id!==undefined && row.id!==null) out.supabase_id=row.id;
   return out;
