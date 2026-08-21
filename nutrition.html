@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Nutrition — HYROX 2026</title>
+<style>
+:root{--bg:#080b0a;--bg2:#0e1412;--bg3:#141c1a;--bg4:#1c2422;--bo:#1e2a27;--bo2:#263530;--bo3:#344840;--tx:#e8f0ed;--tx2:#b0c4be;--tx3:#718e87;--tx4:#4a6560;--gr:#00c4a7;--gr2:#009e87;--gr3:#003d35;--am:#ffb800;--am2:#c98d00;--am3:#3d2e00;--rd:#ff4444;--rd2:#c42020;--rd3:#3d0a0a;--bl:#4488ff;--pu:#a855f7;--ok:#22c55e;--ok2:#166534;--vo:#ff6b35}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+html{scroll-behavior:smooth}
+body{font-family:'Georgia',serif;background:var(--bg);color:var(--tx);max-width:430px;margin:0 auto;font-size:14px;line-height:1.6;padding-bottom:60px}
+.hdr{background:linear-gradient(180deg,#000,var(--bg));border-bottom:1px solid var(--bo2);padding:1.4rem 1rem 1rem;text-align:center}
+.hdr h1{font-size:1.3rem;letter-spacing:.06em;color:var(--gr)}
+.hdr-sub{font-family:monospace;font-size:10.5px;color:var(--tx3);margin-top:.3rem}
+.wrap{padding:0 .8rem}
+.card{background:var(--bg2);border:1px solid var(--bo2);border-radius:12px;padding:1rem;margin-top:.9rem}
+.card h2{font-size:.95rem;color:var(--gr);letter-spacing:.04em;margin-bottom:.5rem}
+.card h3{font-size:.85rem;color:var(--am);margin:.8rem 0 .3rem}
+.tag{display:inline-block;font-family:monospace;font-size:9.5px;padding:2px 8px;border-radius:20px;background:var(--bg3);border:1px solid var(--bo3);color:var(--tx2);margin:2px 3px 2px 0}
+.tag.big{font-size:11px;padding:3px 10px}
+.tag.gr{border-color:var(--gr2);color:var(--gr)}
+.tag.am{border-color:var(--am2);color:var(--am)}
+.tag.rd{border-color:var(--rd2);color:var(--rd)}
+.dtype{border-left:4px solid var(--bo3)}
+.dtype.charge{border-left-color:var(--rd)}
+.dtype.modere{border-left-color:var(--am)}
+.dtype.off{border-left-color:var(--gr)}
+.dtype.today{box-shadow:0 0 0 2px var(--gr);position:relative}
+.today-badge{position:absolute;top:-9px;right:12px;background:var(--gr);color:#000;font-family:monospace;font-size:9.5px;font-weight:bold;padding:1px 10px;border-radius:20px}
+.macro{display:flex;gap:.4rem;flex-wrap:wrap;margin:.4rem 0 .6rem}
+.macro span{flex:1;min-width:70px;background:var(--bg3);border:1px solid var(--bo2);border-radius:8px;padding:.35rem .3rem;text-align:center;font-family:monospace;font-size:10px;color:var(--tx2)}
+.macro b{display:block;font-size:13px;color:var(--tx)}
+.meal{background:var(--bg3);border:1px solid var(--bo);border-radius:9px;padding:.6rem .7rem;margin-top:.5rem}
+.meal-t{font-family:monospace;font-size:10px;color:var(--gr);letter-spacing:.05em;text-transform:uppercase}
+.meal p{font-size:12.5px;color:var(--tx2);margin-top:.2rem}
+.meal p b{color:var(--tx)}
+.note{font-size:11.5px;color:var(--tx3);border-top:1px dashed var(--bo2);margin-top:.6rem;padding-top:.45rem}
+ul{margin:.3rem 0 .3rem 1.1rem;font-size:12.5px;color:var(--tx2)}
+li{margin-bottom:.25rem}
+li b{color:var(--tx)}
+.banner{margin-top:.9rem;background:var(--gr3);border:1px solid var(--gr2);border-radius:12px;padding:.7rem .9rem;font-size:12.5px}
+.banner b{color:var(--gr)}
+.back{display:block;text-align:center;font-family:monospace;font-size:11px;color:var(--tx3);margin-top:1.4rem;text-decoration:none}
+.warn{background:var(--am3);border:1px solid var(--am2);border-radius:9px;padding:.55rem .7rem;font-size:12px;color:var(--tx2);margin-top:.6rem}
+.warn b{color:var(--am)}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <h1>NUTRITION · OBJECTIF 1H10</h1>
+  <div class="hdr-sub">À partir du 31 août (S14) · 90 kg → −5/−6 kg avant course · le reste après le 13 nov · Sans lait</div>
+</div>
+<div class="wrap">
+
+<div class="banner" id="today-banner">📅 Chargement du jour…</div>
+
+<div class="card">
+  <h2>Principes — lis-moi une fois</h2>
+  <ul>
+    <li><b>Trajectoire</b> : −550/−600 g par semaine du 31/08 au début du taper (S22), <b>maintenance en S23–S24</b> (on ne coupe jamais les glucides près de la course), les 2-3 derniers kg après le 13 novembre.</li>
+    <li><b>Protéines constantes</b> : ~165 g/jour quel que soit le jour — c'est le muscle qu'on protège pendant la perte.</li>
+    <li><b>Les glucides suivent l'entraînement</b> : jours durs = glucides hauts (les séances paient le 1h10), jours OFF = glucides bas (c'est là que la perte se fait).</li>
+    <li><b>Sans lait</b> : whey <b>isolat</b> (quasi zéro lactose) ou protéine végétale, boissons végétales enrichies calcium, pas de fromage/yaourt dans les menus.</li>
+    <li><b>Pesée</b> : chaque lundi à jeun, loggée dans le tracker (onglet Poids). Si la perte dépasse 800 g/sem deux semaines de suite → +150 kcal/jour sur les jours modérés.</li>
+  </ul>
+</div>
+
+<div class="card dtype charge" id="card-charge">
+  <h2>🔴 JOUR CHARGE <span class="tag big rd">~2 850–2 900 kcal</span></h2>
+  <div style="font-size:11.5px;color:var(--tx3)">Mar → Sam des semaines de charge : qualité course, bas lourd + WB, compromised, sled complet, longue/simulation.</div>
+  <div class="macro"><span>Protéines<b>165 g</b></span><span>Glucides<b>330–360 g</b></span><span>Lipides<b>80 g</b></span></div>
+  <div class="meal"><div class="meal-t">Collation post-entraînement (30–45 min après la séance du matin)</div>
+    <p><b>Shaker</b> : 40 g whey isolat ou protéine végétale + 1 banane + 80 g flocons d'avoine mixés dans 300 ml boisson d'amande + 1 c. à s. de miel. <i>(~650 kcal · P42/G95/L8)</i></p>
+    <p>Variante solide : 4 galettes de riz + 3 œufs durs + 1 banane + 30 g miel.</p></div>
+  <div class="meal"><div class="meal-t">Déjeuner</div>
+    <p><b>140 g (cru)</b> riz basmati ou pâtes complètes · <b>200 g</b> poulet, dinde ou bœuf 5% · légumes à volonté · 15 ml huile d'olive · 1 fruit. <i>(~1 100 kcal)</i></p></div>
+  <div class="meal"><div class="meal-t">Dîner</div>
+    <p><b>120 g (cru)</b> riz / semoule ou <b>400 g</b> patate douce · <b>180 g</b> poisson (saumon 2×/sem) ou 4 œufs ou 200 g tofu ferme · légumes · ½ avocat · 20 g amandes/noix · 2 carrés chocolat noir 85%. <i>(~1 100 kcal)</i></p></div>
+  <div class="note">Séance &gt;75 min (longue, simulation) : +30–40 g de glucides <b>par heure pendant</b> (gel, banane, boisson iso) — non comptés dans le total du jour. Veille de simulation : dîner passe à 180 g de riz (cru).</div>
+</div>
+
+<div class="card dtype modere" id="card-modere">
+  <h2>🟡 JOUR MODÉRÉ <span class="tag big am">~2 450–2 500 kcal</span></h2>
+  <div style="font-size:11.5px;color:var(--tx3)">Lundi (haut + Z2) · tous les jours des semaines de décharge/reprise (S14, S18, S22) · lun-mar de S24.</div>
+  <div class="macro"><span>Protéines<b>165 g</b></span><span>Glucides<b>230–250 g</b></span><span>Lipides<b>85 g</b></span></div>
+  <div class="meal"><div class="meal-t">Collation post-entraînement</div>
+    <p><b>Shaker</b> : 35 g whey isolat ou végétale + 1 banane + 40 g flocons d'avoine dans boisson d'amande. <i>(~430 kcal)</i></p></div>
+  <div class="meal"><div class="meal-t">Déjeuner</div>
+    <p><b>100 g (cru)</b> riz ou pâtes complètes · <b>200 g</b> viande maigre · légumes à volonté · 15 ml huile d'olive · 1 fruit. <i>(~950 kcal)</i></p></div>
+  <div class="meal"><div class="meal-t">Dîner</div>
+    <p><b>80 g (cru)</b> quinoa/riz ou 300 g patate douce · <b>180 g</b> poisson ou 4 œufs ou 200 g tofu · légumes · ½ avocat · 25 g oléagineux. <i>(~1 000 kcal)</i></p></div>
+</div>
+
+<div class="card dtype off" id="card-off">
+  <h2>🟢 JOUR OFF / RÉCUP <span class="tag big gr">~2 050–2 100 kcal</span></h2>
+  <div style="font-size:11.5px;color:var(--tx3)">Dimanche (OFF ou drainage) · jours de repos. C'est ici que la perte de gras se fait — les jours durs, eux, financent la performance.</div>
+  <div class="macro"><span>Protéines<b>165 g</b></span><span>Glucides<b>150–160 g</b></span><span>Lipides<b>85 g</b></span></div>
+  <div class="meal"><div class="meal-t">Petit-déjeuner (remplace la collation — pas d'entraînement)</div>
+    <p><b>3 œufs</b> brouillés + 2 tranches pain complet + 1 fruit + café noir. <i>(~500 kcal)</i></p></div>
+  <div class="meal"><div class="meal-t">Déjeuner</div>
+    <p><b>70 g (cru)</b> riz ou légumineuses (lentilles 90 g cru) · <b>200 g</b> viande maigre · gros volume de légumes · 15 ml huile d'olive. <i>(~800 kcal)</i></p></div>
+  <div class="meal"><div class="meal-t">Dîner</div>
+    <p><b>180 g</b> poisson blanc ou 200 g tofu · légumes rôtis à volonté · ½ avocat · 30 g oléagineux · 1 fruit. Féculents : non. <i>(~750 kcal)</i></p></div>
+</div>
+
+<div class="card">
+  <h2>⏱ Timing selon la séance du matin</h2>
+  <ul>
+    <li><b>Post-muscu (haut ou bas)</b> : collation complète dans les 45 min — la fenêtre protéique compte plus que le reste.</li>
+    <li><b>Post-VMA / seuil / allure race</b> : collation version glucides pleins (la banane ET le miel) — le glycogène d'abord.</li>
+    <li><b>Post-sled / compromised</b> : collation + <b>1 bonne pincée de sel</b> dans le shaker ou eau + électrolytes — ces séances font transpirer lourd.</li>
+    <li><b>Veille de sortie longue / simulation</b> : dîner à +40 g de riz (cru) par rapport au menu du jour.</li>
+    <li><b>Séance ratée / annulée</b> : bascule le jour en MODÉRÉ, pas de compensation le lendemain.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>💧 Hydratation</h2>
+  <ul>
+    <li>Base : <b>3,6–4 L/jour</b> (40–45 ml/kg), hors séances.</li>
+    <li>Pendant : 500–750 ml/heure de séance. Électrolytes systématiques sur sled, compromised, simulations et toute séance &gt;60 min l'été.</li>
+    <li>Repère urines : claires le matin, sinon +500 ml sur la journée.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>🏁 Semaine de course (S24 · 9–15 nov)</h2>
+  <ul>
+    <li><b>Lun-mar</b> : jours MODÉRÉS, dernières séances légères.</li>
+    <li><b>Mer-jeu (J-2, J-1)</b> : recharge glucidique <b>7–8 g/kg = 630–720 g/jour</b> — riz blanc, pâtes, pain blanc, banane, miel, jus. Lipides et fibres au minimum, protéines ~130 g. Tu vas prendre ~1 kg d'eau : c'est du carburant, pas du gras.</li>
+    <li><b>Vendredi 13, matin</b> : petit-déj <b>3h avant</b> le départ — 100–120 g glucides faciles sans lait ni fibres (riz blanc + miel + banane, ou pain blanc + confiture + jus). Caféine 200 mg 45–60 min avant si habitué. Sip d'eau + électrolytes jusqu'à −30 min.</li>
+    <li><b>Après la course</b> : mange ce qui te fait plaisir. La reprise du déficit attend le lundi suivant.</li>
+  </ul>
+  <div class="warn"><b>Règle absolue</b> : aucun aliment nouveau en S24. Tout ce que tu manges la semaine de course a déjà été testé les veilles de simulation.</div>
+</div>
+
+<div class="card">
+  <h2>➕ Compléments (optionnels, utiles)</h2>
+  <ul>
+    <li><b>Créatine monohydrate 5 g/jour</b>, tous les jours, n'importe quand — sled, WB et force en profitent directement.</li>
+    <li><b>Vitamine D 2000 UI/jour</b> d'octobre à la course.</li>
+    <li>Caféine : garde-la pour les grosses séances (sim, compromised) et la course — pas tous les jours.</li>
+  </ul>
+</div>
+
+<a class="back" href="index.html">← Retour à l'accueil</a>
+</div>
+
+<script>
+(function(){
+  var START = new Date(2026,5,1); // lundi S1
+  var NUTRI_START = new Date(2026,7,31); // 31 août = S14
+  var now = new Date();
+  var banner = document.getElementById('today-banner');
+  var days = Math.floor((now - START)/(864e5));
+  var week = Math.floor(days/7)+1; // S1..S24
+  var dow = now.getDay(); // 0=dim
+  var type, label;
+  var MODERE_WEEKS = {14:1,18:1,22:1};
+  if (now < NUTRI_START){
+    type='off'; label="Le plan alimentaire démarre le lundi 31 août (S14). D'ici là : mange normalement, protéines à chaque repas.";
+  } else if (week>=25 || week<1){
+    type='off'; label='Hors période du plan.';
+  } else if (week===24){
+    if (dow===1||dow===2){type='modere';label='S24 · Jour MODÉRÉ — dernières séances légères.';}
+    else if (dow===3||dow===4){type='charge';label='S24 · RECHARGE GLUCIDIQUE 630–720 g — riz blanc, pâtes, miel. Fibres au minimum.';}
+    else if (dow===5){type='charge';label="🏁 JOUR DE COURSE — petit-déj 3h avant, 100–120 g glucides testés. Bonne course.";}
+    else {type='off';label='S24 · Post-course — plaisir libre, le déficit reprend lundi.';}
+  } else if (week===23){
+    type='modere'; label='S23 · TAPER — maintenance, jours modérés. On ne coupe pas les glucides près de la course.';
+  } else if (MODERE_WEEKS[week]){
+    type = (dow===0)?'off':'modere';
+    label = 'S'+week+' (décharge/reprise) · Jour '+(dow===0?'OFF':'MODÉRÉ')+'.';
+  } else {
+    if (dow===0){type='off';label='S'+week+' · Dimanche — jour OFF/RÉCUP : glucides bas, la perte se fait ici.';}
+    else if (dow===1){type='modere';label='S'+week+' · Lundi — jour MODÉRÉ (haut + Z2).';}
+    else {type='charge';label='S'+week+' · Jour CHARGE — glucides hauts, la séance du matin paie le 1h10.';}
+  }
+  banner.innerHTML = '📅 <b>Aujourd\'hui : '+label+'</b>';
+  var el = document.getElementById('card-'+type);
+  if (el){ el.classList.add('today'); var b=document.createElement('div'); b.className='today-badge'; b.textContent="AUJOURD'HUI"; el.appendChild(b); }
+})();
+</script>
+</body>
+</html>
