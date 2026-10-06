@@ -298,6 +298,14 @@ hr.div{border:0;border-top:1px solid var(--bo);margin:.4rem 0}
         <div class="field">
           <label>FC max (bpm)</label><input type="number" id="t-fc-max" placeholder="ex : 178">
         </div>
+        <div class="sep-label">Séance VMA / seuil — pour le recalage des allures</div>
+        <div class="field-row">
+          <div class="field"><label>Reps terminées</label><input type="number" id="t-rep-n" placeholder="ex : 5"></div>
+          <div class="field"><label>Durée d'une rep (min)</label><input type="number" step="0.5" id="t-rep-min" placeholder="ex : 3"></div>
+        </div>
+        <div class="field">
+          <label>Allure moyenne des reps (min/km)</label><input type="text" id="t-rep-allure" placeholder="ex : 4:00">
+        </div>
       </div>
 
       <div id="t-str-fields" style="display:none">
@@ -1170,6 +1178,9 @@ async function saveTraining() {
     entry.fc_avg = +document.getElementById('t-fc-avg').value || null;
     entry.fc_max = +document.getElementById('t-fc-max').value || null;
     entry.fc = entry.fc_max; // compatibilité locale avec anciennes données
+    entry.rep_n = +document.getElementById('t-rep-n').value || null;
+    entry.rep_min = +document.getElementById('t-rep-min').value || null;
+    entry.rep_allure = document.getElementById('t-rep-allure').value || null;
   }
   if (['str_bas','str_haut','str_full'].includes(type)) {
     entry.exercises = (window._strExos||[]).map(exo=>({
@@ -1217,6 +1228,7 @@ async function saveTraining() {
     }  }
   
   saveDB(db);
+  ['t-rep-n','t-rep-min','t-rep-allure'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
   showSupabaseSaveStatus(!!savedTraining, 'trainings');
 }
 
@@ -1979,6 +1991,7 @@ function openHistoryDetail(idOrIndex, cat) {
     body += detailField('Distance', item.dist ? item.dist + ' km' : '');
     body += detailField('Allure', item.allure ? item.allure + '/km' : '');
     body += detailField('Intervalles', item.intervals);
+    if (item.rep_n && item.rep_min) body += detailField('Reps (recalage)', item.rep_n+' × '+item.rep_min+' min'+(item.rep_allure?' @ '+item.rep_allure+'/km':''));
     body += detailField('FC moyenne', getFcAvg(item) ? getFcAvg(item) + ' bpm' : '');
     body += detailField('FC max', getFcMax(item) ? getFcMax(item) + ' bpm' : '');
     body += detailField('Run SP', item.sp_allure ? item.sp_allure + '/km' : '');
